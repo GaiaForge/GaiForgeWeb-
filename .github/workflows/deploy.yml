@@ -22,7 +22,7 @@ jobs:
           script: |
             cd /tmp
             rm -rf GaiForgeWeb- 2>/dev/null
-            git clone git@github.com:GaiaForge/GaiForgeWeb-.git
+            git clone https://github.com/GaiaForge/GaiForgeWeb-.git
             sudo cp -r GaiForgeWeb-/html/* /var/www/html/
             sudo chown -R www-data:www-data /var/www/html
             sudo chmod -R 755 /var/www/html
