@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orpheus - Advanced Ecosystem Audio Control System | GaiaForge</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .playback-modes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+      margin-top: 40px;
+    }
+    .mode-card {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 16px;
+      padding: 30px;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border: 1px solid rgba(76, 140, 74, 0.1);
+    }
+    .mode-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    }
+    .mode-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #1a3a1a 0%, #2d5a2d 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      box-shadow: 0 8px 25px rgba(26, 58, 26, 0.5);
+    }
+    .mode-icon i {
+      font-size: 2.2rem;
+      color: #e6a817;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    .mode-card h4 {
+      font-family: 'Cinzel', serif;
+      color: var(--primary-green);
+      margin-bottom: 15px;
+      font-size: 1.3rem;
+    }
+    .mode-card p {
+      color: var(--dark-gray);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    }
+    .comparison-table th, .comparison-table td {
+      padding: 18px 20px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    .comparison-table th {
+      background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%);
+      color: white;
+      font-family: 'Cinzel', serif;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+    .comparison-table tr:hover td {
+      background: rgba(76, 140, 74, 0.05);
+    }
+    .check-icon {
+      color: var(--primary-green);
+      font-size: 1.2rem;
+    }
+    .x-icon {
+      color: #ccc;
+      font-size: 1.2rem;
+    }
+    .downloads-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      margin-top: 30px;
+    }
+    .download-card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+    .download-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    }
+    .download-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .download-icon i {
+      font-size: 1.8rem;
+      color: white;
+    }
+    .download-info h4 {
+      font-family: 'Cinzel', serif;
+      color: var(--primary-green);
+      margin-bottom: 5px;
+      font-size: 1.1rem;
+    }
+    .download-info p {
+      color: var(--dark-gray);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+    .version-badge {
+      display: inline-block;
+      background: var(--accent-gold);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+    .pro-badge {
+      background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header with Navigation -->
+  <header class="site-header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <a href="index.html">
+            <img src="images/gaiaforge-logo.png" alt="GaiaForge Logo">
+          </a>
+        </div>
+        <nav class="main-nav">
+          <button class="menu-toggle" aria-label="Toggle navigation">
+            <span class="menu-icon"></span>
+          </button>
+          <ul class="nav-menu">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="our-story.html">Our Story</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle active">Products</a>
+              <ul class="dropdown-menu">
+                <li><a href="orpheus.html" class="active">Orpheus</a></li>
+                <li><a href="sprigrig.html">SprigRig</a></li>
+              </ul>
+            </li>
+            <li><a href="/portal" target="_blank">Portal</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Product Hero Section -->
+  <section class="product-hero">
+    <div class="container">
+      <img src="images/Orpheus.png" alt="Orpheus Device" class="fade-in">
+      <h1 class="fade-in">Orpheus</h1>
+      <p class="product-tagline fade-in">Advanced Ecosystem Audio Control System</p>
+      <p class="fade-in">Solar-Powered. Autonomous. Built for Wildlife Research.</p>
+    </div>
+  </section>
+
+  <!-- Product Overview -->
+  <section class="product-details">
+    <div class="container">
+      <div class="product-section fade-in">
+        <h2>Overview</h2>
+        <p>Orpheus is a sophisticated environmental audio control system designed for ecosystem management, habitat restoration, wildlife research, and various human-focused applications. Available in <strong>Basic</strong> and <strong>Pro</strong> versions, this state-of-the-art platform enables precise control over sound playback based on astronomical events, time schedules, and seasonal patterns—all while operating autonomously on solar power for months at a time.</p>
+      </div>
+
+      <!-- Playback Modes -->
+      <div class="product-section fade-in">
+        <h2>4 Intelligent Playback Modes</h2>
+        <p>Orpheus Basic and Pro both feature four powerful playback modes designed for research-grade precision:</p>
+
+        <div class="playback-modes-grid">
+          <div class="mode-card">
+            <div class="mode-icon">
+              <i class="fas fa-hand-pointer"></i>
+            </div>
+            <h4>Manual Playback</h4>
+            <p>Direct audio control with Play, Pause, and Stop functionality. Perfect for on-demand playback during field observations or controlled experiments.</p>
+          </div>
+
+          <div class="mode-card">
+            <div class="mode-icon">
+              <i class="fas fa-clock"></i>
+            </div>
+            <h4>Interval Playback</h4>
+            <p>Schedule audio at precise time windows throughout the day. Set specific intervals for targeted playback aligned with your research protocol.</p>
+          </div>
+
+          <div class="mode-card">
+            <div class="mode-icon">
+              <i class="fas fa-sun"></i>
+            </div>
+            <h4>Astral Playback</h4>
+            <p>Sun-synchronized scheduling that automatically adjusts to sunrise and sunset times. Ideal for studying crepuscular species and dawn/dusk behaviors.</p>
+          </div>
+
+          <div class="mode-card">
+            <div class="mode-icon">
+              <i class="fas fa-leaf"></i>
+            </div>
+            <h4>Seasonal Playback</h4>
+            <p>Natural season-based scheduling (Spring, Summer, Fall, Winter) with support for custom date ranges. Perfect for migration studies and breeding seasons.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Basic vs Pro Comparison -->
+      <div class="product-section fade-in">
+        <h2>Choose Your Version</h2>
+        <p>Both versions share core playback capabilities, with the Pro adding advanced monitoring and recording features for comprehensive research deployments.</p>
+
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Basic</th>
+              <th>Pro</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Manual Playback Mode</strong></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+            </tr>
+            <tr>
+              <td><strong>Interval Playback Mode</strong></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+            </tr>
+            <tr>
+              <td><strong>Astral Playback Mode</strong></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+            </tr>
+            <tr>
+              <td><strong>Seasonal Playback Mode</strong></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+            </tr>
+            <tr>
+              <td><strong>Solar Power Management</strong></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+            </tr>
+            <tr>
+              <td><strong>Deep Sleep Scheduling</strong></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+            </tr>
+            <tr>
+              <td><strong>Remote App Control (Bluetooth)</strong></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+            </tr>
+            <tr>
+              <td><strong>GPS Location Awareness</strong></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+            </tr>
+            <tr>
+              <td><strong>Touchscreen Display</strong></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+            </tr>
+            <tr>
+              <td><strong>Real-Time Solar Monitoring</strong> <span class="version-badge pro-badge">Pro</span></td>
+              <td><i class="fas fa-times x-icon"></i></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+            </tr>
+            <tr>
+              <td><strong>Environmental Sensors</strong> (Temperature, Humidity, Pressure) <span class="version-badge pro-badge">Pro</span></td>
+              <td><i class="fas fa-times x-icon"></i></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+            </tr>
+            <tr>
+              <td><strong>Audio Recording</strong> (16/24/32-bit) <span class="version-badge pro-badge">Pro</span></td>
+              <td><i class="fas fa-times x-icon"></i></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+            </tr>
+            <tr>
+              <td><strong>Playback Logging & Analytics</strong> <span class="version-badge pro-badge">Pro</span></td>
+              <td><i class="fas fa-times x-icon"></i></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+            </tr>
+            <tr>
+              <td><strong>Power Flow Visualization</strong> <span class="version-badge pro-badge">Pro</span></td>
+              <td><i class="fas fa-times x-icon"></i></td>
+              <td><i class="fas fa-check check-icon"></i></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Key Features -->
+      <div class="product-section fade-in">
+        <h2>Key Features</h2>
+        <div class="row">
+          <div class="col">
+            <ul class="feature-list">
+              <li><strong>Astronomical-Based Playback</strong>: Schedule audio relative to sunrise and sunset, automatically adjusting to seasonal light changes at any location worldwide</li>
+              <li><strong>Seasonal Programming</strong>: Define custom seasons for migration studies or use natural seasons with specific audio schedules for each</li>
+              <li><strong>Location-Aware Scheduling</strong>: Latitude/longitude configuration ensures accurate sun calculations for any deployment location on Earth</li>
+              <li><strong>Solar Power Integration</strong>: Built-in power management with ACS37800 sensor for real-time solar monitoring and deep sleep capabilities</li>
+            </ul>
+          </div>
+          <div class="col">
+            <ul class="feature-list">
+              <li><strong>Companion App Control</strong>: Configure and monitor remotely via Bluetooth with the Orpheus mobile app</li>
+              <li><strong>Environmental Monitoring</strong> (Pro): BME280 sensor tracks temperature, humidity, and barometric pressure with data logging</li>
+              <li><strong>High-Quality Recording</strong> (Pro): Capture animal responses with configurable bit depth (16/24/32-bit float) and sample rates</li>
+              <li><strong>Comprehensive Logging</strong> (Pro): Detailed playback analytics with timestamps and location data for research documentation</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documentation Downloads -->
+      <div class="product-section fade-in">
+        <h2>Documentation</h2>
+        <p>Download user guides, technical specifications, and quick start guides for your Orpheus device.</p>
+
+        <div class="downloads-grid">
+          <a href="docs/orpheus-basic-user-guide.pdf" class="download-card" target="_blank">
+            <div class="download-icon">
+              <i class="fas fa-file-pdf"></i>
+            </div>
+            <div class="download-info">
+              <h4>Orpheus Basic User Guide</h4>
+              <p>Complete setup and operation manual</p>
+            </div>
+          </a>
+
+          <a href="docs/orpheus-pro-user-guide.pdf" class="download-card" target="_blank">
+            <div class="download-icon">
+              <i class="fas fa-file-pdf"></i>
+            </div>
+            <div class="download-info">
+              <h4>Orpheus Pro User Guide</h4>
+              <p>Advanced features and configuration</p>
+            </div>
+          </a>
+
+          <a href="docs/orpheus-quick-start.pdf" class="download-card" target="_blank">
+            <div class="download-icon">
+              <i class="fas fa-file-pdf"></i>
+            </div>
+            <div class="download-info">
+              <h4>Quick Start Guide</h4>
+              <p>Get up and running in minutes</p>
+            </div>
+          </a>
+
+          <a href="docs/orpheus-technical-specs.pdf" class="download-card" target="_blank">
+            <div class="download-icon">
+              <i class="fas fa-file-pdf"></i>
+            </div>
+            <div class="download-info">
+              <h4>Technical Specifications</h4>
+              <p>Hardware specs and requirements</p>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Applications -->
+      <div class="product-section fade-in">
+        <h2>Applications</h2>
+
+        <h3 class="mb-3">Environmental & Research</h3>
+        <div class="application-grid">
+          <div class="application-card">
+            <div class="application-icon"><i class="fas fa-dove"></i></div>
+            <h4>Wildlife Research</h4>
+            <p>Deploy species-specific calls for monitoring and conservation studies with sun-synchronized scheduling</p>
+          </div>
+          <div class="application-card">
+            <div class="application-icon"><i class="fas fa-tree"></i></div>
+            <h4>Habitat Restoration</h4>
+            <p>Create auditory landscapes to attract desired species to recovering ecosystems</p>
+          </div>
+          <div class="application-card">
+            <div class="application-icon"><i class="fas fa-ring"></i></div>
+            <h4>Bird Ringing Stations</h4>
+            <p>Acoustic lures for bird capture and population research with autonomous operation</p>
+          </div>
+          <div class="application-card">
+            <div class="application-icon"><i class="fas fa-route"></i></div>
+            <h4>Migration Studies</h4>
+            <p>Seasonal playback aligned with migration patterns for long-term deployments</p>
+          </div>
+          <div class="application-card">
+            <div class="application-icon"><i class="fas fa-volume-up"></i></div>
+            <h4>Ecoacoustic Monitoring</h4>
+            <p>Deploy sounds and record responses for ecosystem health assessment (Pro)</p>
+          </div>
+        </div>
+
+        <h3 class="mb-3 mt-5">Human-Centered Applications</h3>
+        <div class="application-grid">
+          <div class="application-card">
+            <div class="application-icon"><i class="fas fa-museum"></i></div>
+            <h4>Museum Exhibits</h4>
+            <p>Schedule context-sensitive audio content based on time of day or exhibit themes</p>
+          </div>
+          <div class="application-card">
+            <div class="application-icon"><i class="fas fa-bullhorn"></i></div>
+            <h4>PA Systems</h4>
+            <p>Automated announcements and sound programs for institutions and public spaces</p>
+          </div>
+          <div class="application-card">
+            <div class="application-icon"><i class="fas fa-hand-holding-heart"></i></div>
+            <h4>Therapy Settings</h4>
+            <p>Controlled soundscapes for sensory rooms and therapeutic environments</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Technical Specifications -->
+      <div class="product-section fade-in">
+        <h2>Technical Specifications</h2>
+        <ul class="specifications-list">
+          <li><strong>Processor:</strong> Raspberry Pi / DietPi compatible SBC with custom hardware integration</li>
+          <li><strong>Power:</strong> Solar-powered with ESP32-based power management and EEPROM wake scheduling</li>
+          <li><strong>Current Draw:</strong> Optimized to ~50mA (67% reduction from initial design)</li>
+          <li><strong>Sensors (Pro):</strong> BME280 (environmental), ACS37800 (power monitoring)</li>
+          <li><strong>Audio Output:</strong> High-quality amplified speaker system</li>
+          <li><strong>Recording (Pro):</strong> USB audio device support, 16/24/32-bit float, configurable sample rates</li>
+          <li><strong>Connectivity:</strong> Bluetooth Low Energy (BLE) for remote app control</li>
+          <li><strong>Display:</strong> Touchscreen interface with real-time status and controls</li>
+          <li><strong>Storage:</strong> Expandable storage for large audio libraries</li>
+          <li><strong>Enclosure:</strong> Weatherproof design for field deployment</li>
+          <li><strong>GPIO:</strong> Integration for external equipment control (relays, triggers)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action -->
+  <section class="cta-section">
+    <div class="container text-center">
+      <h2>Designed for Researchers, Built for the Wild</h2>
+      <p>Deploy autonomous audio systems that run for months on solar power. Reduce manual work, enhance data accuracy, and let nature take its course.</p>
+      <div class="btn-group mt-4">
+        <a href="contact.html" class="btn btn-lg">Contact Us to Learn More</a>
+        <a href="https://blog.gaiaforge.tech" class="btn btn-lg btn-secondary" target="_blank">Project Blog & Updates</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-column">
+          <h4 class="footer-title">About <span class="brand-name">GaiaForge</span></h4>
+          <p class="footer-description">Tools for those who protect life on Earth</p>
+          <p>Developing innovative technologies that support researchers and foster a better understanding of the natural world.</p>
+        </div>
+
+        <div class="footer-column">
+          <h4 class="footer-title">Quick Links</h4>
+            <ul class="footer-links">
+              <li><a href="index.html">Home</a></li>
+              <li><a href="our-story.html">Our Story</a></li>
+              <li><a href="orpheus.html">Orpheus</a></li>
+              <li><a href="sprigrig.html">SprigRig</a></li>
+              <li><a href="/portal" target="_blank">Portal Login</a></li>
+              <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-column">
+          <h4 class="footer-title">Contact Us</h4>
+          <ul class="footer-links">
+            <li><i class="fas fa-map-marker-alt"></i> Rheinland-Pfalz, Germany</li>
+            <li><i class="fas fa-phone"></i> (801) 709-1460</li>
+            <li><i class="fas fa-envelope"></i> <a href="mailto:contact@gaiaforge.tech">contact@gaiaforge.tech</a></li>
+          </ul>
+          <div class="footer-social mt-3">
+            <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; <span id="current-year">2024</span> <span class="brand-name">GaiaForge</span><sup>®</sup>. All Rights Reserved.</p>
+        <ul class="footer-links d-flex justify-content-center mt-2">
+          <li><a href="privacy-policy.html">Privacy Policy</a></li>
+          <li style="margin-left: 20px;"><a href="terms-of-service.html">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="js/main.js"></script>
+  <script>
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+.claude/
+
+# Node modules (if any)
+node_modules/
+
+# Build artifacts
+*.log
+
+# Exclude Orpheus app/firmware code (separate repos)
+Orpheus_app-main/
+Orpheus_unified-main/

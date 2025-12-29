@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GaiaForge develops innovative technology solutions bridging nature and science, empowering researchers, conservationists, and educators.">
+  <title>GaiaForge - Tools for Those Who Protect Life on Earth</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Critical inline styles -->
+  <style>
+    .card-image {
+      width: 100%;
+      height: 300px;
+      overflow: hidden;
+      position: relative;
+      background: linear-gradient(to bottom, #0a2351, #1a3a7a);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+    }
+    
+    .tilt-card, .card {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .tilt-card-inner {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header with Navigation -->
+  <header class="site-header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <a href="index.html">
+            <img src="images/gaiaforge-logo.png" alt="GaiaForge Logo">
+          </a>
+        </div>
+        
+        <nav class="main-nav">
+          <button class="menu-toggle" aria-label="Toggle navigation">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          <ul class="nav-menu">
+            <li><a href="our-story.html">Our Story</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle">Products</a>
+              <ul class="dropdown-menu">
+                <li><a href="orpheus.html">Orpheus</a></li>
+                <li><a href="sprigrig.html">SprigRig</a></li>
+              </ul>
+            </li>
+            <li><a href="/portal" target="_blank">Portal</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="hero-fullwidth">
+      <div class="hero-parallax-bg">
+        <div class="hero-layer hero-layer-1"></div>
+        <div class="hero-layer hero-layer-2"></div>
+        <div class="hero-layer hero-layer-3"></div>
+      </div>
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <p class="hero-tagline">GaiaForge<sup>®</sup></p>
+        <h1 class="hero-title">
+          <span>Tools</span> <span>for</span> <span>those</span> <span>who</span> <span>protect</span> 
+          <span class="highlight">life</span> <span>on</span> <span>Earth</span>
+        </h1>
+        <div class="hero-buttons">
+          <a href="#products" class="btn btn-glow">Explore Our Products <span class="btn-icon"><i class="fas fa-arrow-right"></i></span></a>
+          <a href="contact.html" class="btn btn-secondary btn-glow">Get in Touch</a>
+        </div>
+      </div>
+      <div class="scroll-indicator">
+        <div class="mouse"></div>
+      </div>
+    </section>
+
+    <!-- Mission Section with Reveal Effect -->
+    <section id="mission" class="reveal-section py-5">
+      <div class="container">
+        <div class="two-column">
+          <div class="column">
+            <h2 class="heading-animated">Our Mission</h2>
+            <p class="large-text">"To develop solutions that serve both nature and humanity by blending cutting-edge technology with ecological wisdom."</p>
+          </div>
+          <div class="column">
+            <p>At GaiaForge, we strive to develop innovative solutions that support researchers and foster a better understanding of the natural world. Our tools help conservationists, farmers, researchers, and communities <span class="highlighted-text">understand their environment</span>—fostering a sustainable coexistence for future generations.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Products Section with Glassmorphism -->
+    <section id="products" class="glass-section">
+      <div class="container">
+        <div class="section-heading">
+          <h2>Our Innovations</h2>
+          <p>Advanced tools for wildlife research and sustainable agriculture</p>
+        </div>
+
+        <div class="glass-grid">
+          <!-- Orpheus Card -->
+          <div class="glass-product-card">
+            <div class="glass-card-image">
+              <img src="images/Orpheus.png" alt="Orpheus Device">
+            </div>
+            <div class="glass-card-content">
+              <h3>Orpheus</h3>
+              <p>Advanced ecosystem audio control system designed for wildlife research, habitat restoration, and environmental monitoring. Solar-powered with astronomical scheduling capabilities.</p>
+              <a href="orpheus.html" class="glass-card-link">Learn More <i class="fas fa-arrow-right"></i></a>
+            </div>
+          </div>
+
+          <!-- SprigRig Card -->
+          <div class="glass-product-card">
+            <div class="glass-card-image">
+              <img src="images/SprigRig.png" alt="SprigRig System">
+            </div>
+            <div class="glass-card-content">
+              <h3>SprigRig</h3>
+              <p>Modular controlled environment agriculture system adaptable to various growing methods including hydroponics, drip irrigation, greenhouse control, and aeroponics.</p>
+              <a href="sprigrig.html" class="glass-card-link">Learn More <i class="fas fa-arrow-right"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Deployments Gallery Section -->
+    <section id="deployments" class="deployments-section">
+      <div class="container">
+        <div class="section-heading">
+          <h2>Field Deployments</h2>
+          <p>Real-world applications of our technology in action</p>
+        </div>
+
+        <div class="deployments-grid">
+          <article class="deployment-card">
+            <div class="deployment-image">
+              <img src="images/gallery-1.jpg" alt="Orpheus in the field">
+              <span class="deployment-tag">Orpheus</span>
+            </div>
+            <div class="deployment-content">
+              <h3>Bird Ringing Station</h3>
+              <p class="deployment-location"><i class="fas fa-map-marker-alt"></i> Luxembourg</p>
+              <p class="deployment-description">Orpheus units deployed as acoustic lures to attract birds for ringing and population research.</p>
+            </div>
+          </article>
+
+          <article class="deployment-card">
+            <div class="deployment-image">
+              <img src="images/gallery-2.jpg" alt="Wryneck Colony Project">
+              <span class="deployment-tag">Coming Soon</span>
+            </div>
+            <div class="deployment-content">
+              <h3>Wryneck Colony Project</h3>
+              <p class="deployment-location"><i class="fas fa-map-marker-alt"></i> Location TBD</p>
+              <p class="deployment-description">Orpheus units will be deployed to help establish a new colony of Wrynecks through targeted acoustic attraction.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer with Advanced Effects -->
+  <footer class="site-footer">
+    <div class="footer-wave"></div>
+    <div class="footer-background"></div>
+    
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-column">
+          <h4 class="footer-title">About <span class="brand-name">GaiaForge</span></h4>
+          <p class="footer-description">Developing innovative technologies that support researchers and foster a better understanding of the natural world.</p>
+          <div class="footer-social">
+            <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        
+        <div class="footer-column">
+          <h4 class="footer-title">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="our-story.html">Our Story</a></li>
+            <li><a href="orpheus.html">Orpheus</a></li>
+            <li><a href="sprigrig.html">SprigRig</a></li>
+            <li><a href="/portal" target="_blank">Portal Login</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="privacy-policy.html">Privacy Policy</a></li>
+            <li><a href="terms-of-service.html">Terms of Service</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-column">
+          <h4 class="footer-title">Contact Us</h4>
+          <div class="contact-info-item">
+            <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+            <div class="contact-text">
+              <h5>Location</h5>
+              <p>Rheinland-Pfalz, Germany</p>
+            </div>
+          </div>
+          <div class="contact-info-item">
+            <div class="contact-icon"><i class="fas fa-phone"></i></div>
+            <div class="contact-text">
+              <h5>Phone</h5>
+              <p><a href="tel:+18017091460">(801) 709-1460</a></p>
+            </div>
+          </div>
+          <div class="contact-info-item">
+            <div class="contact-icon"><i class="fas fa-envelope"></i></div>
+            <div class="contact-text">
+              <h5>Email</h5>
+              <p><a href="mailto:contact@gaiaforge.tech">contact@gaiaforge.tech</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; <span id="current-year">2024</span> <span class="brand-name">GaiaForge</span><sup>®</sup>. All Rights Reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Back to Top Button -->
+  <a href="#" class="back-to-top">
+    <i class="fas fa-arrow-up"></i>
+  </a>
+
+  <!-- JavaScript -->
+  <script src="js/main.js" defer></script>
+  
+  <!-- Initialization script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Update year
+      document.getElementById('current-year').textContent = new Date().getFullYear();
+      
+      // Sticky header
+      function handleScroll() {
+        if (window.scrollY > 50) {
+          document.querySelector('.site-header').classList.add('header-scrolled');
+        } else {
+          document.querySelector('.site-header').classList.remove('header-scrolled');
+        }
+      }
+      
+      handleScroll();
+      window.addEventListener('scroll', handleScroll);
+      
+      // Reveal sections
+      const revealSections = document.querySelectorAll('.reveal-section');
+      if (revealSections.length > 0 && 'IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('active');
+              
+              // Activate staggered grids within this section
+              const staggeredGrids = entry.target.querySelectorAll('.staggered-grid');
+              staggeredGrids.forEach(grid => grid.classList.add('active'));
+            }
+          });
+        }, {
+          threshold: 0.15
+        });
+        
+        revealSections.forEach(section => {
+          observer.observe(section);
+        });
+      } else {
+        // Fallback for browsers without Intersection Observer
+        revealSections.forEach(section => {
+          section.classList.add('active');
+          const staggeredGrids = section.querySelectorAll('.staggered-grid');
+          staggeredGrids.forEach(grid => grid.classList.add('active'));
+        });
+      }
+      
+      // Back to top button
+      const backToTopButton = document.querySelector('.back-to-top');
+      
+      if (backToTopButton) {
+        window.addEventListener('scroll', function() {
+          if (window.scrollY > 300) {
+            backToTopButton.classList.add('visible');
+          } else {
+            backToTopButton.classList.remove('visible');
+          }
+        });
+        
+        backToTopButton.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        });
+      }
+      
+      // Page loaded
+      document.body.classList.add('page-loaded');
+    });
+  </script>
+</body>
+</html>
