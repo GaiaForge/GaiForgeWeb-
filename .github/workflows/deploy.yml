@@ -28,4 +28,4 @@ jobs:
             sudo chmod -R 755 /var/www/html
             rm -rf /tmp/GaiForgeWeb-
             echo "Deployment complete at $(date)"
-            echo "Website updated successfully"
+            echo "Website updated successfully!"
