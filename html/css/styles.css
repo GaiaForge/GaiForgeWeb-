@@ -2757,10 +2757,10 @@
     }
     
     .product-hero img {
-      max-height: 200px;
+      max-height: 280px;
     }
   }
-  
+
   @media (max-width: 992px) {
     h1 {
       font-size: clamp(2rem, 5vw, 3.5rem);
@@ -2919,18 +2919,18 @@
     }
     
     .product-hero img {
-      max-height: 150px;
+      max-height: 220px;
     }
-    
+
     .card-image {
       height: 200px;
     }
-    
+
     .staggered-grid .card-image {
       height: 200px;
     }
   }
-  
+
   /*  styles for legal pages (privacy policy and terms of service) */
 
 .legal-content {
