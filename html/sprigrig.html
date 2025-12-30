@@ -49,41 +49,111 @@
   <section class="product-hero">
     <div class="container">
       <img src="images/SprigRig.png" alt="SprigRig System" class="fade-in">
-      <h1 class="fade-in">SprigRig</h1>
-      <p class="product-tagline fade-in">Modular Controlled Environment Agriculture System</p>
-      <p class="fade-in">Smart. Adaptable. Empowering plant growth anywhere.</p>
+      <h1 class="fade-in">SprigRig™</h1>
+      <p class="product-tagline fade-in">Advanced Automated Growing System</p>
+      <p class="fade-in">Zone-based intelligent growing with AI monitoring, astral scheduling, and modular hardware control.</p>
+      <div class="development-badge fade-in" style="margin-top: 20px;">
+        <span style="display: inline-block; background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: white; padding: 8px 20px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+          <i class="fas fa-flask" style="margin-right: 8px;"></i>In Development
+        </span>
+      </div>
     </div>
   </section>
 
   <!-- Product Overview -->
   <section class="product-details">
     <div class="container">
+      <!-- Development Notice -->
+      <div class="product-section fade-in" style="background: linear-gradient(135deg, rgba(243, 156, 18, 0.1) 0%, rgba(230, 126, 34, 0.1) 100%); border: 1px solid rgba(243, 156, 18, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 30px;">
+        <p style="margin: 0; color: #d35400;"><i class="fas fa-info-circle" style="margin-right: 10px;"></i><strong>Development Status:</strong> SprigRig™ is currently in active development. The features described below represent our development roadmap and planned capabilities. We're building and testing prototypes, and the system is not yet available for purchase. Check back here for progress updates.</p>
+      </div>
+
       <div class="product-section fade-in">
         <h2>Overview</h2>
-        <p>SprigRig is an adaptable controlled environment agriculture system designed for both home gardeners and professional growers. This versatile platform can be configured for various growing methods including hydroponics, drip irrigation, greenhouse control, and aeroponics, making it suitable for a wide range of applications from small-scale indoor growing to commercial operations.</p>
+        <p>SprigRig™ is being developed as a comprehensive zone-based intelligent growing system featuring dynamic dashboards, astral scheduling, AI-powered monitoring, and modular hardware control. Designed for home growers and commercial operations alike, this versatile platform will support soil growing, hydroponics, NFT, and aeroponics—making it suitable for everything from small-scale indoor gardens to professional cultivation facilities.</p>
       </div>
 
       <!-- Key Features -->
       <div class="product-section fade-in">
-        <h2>Key Features</h2>
+        <h2>Planned Features</h2>
         <div class="row">
           <div class="col">
             <ul class="feature-list">
-              <li><strong>Modular Design</strong>: Easily expand or reconfigure your system as your needs change, with plug-and-play components</li>
-              <li><strong>Smart Irrigation Control</strong>: Precision watering based on soil moisture levels, time schedules, and plant-specific needs</li>
-              <li><strong>Environmental Monitoring</strong>: Track temperature, humidity, light levels, and soil conditions in real-time</li>
-              <li><strong>Data Logging & Analysis</strong>: Store historical data to track growth patterns and optimize growing conditions over time</li>
+              <li><strong>Zone-Based Management</strong>: Multiple independent grow zones with customizable dashboards based on grow method and installed hardware</li>
+              <li><strong>Guardian AI</strong>: Continuous environmental monitoring with tiered alerts, plant health analysis via computer vision, nutrient deficiency and pest detection</li>
+              <li><strong>Astral Scheduling</strong>: Sync lighting schedules with sunrise/sunset times for natural photoperiod simulation</li>
+              <li><strong>Recipe System</strong>: Pre-built recipes for common crops with phase-based growing and automatic environmental target adjustment</li>
+              <li><strong>Camera Integration</strong>: Timelapse capture, manual documentation, multi-camera support per zone with AI health analysis</li>
             </ul>
           </div>
           <div class="col">
             <ul class="feature-list">
-              <li><strong>Mobile App Control</strong>: Monitor and adjust your system remotely with intuitive mobile interface</li>
-              <li><strong>Energy-Efficient Operation</strong>: Smart power management with solar integration options for sustainable growing</li>
-              <li><strong>Expandable Sensor Network</strong>: Add specialized sensors for pH, EC, CO2, and other parameters as needed</li>
-              <li><strong>Open API</strong>: Integrate with third-party systems and contribute to our growing developer community</li>
+              <li><strong>Automated Fertigation</strong>: Industrial pH/EC probe support (4-20mA, 0-10V), peristaltic pump control, recipe-driven nutrient dosing with trend analysis</li>
+              <li><strong>Environmental Control</strong>: Lighting, irrigation, HVAC, and aeration automation with environmental triggers and variable speed control</li>
+              <li><strong>Modbus Sensor Hubs</strong>: Custom STM32-based sensor hubs with industrial-grade inputs for professional monitoring</li>
+              <li><strong>Analytics Dashboard</strong>: Historical visualization, multi-sensor overlay charts, statistical analysis, CSV/JSON export</li>
+              <li><strong>Cross-Platform App</strong>: Flutter-based interface runs on Raspberry Pi, desktop, and mobile devices</li>
             </ul>
           </div>
         </div>
+      </div>
+
+      <!-- Grow Methods -->
+      <div class="product-section fade-in">
+        <h2>Supported Grow Methods</h2>
+        <div class="application-grid">
+          <div class="application-card">
+            <div class="application-icon"><i class="fas fa-seedling"></i></div>
+            <h4>Soil Growing</h4>
+            <p>Traditional soil-based cultivation with automated irrigation and monitoring</p>
+          </div>
+          <div class="application-card">
+            <div class="application-icon"><i class="fas fa-water"></i></div>
+            <h4>Hydroponics</h4>
+            <p>DWC, drip, and ebb & flow systems with reservoir management and autofill</p>
+          </div>
+          <div class="application-card">
+            <div class="application-icon"><i class="fas fa-stream"></i></div>
+            <h4>NFT Systems</h4>
+            <p>Nutrient Film Technique with precise flow control and monitoring</p>
+          </div>
+          <div class="application-card">
+            <div class="application-icon"><i class="fas fa-cloud-meatball"></i></div>
+            <h4>Aeroponics</h4>
+            <p>High-efficiency root misting with cycle timing and pressure control</p>
+          </div>
+          <div class="application-card">
+            <div class="application-icon"><i class="fas fa-sun"></i></div>
+            <h4>Outdoor Gardening</h4>
+            <p>Automated irrigation valves with weather-aware scheduling for outdoor beds</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Multi-Zone Example -->
+      <div class="product-section fade-in">
+        <h2>One Controller, Multiple Zones</h2>
+        <p>SprigRig™ is designed to manage multiple growing environments from a single controller. Each zone operates independently with its own schedules, sensors, and automation rules—all accessible from one interface.</p>
+
+        <div class="application-grid" style="margin-top: 20px;">
+          <div class="application-card">
+            <div class="application-icon"><i class="fas fa-house"></i></div>
+            <h4>Zone 1: Propagation Tent</h4>
+            <p>Indoor seedling tent with heat mat control, humidity monitoring, and grow lights on a timer</p>
+          </div>
+          <div class="application-card">
+            <div class="application-icon"><i class="fas fa-warehouse"></i></div>
+            <h4>Zone 2: Backyard Greenhouse</h4>
+            <p>Temperature-triggered ventilation, automated drip irrigation, and environmental logging</p>
+          </div>
+          <div class="application-card">
+            <div class="application-icon"><i class="fas fa-tree"></i></div>
+            <h4>Zone 3: Outdoor Garden</h4>
+            <p>Soil moisture-based irrigation valves for raised beds and in-ground plantings</p>
+          </div>
+        </div>
+
+        <p style="margin-top: 20px; color: #666; font-style: italic;">This flexibility means you can start small with a single zone and expand as your growing operation develops—without needing additional controllers.</p>
       </div>
 
       <!-- Applications -->
@@ -149,16 +219,33 @@
         </div>
       </div>
 
-      <!-- Technical Specifications -->
+      <!-- System Capabilities -->
       <div class="product-section fade-in">
-        <h2>Technical Specifications</h2>
+        <h2>System Capabilities</h2>
+
+        <h3 class="mb-3">Sensing & Monitoring</h3>
         <ul class="specifications-list">
-          <li>Expandable irrigation and lighting zones with independent control</li>
-          <li>temperature, humidity, and barometric pressure sensors</li>
-          <li>Optional integration with soil moisture sensors, pH probes, EC meters</li>
-          <li>Real-time data logging to SD card with monthly CSV format</li>
-          <li>InfluxDB export capability for advanced data analytics</li>
-          <li>Weatherproof enclosure for indoor or outdoor deployment</li>
+          <li>Temperature, humidity, and barometric pressure monitoring</li>
+          <li>Industrial-grade pH and EC measurement for hydroponics</li>
+          <li>CO2 concentration and air quality sensing</li>
+          <li>Soil moisture and water level detection</li>
+          <li>Light intensity measurement (lux/PAR)</li>
+        </ul>
+
+        <h3 class="mb-3 mt-4">Control & Automation</h3>
+        <ul class="specifications-list">
+          <li>Multi-channel relay control for lights, pumps, fans, and heaters</li>
+          <li>Variable speed fan and LED dimming outputs</li>
+          <li>Modular sensor hubs for scalable deployments</li>
+          <li>Timelapse camera integration for growth documentation</li>
+        </ul>
+
+        <h3 class="mb-3 mt-4">Software & Data</h3>
+        <ul class="specifications-list">
+          <li>Cross-platform interface (runs on controller, desktop, and mobile)</li>
+          <li>Historical data logging with analytics and visualization</li>
+          <li>Data export in standard formats (CSV, JSON)</li>
+          <li>AI-powered plant health analysis</li>
         </ul>
       </div>
     </div>
@@ -167,11 +254,10 @@
   <!-- Call to Action -->
   <section class="cta-section">
     <div class="container text-center">
-      <h2>Grow Smarter, Not Harder</h2>
-      <p>Take control of your growing environment and maximize yields while minimizing resource use.</p>
+      <h2>Interested in SprigRig™?</h2>
+      <p>SprigRig™ is currently in active development. Get in touch if you'd like to learn more or discuss potential collaboration.</p>
       <div class="btn-group mt-4">
-        <a href="contact.html" class="btn btn-lg">Contact Us for Pricing</a>
-        <a href="https://blog.gaiaforge.tech" class="btn btn-lg btn-secondary" target="_blank">Read About Our Field Tests</a>
+        <a href="contact.html" class="btn btn-lg">Contact Us</a>
       </div>
     </div>
   </section>
@@ -191,7 +277,7 @@
           <ul class="footer-links">
             <li><a href="index.html">Home</a></li>
             <li><a href="orpheus.html">Orpheus</a></li>
-            <li><a href="sprigrig.html">SprigRig</a></li>
+            <li><a href="sprigrig.html">SprigRig™</a></li>
             <li><a href="https://blog.gaiaforge.tech" target="_blank">Blog</a></li>
             <li><a href="contact.html">Contact</a></li>
           </ul>
@@ -214,7 +300,7 @@
       </div>
       
       <div class="footer-bottom">
-        <p>&copy; 2024 GaiaForge<sup>®</sup>. All Rights Reserved.</p>
+        <p>&copy; 2025 GaiaForge<sup>®</sup>. All Rights Reserved.</p>
         <ul class="footer-links d-flex justify-content-center mt-2">
           <li><a href="privacy-policy.html">Privacy Policy</a></li>
           <li style="margin-left: 20px;"><a href="terms-of-service.html">Terms of Service</a></li>
