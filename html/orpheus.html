@@ -153,6 +153,26 @@
     .pro-badge {
       background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
     }
+    .download-card.coming-soon {
+      pointer-events: none;
+      opacity: 0.7;
+      position: relative;
+    }
+    .download-card.coming-soon .download-icon {
+      background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+    }
+    .coming-soon-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--accent-gold);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
   </style>
 </head>
 <body>
@@ -365,27 +385,19 @@
         <p>Download user guides, technical specifications, and quick start guides for your Orpheus device.</p>
 
         <div class="downloads-grid">
-          <a href="docs/orpheus-basic-user-guide.pdf" class="download-card" target="_blank">
+          <div class="download-card coming-soon">
+            <span class="coming-soon-badge">Coming Soon</span>
             <div class="download-icon">
               <i class="fas fa-file-pdf"></i>
             </div>
             <div class="download-info">
-              <h4>Orpheus Basic User Guide</h4>
+              <h4>Orpheus User Guide</h4>
               <p>Complete setup and operation manual</p>
             </div>
-          </a>
+          </div>
 
-          <a href="docs/orpheus-pro-user-guide.pdf" class="download-card" target="_blank">
-            <div class="download-icon">
-              <i class="fas fa-file-pdf"></i>
-            </div>
-            <div class="download-info">
-              <h4>Orpheus Pro User Guide</h4>
-              <p>Advanced features and configuration</p>
-            </div>
-          </a>
-
-          <a href="docs/orpheus-quick-start.pdf" class="download-card" target="_blank">
+          <div class="download-card coming-soon">
+            <span class="coming-soon-badge">Coming Soon</span>
             <div class="download-icon">
               <i class="fas fa-file-pdf"></i>
             </div>
@@ -393,17 +405,18 @@
               <h4>Quick Start Guide</h4>
               <p>Get up and running in minutes</p>
             </div>
-          </a>
+          </div>
 
-          <a href="docs/orpheus-technical-specs.pdf" class="download-card" target="_blank">
+          <div class="download-card coming-soon">
+            <span class="coming-soon-badge">Coming Soon</span>
             <div class="download-icon">
               <i class="fas fa-file-pdf"></i>
             </div>
             <div class="download-info">
-              <h4>Technical Specifications</h4>
-              <p>Hardware specs and requirements</p>
+              <h4>Solar Panel Guide</h4>
+              <p>Optimize your solar setup</p>
             </div>
-          </a>
+          </div>
         </div>
       </div>
 
