@@ -110,7 +110,7 @@
         <!-- Contact Form -->
         <div class="contact-form fade-in">
           <h2>Send Us a Message</h2>
-          <form action="#" method="post" id="contactForm">
+          <form id="contactForm">
             <div class="form-group">
               <label for="name" class="form-label">Your Name</label>
               <input type="text" id="name" name="name" class="form-control" placeholder="Enter your name" required>
@@ -127,10 +127,11 @@
             </div>
             
             <div class="form-submit">
-              <button type="submit" class="btn btn-lg">Submit</button>
+              <button type="submit" id="submitBtn" class="btn btn-lg">Submit</button>
             </div>
           </form>
-          <div id="successMessage">Message Sent! We'll get back to you soon.</div>
+          <div id="successMessage" style="display:none;color:#4caf50;margin-top:1rem;font-weight:600;">✅ Message sent! We'll get back to you soon.</div>
+          <div id="errorMessage" style="display:none;color:#e53935;margin-top:1rem;font-weight:600;">❌ Something went wrong. Please email us directly at contact@gaiaforge.tech</div>
         </div>
       </div>
     </div>
@@ -185,5 +186,38 @@
 
   <!-- JavaScript -->
   <script src="js/main.js"></script>
+  <script>
+    document.getElementById('contactForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+      document.getElementById('successMessage').style.display = 'none';
+      document.getElementById('errorMessage').style.display = 'none';
+
+      try {
+        const res = await fetch('/send-contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: document.getElementById('name').value,
+            email: document.getElementById('email').value,
+            message: document.getElementById('message').value
+          })
+        });
+        if (res.ok) {
+          document.getElementById('successMessage').style.display = 'block';
+          this.reset();
+        } else {
+          document.getElementById('errorMessage').style.display = 'block';
+        }
+      } catch (err) {
+        document.getElementById('errorMessage').style.display = 'block';
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Submit';
+    });
+  </script>
 </body>
 </html>
