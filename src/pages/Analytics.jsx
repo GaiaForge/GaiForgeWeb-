@@ -807,7 +807,7 @@ function Analytics({ user, onLogout }) {
                   <div className="chart-section">
                     <div className="analytics-card full-width ai-card">
                       <h3>AI Colony Report</h3>
-                      {user?.subscription_tier !== 'pro' ? (
+                      {user?.subscription_tier !== 'pro' && !user?.is_admin ? (
                         <div className="pro-upgrade">
                           <h4>Pro Feature</h4>
                           <p>AI-powered colony analysis generates detailed reports with health assessments,
