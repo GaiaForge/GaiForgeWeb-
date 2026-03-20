@@ -88,10 +88,13 @@ function Dashboard({ user, onLogout }) {
           <Link to="/devices" className="nav-item">
             <span className="nav-icon">📟</span> My Hives
           </Link>
+          <Link to="/alerts" className="nav-item">
+            <span className="nav-icon">🔔</span> Alerts
+          </Link>
           <Link to="/profile" className="nav-item">
             <span className="nav-icon">👤</span> Profile
           </Link>
-                  {user?.is_admin && <Link to="/admin" className="nav-item">
+          {user?.is_admin && <Link to="/admin" className="nav-item">
             <span className="nav-icon">⚙️</span> Admin
           </Link>}
         </nav>

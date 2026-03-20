@@ -223,6 +223,12 @@ function Analytics({ user, onLogout }) {
           <Link to="/devices" className="nav-item">
             <span className="nav-icon">&#x1F4DF;</span> My Hives
           </Link>
+          <Link to="/alerts" className="nav-item">
+            <span className="nav-icon">&#x1F514;</span> Alerts
+          </Link>
+          <Link to="/profile" className="nav-item">
+            <span className="nav-icon">&#x1F464;</span> Profile
+          </Link>
           {user?.is_admin && <Link to="/admin" className="nav-item">
             <span className="nav-icon">&#x2699;&#xFE0F;</span> Admin
           </Link>}
@@ -372,7 +378,8 @@ function Analytics({ user, onLogout }) {
             <div className="chart-tabs">
               {[
                 ['environmental', '&#x1F321;&#xFE0F;', 'Environmental'],
-                ['acoustic', '&#x1F50A;', 'Acoustic Analysis'],
+                ['acoustic', '&#x1F50A;', 'Acoustic'],
+                ['spectral', '&#x1F4CA;', 'Spectral Features'],
                 ['weight', '&#x2696;&#xFE0F;', 'Weight'],
                 ['battery', '&#x1F50B;', 'Battery'],
                 ['ai', '&#x1F916;', 'AI Insights'],
@@ -519,6 +526,154 @@ function Analytics({ user, onLogout }) {
                         </div>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* SPECTRAL FEATURES */}
+                {activeTab === 'spectral' && (
+                  <div className="chart-section">
+                    <div className="analytics-card full-width">
+                      <h3>Spectral Centroid &amp; Harmonicity</h3>
+                      <p className="chart-description">
+                        <strong>Spectral centroid</strong> is the "center of mass" of the frequency spectrum — higher values
+                        mean energy is concentrated in higher frequencies. During normal foraging, bees produce a centroid
+                        around 300–500 Hz. Pre-swarm excitement drives it higher. <strong>Harmonicity</strong> measures
+                        how tonal vs. noisy the sound is — queen piping is highly harmonic; stressed colonies produce
+                        noisier, less harmonic signals.
+                      </p>
+                      <ResponsiveContainer width="100%" height={320}>
+                        <ComposedChart data={readings}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                          <XAxis dataKey="time" tick={{fontSize: 11}} interval="preserveStartEnd" />
+                          <YAxis yAxisId="cent" orientation="left" domain={['auto','auto']}
+                            label={{value: 'Hz', position: 'insideTopLeft'}} />
+                          <YAxis yAxisId="harm" orientation="right" domain={[0,1]}
+                            label={{value: 'Harmonicity', position: 'insideTopRight'}} />
+                          <Tooltip content={<ChartTooltip />} />
+                          <Legend />
+                          <Line yAxisId="cent" type="monotone" dataKey="spectral_centroid"
+                            name="Spectral Centroid (Hz)" stroke="#8b5cf6" dot={false} strokeWidth={2} />
+                          <Line yAxisId="harm" type="monotone" dataKey="harmonicity"
+                            name="Harmonicity" stroke="#10b981" dot={false} strokeWidth={2} />
+                          <Brush dataKey="time" height={30} stroke="#f59e0b" />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <div className="analytics-card full-width">
+                      <h3>Frequency Band Energy Distribution</h3>
+                      <p className="chart-description">
+                        Shows how acoustic energy is spread across frequency bands. Healthy colonies concentrate
+                        energy in the 200–600 Hz range (worker activity). Elevated 0–200 Hz indicates low-frequency
+                        vibrations from fanning or queen piping. High energy above 600 Hz may indicate stress,
+                        defensive behavior, or environmental noise.
+                      </p>
+                      <ResponsiveContainer width="100%" height={320}>
+                        <AreaChart data={readings}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                          <XAxis dataKey="time" tick={{fontSize: 11}} interval="preserveStartEnd" />
+                          <YAxis label={{value: 'Energy', position: 'insideTopLeft'}} />
+                          <Tooltip content={<ChartTooltip />} />
+                          <Legend />
+                          <Area type="monotone" dataKey="band_0_200" name="0–200 Hz" stackId="1"
+                            stroke="#6366f1" fill="#6366f1" fillOpacity={0.6} />
+                          <Area type="monotone" dataKey="band_200_400" name="200–400 Hz" stackId="1"
+                            stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.6} />
+                          <Area type="monotone" dataKey="band_400_600" name="400–600 Hz" stackId="1"
+                            stroke="#10b981" fill="#10b981" fillOpacity={0.6} />
+                          <Area type="monotone" dataKey="band_600_800" name="600–800 Hz" stackId="1"
+                            stroke="#ef4444" fill="#ef4444" fillOpacity={0.6} />
+                          <Area type="monotone" dataKey="band_800_1000" name="800–1000 Hz" stackId="1"
+                            stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.6} />
+                          <Area type="monotone" dataKey="band_1000_plus" name="1000+ Hz" stackId="1"
+                            stroke="#6b7280" fill="#6b7280" fillOpacity={0.6} />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <div className="analytics-row">
+                      <div className="analytics-card">
+                        <h3>Spectral Shape</h3>
+                        <p className="chart-description" style={{fontSize:'13px'}}>
+                          <strong>Spectral rolloff</strong>: frequency below which 85% of energy falls.
+                          <strong> Zero-crossing rate</strong>: how often the signal crosses zero —
+                          high values indicate noisy, less tonal sound typical of stressed or queenless colonies.
+                          <strong> Peak-to-avg</strong>: ratio of peak to average energy; high values suggest
+                          brief, intense sound events like queen piping.
+                        </p>
+                        <ResponsiveContainer width="100%" height={250}>
+                          <LineChart data={readings}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                            <XAxis dataKey="time" tick={{fontSize: 11}} interval="preserveStartEnd" />
+                            <YAxis />
+                            <Tooltip content={<ChartTooltip />} />
+                            <Legend />
+                            <Line type="monotone" dataKey="spectral_rolloff" name="Rolloff" stroke="#8b5cf6" dot={false} />
+                            <Line type="monotone" dataKey="zero_crossing_rate" name="Zero-Crossing Rate" stroke="#ef4444" dot={false} />
+                            <Line type="monotone" dataKey="peak_to_avg" name="Peak-to-Avg" stroke="#f59e0b" dot={false} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      <div className="analytics-card">
+                        <h3>Temporal Energy &amp; Activity</h3>
+                        <p className="chart-description" style={{fontSize:'13px'}}>
+                          Short, mid, and long-term energy show how sound intensity changes across timescales.
+                          <strong> Activity increase</strong> flags when the colony is becoming more active
+                          than its recent baseline — a key pre-swarm signal.
+                          <strong> Absconding risk</strong> combines multiple signals to estimate the probability
+                          the colony is preparing to abandon the hive.
+                        </p>
+                        <ResponsiveContainer width="100%" height={250}>
+                          <ComposedChart data={readings}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                            <XAxis dataKey="time" tick={{fontSize: 11}} interval="preserveStartEnd" />
+                            <YAxis yAxisId="energy" orientation="left" />
+                            <YAxis yAxisId="risk" orientation="right" domain={[0,100]}
+                              label={{value: 'Risk %', position: 'insideTopRight'}} />
+                            <Tooltip content={<ChartTooltip />} />
+                            <Legend />
+                            <Line yAxisId="energy" type="monotone" dataKey="short_term_energy"
+                              name="Short-Term Energy" stroke="#10b981" dot={false} />
+                            <Line yAxisId="energy" type="monotone" dataKey="activity_increase"
+                              name="Activity Increase" stroke="#f59e0b" dot={false} />
+                            <Line yAxisId="risk" type="monotone" dataKey="absconding_risk"
+                              name="Absconding Risk %" stroke="#ef4444" dot={false} strokeWidth={2} />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    <div className="analytics-card full-width">
+                      <h3>Spectral Statistics Context</h3>
+                      <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px,1fr))', gap:'16px', padding:'8px 0'}}>
+                        {[
+                          {key:'spectral_centroid', label:'Spectral Centroid', unit:'Hz', note:'Center of spectral mass. >400Hz = elevated activity'},
+                          {key:'harmonicity', label:'Harmonicity', unit:'', note:'0–1. Higher = more tonal. Queen piping ~0.8+'},
+                          {key:'spectral_spread', label:'Spectral Spread', unit:'Hz', note:'Width of spectrum. High = energy spread across many frequencies'},
+                          {key:'spectral_skewness', label:'Spectral Skewness', unit:'', note:'Shape of spectrum. Positive = energy skewed toward high freqs'},
+                          {key:'energy_entropy', label:'Energy Entropy', unit:'', note:'Disorder in energy distribution. High = unpredictable, chaotic sound'},
+                          {key:'absconding_risk', label:'Absconding Risk', unit:'%', note:'Estimated probability colony may abandon hive'},
+                        ].map(({key, label, unit, note}) => {
+                          const vals = readings.filter(r => r[key] != null).map(r => r[key]);
+                          const avg = vals.length ? (vals.reduce((a,b) => a+b, 0)/vals.length).toFixed(2) : '--';
+                          const latest = vals.length ? vals[vals.length-1].toFixed(2) : '--';
+                          return (
+                            <div key={key} style={{
+                              background:'#f9fafb', borderRadius:'10px', padding:'14px',
+                              border:'1px solid #e5e7eb'
+                            }}>
+                              <div style={{fontWeight:700, fontSize:'14px', marginBottom:'4px'}}>{label}</div>
+                              <div style={{fontSize:'22px', fontWeight:'800', color:'#1f2937'}}>
+                                {latest}{unit}
+                              </div>
+                              <div style={{fontSize:'12px', color:'#6b7280', marginTop:'2px'}}>avg {avg}{unit}</div>
+                              <div style={{fontSize:'12px', color:'#9ca3af', marginTop:'6px', lineHeight:'1.4'}}>{note}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 )}
 

@@ -8,6 +8,7 @@ import Upload from './pages/Upload';
 import Devices from './pages/Devices';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
+import Alerts from './pages/Alerts';
 import './App.css';
 
 function App() {
@@ -83,6 +84,9 @@ function App() {
           } />
           <Route path="/profile" element={
             isAuthenticated ? <Profile user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
+          } />
+          <Route path="/alerts" element={
+            isAuthenticated ? <Alerts user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
           } />
           <Route path="/admin" element={
             isAuthenticated ? <Admin user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
