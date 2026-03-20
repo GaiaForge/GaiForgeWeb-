@@ -7,8 +7,10 @@ Thumbs.db
 .idea/
 .claude/
 
-# Node modules (if any)
+# Node modules and Vite cache
 node_modules/
+dist/
+.vite/
 
 # Build artifacts
 *.log
