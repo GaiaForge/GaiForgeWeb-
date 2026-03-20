@@ -89,6 +89,7 @@ function Analytics({ user, onLogout }) {
           temperature: r.temperature || null,
           humidity: r.humidity || null,
           pressure: r.pressure || null,
+          battery_voltage: r.battery_voltage || null,
           time: new Date(r.timestamp).toLocaleDateString('en-US', {
             month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
           }),
