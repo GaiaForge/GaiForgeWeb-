@@ -111,6 +111,10 @@ function Profile({ user, onLogout }) {
     free: { bg: '#f3f4f6', color: '#374151', label: 'Free' },
   };
   const tier = TIER_BADGE[user?.subscription_tier] || TIER_BADGE.free;
+  const isPro = user?.subscription_tier === 'pro';
+  const expiresAt = user?.subscription_expires_at ? new Date(user.subscription_expires_at) : null;
+  const isExpired = expiresAt && expiresAt < new Date();
+  const daysLeft = expiresAt ? Math.ceil((expiresAt - new Date()) / (1000 * 60 * 60 * 24)) : null;
 
   return (
     <div className="dashboard-container">
@@ -179,6 +183,7 @@ function Profile({ user, onLogout }) {
           <div style={{ flex: 1, minWidth: '280px', maxWidth: '520px' }}>
 
             {section === 'account' && (
+              <>
               <div className="device-selector">
                 <h3>Account Information</h3>
                 <div className="form-group" style={{ marginBottom: '16px' }}>
@@ -193,19 +198,74 @@ function Profile({ user, onLogout }) {
                 </div>
                 <div className="form-group">
                   <label>Subscription</label>
-                  <div style={{ marginTop: '6px' }}>
+                  <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                     <span style={{
                       padding: '6px 16px', borderRadius: '20px', fontWeight: 700,
                       fontSize: '14px', background: tier.bg, color: tier.color,
                     }}>{tier.label}</span>
-                    {user?.subscription_tier === 'free' && (
-                      <span style={{ marginLeft: '12px', fontSize: '13px', color: '#6b7280' }}>
-                        Upgrade for unlimited hives and AI insights
+                    {isPro && expiresAt && (
+                      <span style={{ fontSize: '13px', color: isExpired ? '#dc2626' : daysLeft <= 14 ? '#f59e0b' : '#10b981', fontWeight: 600 }}>
+                        {isExpired ? 'Expired' : `${daysLeft} days remaining`}
+                        {' · '}{expiresAt.toLocaleDateString()}
                       </span>
+                    )}
+                    {isPro && !expiresAt && (
+                      <span style={{ fontSize: '13px', color: '#10b981', fontWeight: 600 }}>Active</span>
                     )}
                   </div>
                 </div>
               </div>
+
+              {/* Upgrade / Plan Info */}
+              {(!isPro || isExpired) && (
+                <div className="device-selector" style={{ marginTop: '16px', border: '2px solid #f59e0b' }}>
+                  <h3 style={{ color: '#92400e' }}>Upgrade to Pro</h3>
+                  <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '20px' }}>
+                    Unlock AI-powered colony reports, advanced analytics, and priority support.
+                  </p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+                    {[
+                      { icon: '🤖', text: 'AI colony health reports (Claude-powered)' },
+                      { icon: '🔔', text: 'Unlimited alert rules with email notifications' },
+                      { icon: '📊', text: 'Full spectral analytics & trend history' },
+                      { icon: '🐝', text: 'Unlimited hives & data storage' },
+                    ].map((f, i) => (
+                      <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', fontSize: '14px', color: '#374151' }}>
+                        <span style={{ fontSize: '18px' }}>{f.icon}</span>
+                        <span>{f.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div>
+                      <span style={{ fontSize: '28px', fontWeight: 800, color: '#1f2937' }}>$9</span>
+                      <span style={{ color: '#6b7280', fontSize: '14px' }}>/month</span>
+                    </div>
+                    <div style={{ color: '#6b7280', fontSize: '14px' }}>or</div>
+                    <div>
+                      <span style={{ fontSize: '28px', fontWeight: 800, color: '#1f2937' }}>$79</span>
+                      <span style={{ color: '#6b7280', fontSize: '14px' }}>/year</span>
+                      <span style={{
+                        marginLeft: '8px', fontSize: '12px', background: '#d1fae5', color: '#065f46',
+                        padding: '2px 8px', borderRadius: '10px', fontWeight: 700,
+                      }}>Save 27%</span>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <a href="mailto:hello@gaiaforge.tech?subject=HiveGuard%20Pro%20Subscription&body=I%27d%20like%20to%20upgrade%20my%20account%20(%7Byour-email%7D)%20to%20Pro."
+                      style={{
+                        display: 'inline-block', padding: '12px 24px', background: '#f59e0b', color: '#fff',
+                        textDecoration: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '15px',
+                      }}>
+                      Upgrade Now
+                    </a>
+                    <span style={{ fontSize: '13px', color: '#9ca3af', alignSelf: 'center' }}>
+                      We'll activate your Pro access within 24 hours.
+                    </span>
+                  </div>
+                </div>
+              )}
+              </>
             )}
 
             {section === 'password' && (

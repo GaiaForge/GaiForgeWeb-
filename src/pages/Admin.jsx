@@ -14,6 +14,7 @@ function Admin({ user, onLogout }) {
   const [apiKey, setApiKey] = useState('');
   const [keySaving, setKeySaving] = useState(false);
   const [keyMessage, setKeyMessage] = useState(null);
+  const [subEdit, setSubEdit] = useState(null); // { userId, tier, expires, notes }
 
   // Data management
   const [allHives, setAllHives] = useState([]);
@@ -96,6 +97,29 @@ function Admin({ user, onLogout }) {
       }
     } catch (err) {
       console.error('Failed to update subscription:', err);
+    }
+  };
+
+  const saveSubEdit = async () => {
+    const { userId, tier, expires, notes } = subEdit;
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/users/${userId}/subscription`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({
+          subscription_tier: tier,
+          subscription_expires_at: expires || '',
+          subscription_notes: notes,
+        }),
+      });
+      if (res.ok) {
+        setUsers(users.map(u =>
+          u.id === userId ? { ...u, subscription_tier: tier, subscription_expires_at: expires || null, subscription_notes: notes } : u
+        ));
+        setSubEdit(null);
+      }
+    } catch (err) {
+      console.error('Failed to save subscription:', err);
     }
   };
 
@@ -379,19 +403,18 @@ function Admin({ user, onLogout }) {
                     <th>Joined</th>
                     <th>Hives</th>
                     <th>Readings</th>
-                    <th>Tier</th>
+                    <th>Subscription</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.map(u => (
-                    <tr key={u.id} className={!u.is_active ? 'row-inactive' : ''}>
+                    <React.Fragment key={u.id}>
+                    <tr className={!u.is_active ? 'row-inactive' : ''}>
                       <td>
                         <div className="user-cell">
-                          <div className="user-mini-avatar">
-                            {u.name.charAt(0).toUpperCase()}
-                          </div>
+                          <div className="user-mini-avatar">{u.name.charAt(0).toUpperCase()}</div>
                           {u.name}
                           {u.id === 1 && <span className="admin-tag">admin</span>}
                         </div>
@@ -401,9 +424,17 @@ function Admin({ user, onLogout }) {
                       <td>{u.hive_count}</td>
                       <td>{u.reading_count.toLocaleString()}</td>
                       <td>
-                        <span className={`tier-badge ${u.subscription_tier}`}>
-                          {u.subscription_tier}
-                        </span>
+                        <span className={`tier-badge ${u.subscription_tier}`}>{u.subscription_tier}</span>
+                        {u.subscription_tier === 'pro' && u.subscription_expires_at && (
+                          <div style={{fontSize:'11px', color:'#6b7280', marginTop:'3px'}}>
+                            Expires {new Date(u.subscription_expires_at).toLocaleDateString()}
+                          </div>
+                        )}
+                        {u.subscription_notes && (
+                          <div style={{fontSize:'11px', color:'#9ca3af', marginTop:'2px', fontStyle:'italic'}}>
+                            {u.subscription_notes}
+                          </div>
+                        )}
                       </td>
                       <td>
                         <span className={`status-dot ${u.is_active ? 'active' : 'inactive'}`}></span>
@@ -413,21 +444,61 @@ function Admin({ user, onLogout }) {
                         <div className="action-buttons">
                           <button
                             className="btn-small btn-tier"
-                            onClick={() => toggleSubscription(u.id, u.subscription_tier)}
+                            onClick={() => setSubEdit({
+                              userId: u.id,
+                              tier: u.subscription_tier,
+                              expires: u.subscription_expires_at ? u.subscription_expires_at.slice(0,10) : '',
+                              notes: u.subscription_notes || '',
+                            })}
                           >
-                            {u.subscription_tier === 'pro' ? 'Downgrade' : 'Upgrade'}
+                            Edit Sub
                           </button>
                           {u.id !== 1 && (
-                            <button
-                              className="btn-small btn-toggle"
-                              onClick={() => toggleActive(u.id)}
-                            >
+                            <button className="btn-small btn-toggle" onClick={() => toggleActive(u.id)}>
                               {u.is_active ? 'Disable' : 'Enable'}
                             </button>
                           )}
                         </div>
                       </td>
                     </tr>
+                    {subEdit?.userId === u.id && (
+                      <tr>
+                        <td colSpan="8" style={{background:'#fef3c7', padding:'16px 20px'}}>
+                          <div style={{display:'flex', gap:'12px', flexWrap:'wrap', alignItems:'flex-end'}}>
+                            <div>
+                              <label style={{display:'block', fontSize:'12px', fontWeight:600, marginBottom:'4px'}}>Tier</label>
+                              <select value={subEdit.tier} onChange={e => setSubEdit({...subEdit, tier: e.target.value})}
+                                style={{padding:'8px 12px', border:'2px solid #e5e7eb', borderRadius:'8px'}}>
+                                <option value="free">Free</option>
+                                <option value="pro">Pro</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label style={{display:'block', fontSize:'12px', fontWeight:600, marginBottom:'4px'}}>Expires (blank = forever)</label>
+                              <input type="date" value={subEdit.expires}
+                                onChange={e => setSubEdit({...subEdit, expires: e.target.value})}
+                                style={{padding:'8px 12px', border:'2px solid #e5e7eb', borderRadius:'8px'}} />
+                            </div>
+                            <div style={{flex:1, minWidth:'200px'}}>
+                              <label style={{display:'block', fontSize:'12px', fontWeight:600, marginBottom:'4px'}}>Notes (payment ref, etc.)</label>
+                              <input type="text" value={subEdit.notes}
+                                onChange={e => setSubEdit({...subEdit, notes: e.target.value})}
+                                placeholder="e.g. Paid via PayPal 2026-03-20"
+                                style={{padding:'8px 12px', border:'2px solid #e5e7eb', borderRadius:'8px', width:'100%'}} />
+                            </div>
+                            <button onClick={saveSubEdit}
+                              style={{padding:'8px 18px', background:'#10b981', color:'#fff', border:'none', borderRadius:'8px', fontWeight:700, cursor:'pointer'}}>
+                              Save
+                            </button>
+                            <button onClick={() => setSubEdit(null)}
+                              style={{padding:'8px 14px', background:'#e5e7eb', color:'#374151', border:'none', borderRadius:'8px', cursor:'pointer'}}>
+                              Cancel
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>

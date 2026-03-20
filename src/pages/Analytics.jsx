@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -20,6 +20,48 @@ const COLORS = {
   battery: '#22c55e',
   confidence: '#ec4899',
 };
+
+// Inline info tooltip component
+function InfoTip({ text }) {
+  const [show, setShow] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!show) return;
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setShow(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [show]);
+
+  return (
+    <span ref={ref} style={{ position: 'relative', display: 'inline-block', marginLeft: '6px' }}>
+      <button
+        onClick={() => setShow(!show)}
+        style={{
+          width: '16px', height: '16px', borderRadius: '50%', background: '#e5e7eb',
+          border: 'none', cursor: 'pointer', fontSize: '10px', fontWeight: '700',
+          color: '#6b7280', lineHeight: '16px', padding: 0, verticalAlign: 'middle',
+        }}
+        title="What is this?"
+      >i</button>
+      {show && (
+        <div style={{
+          position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: '24px',
+          background: '#1f2937', color: '#f9fafb', padding: '10px 14px', borderRadius: '10px',
+          fontSize: '13px', lineHeight: '1.5', width: '240px', zIndex: 100,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+        }}>
+          {text}
+          <div style={{
+            position: 'absolute', bottom: '-6px', left: '50%', transform: 'translateX(-50%)',
+            width: '12px', height: '12px', background: '#1f2937',
+            clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
+          }} />
+        </div>
+      )}
+    </span>
+  );
+}
 
 const BEE_STATE_COLORS = {
   'queen_present': '#f59e0b',
@@ -533,13 +575,15 @@ function Analytics({ user, onLogout }) {
                 {activeTab === 'spectral' && (
                   <div className="chart-section">
                     <div className="analytics-card full-width">
-                      <h3>Spectral Centroid &amp; Harmonicity</h3>
+                      <h3>
+                        Sound Center &amp; Purity
+                        <InfoTip text="Two key acoustic fingerprints of your colony. Sound Center (spectral centroid) is like the pitch of the hive — rising values mean excitement or pre-swarm. Sound Purity (harmonicity) measures how organized vs. chaotic the sound is — a pure-sounding hive usually has a healthy queen present." />
+                      </h3>
                       <p className="chart-description">
-                        <strong>Spectral centroid</strong> is the "center of mass" of the frequency spectrum — higher values
-                        mean energy is concentrated in higher frequencies. During normal foraging, bees produce a centroid
-                        around 300–500 Hz. Pre-swarm excitement drives it higher. <strong>Harmonicity</strong> measures
-                        how tonal vs. noisy the sound is — queen piping is highly harmonic; stressed colonies produce
-                        noisier, less harmonic signals.
+                        <strong>Sound Center (spectral centroid)</strong>: where most buzzing energy sits on the pitch scale.
+                        Normal foraging: 300–400 Hz. Above 450 Hz often signals excitement or swarming preparation.
+                        <strong> Sound Purity (harmonicity)</strong>: how tonal vs. noisy the hive sounds.
+                        High purity (0.7+) suggests queen piping or organized activity. Low purity may indicate stress or queen absence.
                       </p>
                       <ResponsiveContainer width="100%" height={320}>
                         <ComposedChart data={readings}>
@@ -561,12 +605,14 @@ function Analytics({ user, onLogout }) {
                     </div>
 
                     <div className="analytics-card full-width">
-                      <h3>Frequency Band Energy Distribution</h3>
+                      <h3>
+                        Frequency Band Energy
+                        <InfoTip text="Think of this as the equalizer view of your hive. A healthy colony in full foraging mode concentrates buzzing in the 200–600 Hz range. High energy in the 0–200 Hz band can mean the queen is piping or bees are fanning. Lots of energy above 600 Hz may indicate the colony is stressed, defensive, or disturbed." />
+                      </h3>
                       <p className="chart-description">
-                        Shows how acoustic energy is spread across frequency bands. Healthy colonies concentrate
-                        energy in the 200–600 Hz range (worker activity). Elevated 0–200 Hz indicates low-frequency
-                        vibrations from fanning or queen piping. High energy above 600 Hz may indicate stress,
-                        defensive behavior, or environmental noise.
+                        How acoustic energy is distributed across frequency bands over time.
+                        Healthy colonies: most energy in 200–600 Hz (worker buzz). Low-band spikes (0–200 Hz):
+                        fanning or queen piping overtones. High-band spikes (600+ Hz): stress or defensive behavior.
                       </p>
                       <ResponsiveContainer width="100%" height={320}>
                         <AreaChart data={readings}>
@@ -648,12 +694,12 @@ function Analytics({ user, onLogout }) {
                       <h3>Spectral Statistics Context</h3>
                       <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px,1fr))', gap:'16px', padding:'8px 0'}}>
                         {[
-                          {key:'spectral_centroid', label:'Spectral Centroid', unit:'Hz', note:'Center of spectral mass. >400Hz = elevated activity'},
-                          {key:'harmonicity', label:'Harmonicity', unit:'', note:'0–1. Higher = more tonal. Queen piping ~0.8+'},
-                          {key:'spectral_spread', label:'Spectral Spread', unit:'Hz', note:'Width of spectrum. High = energy spread across many frequencies'},
-                          {key:'spectral_skewness', label:'Spectral Skewness', unit:'', note:'Shape of spectrum. Positive = energy skewed toward high freqs'},
-                          {key:'energy_entropy', label:'Energy Entropy', unit:'', note:'Disorder in energy distribution. High = unpredictable, chaotic sound'},
-                          {key:'absconding_risk', label:'Absconding Risk', unit:'%', note:'Estimated probability colony may abandon hive'},
+                          {key:'spectral_centroid', label:'Sound Center', unit:'Hz', note:'Where most of the buzzing energy sits on the frequency scale. Think of it like the pitch "center" of the hive. A healthy foraging colony typically sits around 300–400 Hz. Rising above 450 Hz often means the bees are excited — possibly preparing to swarm.'},
+                          {key:'harmonicity', label:'Sound Purity', unit:'', note:'How musical vs. noisy the hive sounds. 0 = pure noise, 1 = perfectly tonal. Queen piping (a clear signal she\'s present) scores 0.7–0.9. A stressed or queenless colony produces more chaotic noise, usually below 0.3.'},
+                          {key:'spectral_spread', label:'Sound Spread', unit:'Hz', note:'How widely the buzzing is spread across different pitches. A focused spread means the colony is doing one main thing (foraging, resting). A very wide spread can indicate multiple activities happening at once or environmental disturbance.'},
+                          {key:'spectral_skewness', label:'Pitch Bias', unit:'', note:'Whether the sound energy leans toward low or high frequencies. Positive = more energy in high pitches (excited, active). Negative = more energy in low pitches (calm, fanning). Helps distinguish normal activity from defensive or pre-swarm states.'},
+                          {key:'energy_entropy', label:'Sound Chaos', unit:'', note:'How unpredictable and random the colony sounds. Low = organized, predictable hive activity. High = chaotic or highly variable sound patterns. Sudden spikes in chaos can indicate disturbance, queen loss, or swarming preparation.'},
+                          {key:'absconding_risk', label:'Leaving Risk', unit:'%', note:'Estimated chance the colony may abandon the hive entirely. This combines multiple signals including temperature stress, unusual sound patterns, and activity trends. Above 30% warrants a visual inspection; above 60% is urgent.'},
                         ].map(({key, label, unit, note}) => {
                           const vals = readings.filter(r => r[key] != null).map(r => r[key]);
                           const avg = vals.length ? (vals.reduce((a,b) => a+b, 0)/vals.length).toFixed(2) : '--';
@@ -663,12 +709,13 @@ function Analytics({ user, onLogout }) {
                               background:'#f9fafb', borderRadius:'10px', padding:'14px',
                               border:'1px solid #e5e7eb'
                             }}>
-                              <div style={{fontWeight:700, fontSize:'14px', marginBottom:'4px'}}>{label}</div>
+                              <div style={{fontWeight:700, fontSize:'14px', marginBottom:'4px', display:'flex', alignItems:'center'}}>
+                                {label}<InfoTip text={note} />
+                              </div>
                               <div style={{fontSize:'22px', fontWeight:'800', color:'#1f2937'}}>
                                 {latest}{unit}
                               </div>
                               <div style={{fontSize:'12px', color:'#6b7280', marginTop:'2px'}}>avg {avg}{unit}</div>
-                              <div style={{fontSize:'12px', color:'#9ca3af', marginTop:'6px', lineHeight:'1.4'}}>{note}</div>
                             </div>
                           );
                         })}
