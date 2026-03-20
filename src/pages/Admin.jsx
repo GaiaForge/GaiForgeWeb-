@@ -15,6 +15,14 @@ function Admin({ user, onLogout }) {
   const [keySaving, setKeySaving] = useState(false);
   const [keyMessage, setKeyMessage] = useState(null);
 
+  // Data management
+  const [allHives, setAllHives] = useState([]);
+  const [archiveHiveId, setArchiveHiveId] = useState('');
+  const [archiveBefore, setArchiveBefore] = useState('');
+  const [archiveCount, setArchiveCount] = useState(null);
+  const [archiving, setArchiving] = useState(false);
+  const [archiveMessage, setArchiveMessage] = useState(null);
+
   const headers = {
     'Authorization': `Bearer ${user?.token}`,
     'Content-Type': 'application/json',
@@ -27,9 +35,10 @@ function Admin({ user, onLogout }) {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [statsRes, usersRes] = await Promise.all([
+      const [statsRes, usersRes, hivesRes] = await Promise.all([
         fetch(`${API_BASE}/api/admin/stats`, { headers }),
         fetch(`${API_BASE}/api/admin/users`, { headers }),
+        fetch(`${API_BASE}/api/admin/hives`, { headers }),
       ]);
 
       if (statsRes.status === 403 || usersRes.status === 403) {
@@ -40,6 +49,7 @@ function Admin({ user, onLogout }) {
 
       if (statsRes.ok) setStats(await statsRes.json());
       if (usersRes.ok) setUsers(await usersRes.json());
+      if (hivesRes.ok) setAllHives(await hivesRes.json());
     } catch (err) {
       setError('Failed to load admin data.');
     } finally {
@@ -103,6 +113,61 @@ function Admin({ user, onLogout }) {
       }
     } catch (err) {
       console.error('Failed to toggle user:', err);
+    }
+  };
+
+  const fetchArchiveCount = async (hiveId, before) => {
+    if (!before) { setArchiveCount(null); return; }
+    try {
+      const params = new URLSearchParams({ before });
+      if (hiveId) params.set('hive_id', hiveId);
+      const res = await fetch(`${API_BASE}/api/admin/readings/count?${params}`, { headers });
+      if (res.ok) { const data = await res.json(); setArchiveCount(data.count); }
+    } catch { setArchiveCount(null); }
+  };
+
+  const handleArchiveHiveChange = (val) => {
+    setArchiveHiveId(val);
+    setArchiveCount(null);
+    fetchArchiveCount(val, archiveBefore);
+  };
+
+  const handleArchiveDateChange = (val) => {
+    setArchiveBefore(val);
+    setArchiveCount(null);
+    fetchArchiveCount(archiveHiveId, val ? val + 'T00:00:00Z' : '');
+  };
+
+  const runArchive = async () => {
+    if (!archiveBefore || archiveCount === 0) return;
+    if (!window.confirm(`Archive and delete ${archiveCount.toLocaleString()} readings before ${archiveBefore}? This cannot be undone.`)) return;
+    setArchiving(true);
+    setArchiveMessage(null);
+    try {
+      const params = new URLSearchParams({ before: archiveBefore + 'T00:00:00Z' });
+      if (archiveHiveId) params.set('hive_id', archiveHiveId);
+      const res = await fetch(`${API_BASE}/api/admin/readings/archive?${params}`, {
+        method: 'POST', headers,
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = res.headers.get('Content-Disposition')?.split('filename=')[1] || 'archive.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+        setArchiveMessage({ type: 'ok', text: `Archived and deleted ${archiveCount.toLocaleString()} readings.` });
+        setArchiveCount(null);
+        fetchData();
+      } else {
+        const err = await res.json();
+        setArchiveMessage({ type: 'err', text: err.detail || 'Archive failed' });
+      }
+    } catch {
+      setArchiveMessage({ type: 'err', text: 'Connection error' });
+    } finally {
+      setArchiving(false);
     }
   };
 
@@ -235,6 +300,67 @@ function Admin({ user, onLogout }) {
                 </p>
               </div>
             )}
+
+            {/* Data Management */}
+            <div className="admin-card status-warn">
+              <h3>Data Management</h3>
+              <p style={{fontSize: '14px', color: '#6b7280', marginBottom: '20px'}}>
+                Export readings to CSV then permanently delete them from the database.
+                The CSV will download automatically before deletion.
+              </p>
+              <div style={{display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: '16px'}}>
+                <div>
+                  <label style={{display: 'block', fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: '6px'}}>
+                    Hive
+                  </label>
+                  <select
+                    value={archiveHiveId}
+                    onChange={e => handleArchiveHiveChange(e.target.value)}
+                    style={{padding: '10px 14px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', background: '#fff', minWidth: '200px'}}
+                  >
+                    <option value="">All hives</option>
+                    {allHives.map(h => (
+                      <option key={h.id} value={h.id}>{h.name} ({h.owner})</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={{display: 'block', fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: '6px'}}>
+                    Delete readings before
+                  </label>
+                  <input
+                    type="date"
+                    value={archiveBefore}
+                    onChange={e => handleArchiveDateChange(e.target.value)}
+                    style={{padding: '10px 14px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '14px'}}
+                  />
+                </div>
+                <div style={{paddingBottom: '2px'}}>
+                  {archiveCount !== null && (
+                    <div style={{fontSize: '13px', color: archiveCount === 0 ? '#6b7280' : '#92400e', fontWeight: 600, marginBottom: '8px'}}>
+                      {archiveCount === 0 ? 'No readings in this range' : `${archiveCount.toLocaleString()} readings will be deleted`}
+                    </div>
+                  )}
+                  <button
+                    onClick={runArchive}
+                    disabled={archiving || !archiveBefore || archiveCount === 0 || archiveCount === null}
+                    style={{
+                      padding: '10px 20px', background: '#ef4444', color: '#fff',
+                      border: 'none', borderRadius: '10px', fontWeight: 600,
+                      cursor: 'pointer', fontSize: '14px',
+                      opacity: (archiving || !archiveBefore || archiveCount === 0 || archiveCount === null) ? 0.5 : 1,
+                    }}
+                  >
+                    {archiving ? 'Archiving...' : 'Archive & Delete'}
+                  </button>
+                </div>
+              </div>
+              {archiveMessage && (
+                <p style={{fontSize: '13px', color: archiveMessage.type === 'ok' ? '#10b981' : '#ef4444'}}>
+                  {archiveMessage.text}
+                </p>
+              )}
+            </div>
 
             {/* User Management */}
             <div className="admin-card">
