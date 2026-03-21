@@ -19,6 +19,10 @@ const COLORS = {
   weight: '#6366f1',
   battery: '#22c55e',
   confidence: '#ec4899',
+  weather: '#06b6d4',
+  foraging: '#84cc16',
+  robbing: '#dc2626',
+  winter: '#0ea5e9',
 };
 
 // Inline info tooltip component
@@ -74,6 +78,12 @@ const BEE_STATE_COLORS = {
   'no_signal': '#d1d5db',
 };
 
+const BEE_STATE_NAMES = {
+  0: 'Unknown', 1: 'Quiet', 2: 'Normal', 3: 'Active',
+  4: 'Queen Present', 5: 'Pre-Swarm', 6: 'Defensive',
+  7: 'Stressed', 8: 'Queen Missing',
+};
+
 function Analytics({ user, onLogout }) {
   const navigate = useNavigate();
   const [hives, setHives] = useState([]);
@@ -87,6 +97,7 @@ function Analytics({ user, onLogout }) {
   const [dateRange, setDateRange] = useState(30);
   const [activeTab, setActiveTab] = useState('environmental');
   const [error, setError] = useState('');
+  const [viewMode, setViewMode] = useState(user?.report_mode || 'beekeeper'); // synced from profile
 
   const headers = {
     'Authorization': `Bearer ${user?.token}`,
@@ -131,6 +142,11 @@ function Analytics({ user, onLogout }) {
           time: new Date(r.timestamp).toLocaleDateString('en-US', {
             month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
           }),
+          temperature:    (r.temperature    && r.temperature    !== 0) ? r.temperature    : undefined,
+          humidity:       (r.humidity       && r.humidity       !== 0) ? r.humidity       : undefined,
+          pressure:       (r.pressure       && r.pressure       !== 0) ? r.pressure       : undefined,
+          battery_voltage:(r.battery_voltage && r.battery_voltage !== 0) ? r.battery_voltage : undefined,
+          weight:         (r.weight         && r.weight         !== 0) ? r.weight         : undefined,
         })));
       }
     } catch (err) { console.error(err); }
@@ -138,7 +154,7 @@ function Analytics({ user, onLogout }) {
   };
 
   const generateReport = async () => {
-    if (user?.subscription_tier !== 'pro') return;
+    if (user?.subscription_tier !== 'pro' && !user?.is_admin) return;
     setAiLoading(true); setAiReport('');
     try {
       const res = await fetch(`${API_BASE}/api/analysis/hive/${selectedHive}/insights`, { headers });
@@ -148,29 +164,56 @@ function Analytics({ user, onLogout }) {
     finally { setAiLoading(false); }
   };
 
-  const BEE_STATE_NAMES = {
-    0: 'Unknown', 1: 'Quiet', 2: 'Normal', 3: 'Active',
-    4: 'Queen Present', 5: 'Pre-Swarm', 6: 'Defensive',
-    7: 'Stressed', 8: 'Queen Missing',
-  };
-
+  // ===== FULL CSV EXPORT (Researcher mode exports ALL columns) =====
   const exportCSV = () => {
     if (readings.length === 0) return;
-    const columns = [
+    const columns = viewMode === 'researcher' ? [
       { key: 'timestamp', label: 'Date & Time' },
       { key: 'temperature', label: 'Temperature (C)' },
       { key: 'humidity', label: 'Humidity (%)' },
       { key: 'pressure', label: 'Pressure (hPa)' },
-      { key: 'sound_level', label: 'Sound Level (dB)' },
+      { key: 'sound_level', label: 'Sound Level' },
       { key: 'dominant_freq', label: 'Dominant Frequency (Hz)' },
       { key: 'bee_state', label: 'Bee State' },
       { key: 'confidence', label: 'Confidence (%)' },
       { key: 'battery_voltage', label: 'Battery (V)' },
       { key: 'weight', label: 'Weight (kg)' },
       { key: 'spectral_centroid', label: 'Spectral Centroid' },
+      { key: 'peak_to_avg', label: 'Peak to Avg Ratio' },
       { key: 'harmonicity', label: 'Harmonicity' },
-      { key: 'signal_quality', label: 'Signal Quality (%)' },
-      { key: 'absconding_risk', label: 'Absconding Risk (%)' },
+      { key: 'band_0_200', label: 'Band 0-200 Hz' },
+      { key: 'band_200_400', label: 'Band 200-400 Hz' },
+      { key: 'band_400_600', label: 'Band 400-600 Hz' },
+      { key: 'band_600_800', label: 'Band 600-800 Hz' },
+      { key: 'band_800_1000', label: 'Band 800-1000 Hz' },
+      { key: 'band_1000_plus', label: 'Band 1000+ Hz' },
+      { key: 'spectral_rolloff', label: 'Spectral Rolloff' },
+      { key: 'spectral_flux', label: 'Spectral Flux' },
+      { key: 'zero_crossing_rate', label: 'Zero Crossing Rate' },
+      { key: 'spectral_spread', label: 'Spectral Spread' },
+      { key: 'spectral_skewness', label: 'Spectral Skewness' },
+      { key: 'spectral_kurtosis', label: 'Spectral Kurtosis' },
+      { key: 'short_term_energy', label: 'Short Term Energy' },
+      { key: 'mid_term_energy', label: 'Mid Term Energy' },
+      { key: 'long_term_energy', label: 'Long Term Energy' },
+      { key: 'energy_entropy', label: 'Energy Entropy' },
+      { key: 'activity_increase', label: 'Activity Increase' },
+      { key: 'ambient_noise_level', label: 'Ambient Noise Level' },
+      { key: 'signal_quality', label: 'Signal Quality' },
+      { key: 'absconding_risk', label: 'Absconding Risk' },
+      { key: 'foraging_score', label: 'Foraging Score' },
+      { key: 'robbing_risk', label: 'Robbing Risk' },
+      { key: 'winter_cluster', label: 'Winter Cluster' },
+      { key: 'weather_confidence', label: 'Weather Confidence' },
+    ] : [
+      { key: 'timestamp', label: 'Date & Time' },
+      { key: 'temperature', label: 'Temperature (C)' },
+      { key: 'humidity', label: 'Humidity (%)' },
+      { key: 'sound_level', label: 'Sound Level' },
+      { key: 'bee_state', label: 'Bee State' },
+      { key: 'confidence', label: 'Confidence (%)' },
+      { key: 'battery_voltage', label: 'Battery (V)' },
+      { key: 'weight', label: 'Weight (kg)' },
     ];
     const header = columns.map(c => c.label).join(',');
     const rows = readings.map(r => columns.map(c => {
@@ -178,23 +221,26 @@ function Analytics({ user, onLogout }) {
       if (c.key === 'bee_state') return BEE_STATE_NAMES[v] || v;
       if (c.key === 'timestamp') return new Date(v).toLocaleString();
       if (v == null) return '';
-      return typeof v === 'number' ? v.toFixed(2) : v;
+      return typeof v === 'number' ? v.toFixed(4) : v;
     }).join(','));
     const csv = [header, ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = `hive_${selectedHive}_readings.csv`; a.click();
+    a.href = url; a.download = `hive_${selectedHive}_${viewMode}_readings.csv`; a.click();
     URL.revokeObjectURL(url);
   };
 
+  // ===== COMPUTED STATS =====
   const stats = useMemo(() => {
     if (readings.length === 0) return null;
-    const get = (key) => readings.filter(r => r[key] != null).map(r => r[key]);
+    const get = (key) => readings.filter(r => r[key] != null && r[key] !== 0).map(r => r[key]);
     const avg = arr => arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : '--';
     const mn = arr => arr.length ? Math.min(...arr).toFixed(1) : '--';
     const mx = arr => arr.length ? Math.max(...arr).toFixed(1) : '--';
     const temps = get('temperature'), hums = get('humidity'), sounds = get('sound_level'), weights = get('weight');
+    const weatherConf = get('weather_confidence');
+    const weatherAffected = readings.filter(r => r.weather_confidence != null && r.weather_confidence < 50).length;
     return {
       count: readings.length,
       temp: { avg: avg(temps), min: mn(temps), max: mx(temps) },
@@ -204,6 +250,8 @@ function Analytics({ user, onLogout }) {
         current: weights[weights.length - 1].toFixed(1),
         change: (weights[weights.length - 1] - weights[0]).toFixed(1),
       } : null,
+      weatherAffectedPct: readings.length > 0 ? ((weatherAffected / readings.length) * 100).toFixed(0) : '0',
+      avgWeatherConf: avg(weatherConf),
     };
   }, [readings]);
 
@@ -236,12 +284,56 @@ function Analytics({ user, onLogout }) {
         <p className="tooltip-label">{label}</p>
         {payload.map((p, i) => (
           <p key={i} style={{ color: p.color }}>
-            {p.name}: {typeof p.value === 'number' ? p.value.toFixed(1) : p.value}
+            {p.name}: {typeof p.value === 'number' ? p.value.toFixed(2) : p.value}
           </p>
         ))}
       </div>
     );
   };
+
+  // ===== HEALTH SUMMARY (for Beekeeper mode) =====
+  const healthSummary = useMemo(() => {
+    if (!overview?.health) return null;
+    const score = overview.health.score;
+    let emoji, message, color;
+    if (score >= 80) {
+      emoji = '\uD83D\uDC1D'; message = 'Your colony is thriving!'; color = '#10b981';
+    } else if (score >= 60) {
+      emoji = '\uD83D\uDC4D'; message = 'Colony is doing well, minor items to watch.'; color = '#f59e0b';
+    } else if (score >= 40) {
+      emoji = '\u26A0\uFE0F'; message = 'Some concerns detected. Consider an inspection.'; color = '#f97316';
+    } else {
+      emoji = '\uD83D\uDEA8'; message = 'Urgent attention needed!'; color = '#ef4444';
+    }
+    return { emoji, message, color, score };
+  }, [overview]);
+
+  // ===== BEEKEEPER TABS =====
+  const beekeeperTabs = [
+    ['overview', '\uD83D\uDC1D', 'Colony Status'],
+    ['environment', '\uD83C\uDF21\uFE0F', 'Environment'],
+    ['weight', '\u2696\uFE0F', 'Weight'],
+    ['ai', '\uD83E\uDD16', 'AI Report'],
+  ];
+
+  // ===== RESEARCHER TABS =====
+  const researcherTabs = [
+    ['environmental', '\uD83C\uDF21\uFE0F', 'Environmental'],
+    ['acoustic', '\uD83D\uDD0A', 'Acoustic'],
+    ['spectral', '\uD83D\uDCCA', 'Spectral Features'],
+    ['behavioral', '\uD83D\uDC1D', 'Behavioral Scores'],
+    ['weather', '\uD83C\uDF27\uFE0F', 'Weather Gate'],
+    ['weight', '\u2696\uFE0F', 'Weight'],
+    ['battery', '\uD83D\uDD0B', 'Battery'],
+    ['quality', '\uD83D\uDCE1', 'Data Quality'],
+    ['ai', '\uD83E\uDD16', 'AI Insights'],
+  ];
+
+  // Reset tab when switching modes
+  useEffect(() => {
+    if (viewMode === 'beekeeper') setActiveTab('overview');
+    else setActiveTab('environmental');
+  }, [viewMode]);
 
   return (
     <div className="dashboard-container">
@@ -286,9 +378,33 @@ function Analytics({ user, onLogout }) {
         <header className="content-header">
           <div>
             <h1>Colony Analytics</h1>
-            <p>Sensor data analysis and bioacoustic insights</p>
+            <p>{viewMode === 'beekeeper' ? 'How are your bees doing?' : 'Full sensor data analysis and bioacoustic research tools'}</p>
           </div>
           <div className="header-actions">
+            {/* Mode Toggle */}
+            <div style={{
+              display: 'flex', background: '#f3f4f6', borderRadius: '8px', padding: '2px',
+              border: '1px solid #e5e7eb',
+            }}>
+              <button
+                onClick={() => setViewMode('beekeeper')}
+                style={{
+                  padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer',
+                  fontSize: '13px', fontWeight: 600,
+                  background: viewMode === 'beekeeper' ? '#f59e0b' : 'transparent',
+                  color: viewMode === 'beekeeper' ? '#fff' : '#6b7280',
+                }}
+              >Beekeeper</button>
+              <button
+                onClick={() => setViewMode('researcher')}
+                style={{
+                  padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer',
+                  fontSize: '13px', fontWeight: 600,
+                  background: viewMode === 'researcher' ? '#8b5cf6' : 'transparent',
+                  color: viewMode === 'researcher' ? '#fff' : '#6b7280',
+                }}
+              >Researcher</button>
+            </div>
             <select value={dateRange} onChange={e => setDateRange(Number(e.target.value))}
               className="range-select">
               <option value={7}>Last 7 days</option>
@@ -326,110 +442,16 @@ function Analytics({ user, onLogout }) {
           </div>
         ) : (
           <>
-            {/* Summary Cards */}
-            {stats && (
-              <div className="stats-grid four-col">
-                <div className="stat-card">
-                  <div className="stat-icon temp-icon">&#x1F321;&#xFE0F;</div>
-                  <div className="stat-content">
-                    <div className="stat-value">{stats.temp.avg}&deg;C</div>
-                    <div className="stat-label">Avg Temperature</div>
-                    <div className="stat-range">{stats.temp.min}&deg; &ndash; {stats.temp.max}&deg;</div>
-                  </div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-icon hum-icon">&#x1F4A7;</div>
-                  <div className="stat-content">
-                    <div className="stat-value">{stats.humidity.avg}%</div>
-                    <div className="stat-label">Avg Humidity</div>
-                    <div className="stat-range">{stats.humidity.min}% &ndash; {stats.humidity.max}%</div>
-                  </div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-icon sound-icon">&#x1F50A;</div>
-                  <div className="stat-content">
-                    <div className="stat-value">{stats.sound.avg} dB</div>
-                    <div className="stat-label">Avg Sound Level</div>
-                    <div className="stat-range">{stats.sound.min} &ndash; {stats.sound.max} dB</div>
-                  </div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-icon">&#x1F4C8;</div>
-                  <div className="stat-content">
-                    <div className="stat-value">{stats.count.toLocaleString()}</div>
-                    <div className="stat-label">Total Readings</div>
-                    <div className="stat-range">{dateRange}-day window</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Health + Bee State Row */}
-            {overview && (
-              <div className="analytics-row">
-                <div className="analytics-card health-card">
-                  <h3>Colony Health Score</h3>
-                  <div className="health-score-display">
-                    <div className={`health-circle ${overview.health.category.toLowerCase()}`}>
-                      <span className="health-number">{overview.health.score}</span>
-                      <span className="health-cat">{overview.health.category}</span>
-                    </div>
-                    <div className="health-metrics">
-                      <div className="health-metric">
-                        <span className="metric-label">Queen Presence</span>
-                        <div className="metric-bar"><div className="metric-fill queen"
-                          style={{width: `${overview.health.queen_presence_pct}%`}}></div></div>
-                        <span className="metric-value">{overview.health.queen_presence_pct.toFixed(0)}%</span>
-                      </div>
-                      <div className="health-metric">
-                        <span className="metric-label">Stress Level</span>
-                        <div className="metric-bar"><div className="metric-fill stress"
-                          style={{width: `${overview.health.stress_pct}%`}}></div></div>
-                        <span className="metric-value">{overview.health.stress_pct.toFixed(0)}%</span>
-                      </div>
-                      <div className="health-metric">
-                        <span className="metric-label">Signal Quality</span>
-                        <div className="metric-bar"><div className="metric-fill signal"
-                          style={{width: `${overview.health.avg_signal_quality}%`}}></div></div>
-                        <span className="metric-value">{overview.health.avg_signal_quality.toFixed(0)}%</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="analytics-card">
-                  <h3>Bee State Distribution</h3>
-                  <div className="pie-container">
-                    <ResponsiveContainer width="100%" height={220}>
-                      <PieChart>
-                        <Pie data={beeStatePie} dataKey="value" nameKey="name"
-                          cx="50%" cy="50%" outerRadius={80} innerRadius={40} paddingAngle={2}>
-                          {beeStatePie.map((entry, i) => (
-                            <Cell key={i} fill={Object.values(BEE_STATE_COLORS)[i % Object.values(BEE_STATE_COLORS).length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value, name) => [`${value} readings`, name]} />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tab Navigation */}
+            {/* ============================================================
+                TAB NAVIGATION
+                ============================================================ */}
             <div className="chart-tabs">
-              {[
-                ['environmental', '&#x1F321;&#xFE0F;', 'Environmental'],
-                ['acoustic', '&#x1F50A;', 'Acoustic'],
-                ['spectral', '&#x1F4CA;', 'Spectral Features'],
-                ['weight', '&#x2696;&#xFE0F;', 'Weight'],
-                ['battery', '&#x1F50B;', 'Battery'],
-                ['ai', '&#x1F916;', 'AI Insights'],
-              ].map(([key, icon, label]) => (
+              {(viewMode === 'beekeeper' ? beekeeperTabs : researcherTabs).map(([key, icon, label]) => (
                 <button key={key}
                   className={`chart-tab ${activeTab === key ? 'active' : ''}`}
-                  onClick={() => setActiveTab(key)}
-                  dangerouslySetInnerHTML={{__html: `${icon} ${label}`}} />
+                  onClick={() => setActiveTab(key)}>
+                  {icon} {label}
+                </button>
               ))}
             </div>
 
@@ -437,8 +459,175 @@ function Analytics({ user, onLogout }) {
               <div className="loading-state">Loading chart data...</div>
             ) : (
               <>
-                {/* ENVIRONMENTAL */}
-                {activeTab === 'environmental' && (
+                {/* ============================================================
+                    BEEKEEPER: COLONY STATUS (simple health overview)
+                    ============================================================ */}
+                {activeTab === 'overview' && viewMode === 'beekeeper' && (
+                  <div className="chart-section">
+                    {/* Big health card */}
+                    {healthSummary && (
+                      <div className="analytics-card full-width" style={{textAlign: 'center', padding: '40px 24px'}}>
+                        <div style={{fontSize: '64px', marginBottom: '12px'}}>{healthSummary.emoji}</div>
+                        <div style={{
+                          fontSize: '72px', fontWeight: '800', color: healthSummary.color,
+                          lineHeight: 1, marginBottom: '8px',
+                        }}>{healthSummary.score}</div>
+                        <div style={{fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '4px'}}>
+                          Health Score
+                        </div>
+                        <div style={{fontSize: '16px', color: '#6b7280'}}>{healthSummary.message}</div>
+                      </div>
+                    )}
+
+                    {/* Simple stat cards */}
+                    {stats && (
+                      <div className="stats-grid four-col">
+                        <div className="stat-card">
+                          <div className="stat-icon temp-icon">&#x1F321;&#xFE0F;</div>
+                          <div className="stat-content">
+                            <div className="stat-value">{stats.temp.avg}&deg;C</div>
+                            <div className="stat-label">Hive Temperature</div>
+                          </div>
+                        </div>
+                        <div className="stat-card">
+                          <div className="stat-icon hum-icon">&#x1F4A7;</div>
+                          <div className="stat-content">
+                            <div className="stat-value">{stats.humidity.avg}%</div>
+                            <div className="stat-label">Humidity</div>
+                          </div>
+                        </div>
+                        <div className="stat-card">
+                          <div className="stat-icon">&#x1F451;</div>
+                          <div className="stat-content">
+                            <div className="stat-value">{overview?.health?.queen_presence_pct?.toFixed(0) ?? '--'}%</div>
+                            <div className="stat-label">Queen Detected</div>
+                          </div>
+                        </div>
+                        <div className="stat-card">
+                          <div className="stat-icon">&#x1F50B;</div>
+                          <div className="stat-content">
+                            <div className="stat-value">
+                              {readings.length > 0 && readings[readings.length - 1].battery_voltage
+                                ? readings[readings.length - 1].battery_voltage.toFixed(1) + 'V'
+                                : '--'}
+                            </div>
+                            <div className="stat-label">Battery</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Bee state pie */}
+                    {beeStatePie.length > 0 && (
+                      <div className="analytics-card full-width">
+                        <h3>What are your bees doing?</h3>
+                        <div className="pie-container">
+                          <ResponsiveContainer width="100%" height={260}>
+                            <PieChart>
+                              <Pie data={beeStatePie} dataKey="value" nameKey="name"
+                                cx="50%" cy="50%" outerRadius={100} innerRadius={50} paddingAngle={2}>
+                                {beeStatePie.map((entry, i) => (
+                                  <Cell key={i} fill={Object.values(BEE_STATE_COLORS)[i % Object.values(BEE_STATE_COLORS).length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip formatter={(value, name) => [`${value} readings`, name]} />
+                              <Legend />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Weather note for beekeepers */}
+                    {stats && Number(stats.weatherAffectedPct) > 5 && (
+                      <div className="analytics-card full-width" style={{
+                        background: '#f0f9ff', border: '1px solid #bae6fd',
+                      }}>
+                        <h3 style={{color: '#0369a1'}}>&#x1F327;&#xFE0F; Weather Note</h3>
+                        <p style={{color: '#0c4a6e', margin: 0}}>
+                          About {stats.weatherAffectedPct}% of readings in this period were affected by weather
+                          (rain, wind). These readings have been flagged and won't affect your health score.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Behavioral summary */}
+                    {overview?.behavioral_scores && (
+                      <div className="stats-grid four-col">
+                        <div className="stat-card">
+                          <div className="stat-icon">&#x1F338;</div>
+                          <div className="stat-content">
+                            <div className="stat-value" style={{color: overview.behavioral_scores.avg_foraging_score >= 50 ? '#16a34a' : '#6b7280'}}>
+                              {overview.behavioral_scores.avg_foraging_score ?? '--'}
+                            </div>
+                            <div className="stat-label">Foraging Activity</div>
+                          </div>
+                        </div>
+                        <div className="stat-card">
+                          <div className="stat-icon">&#x2694;&#xFE0F;</div>
+                          <div className="stat-content">
+                            <div className="stat-value" style={{color: overview.behavioral_scores.max_robbing_risk_pct > 50 ? '#dc2626' : '#16a34a'}}>
+                              {overview.behavioral_scores.max_robbing_risk_pct ?? '--'}%
+                            </div>
+                            <div className="stat-label">Robbing Risk</div>
+                          </div>
+                        </div>
+                        {stats?.weight && (
+                          <div className="stat-card">
+                            <div className="stat-icon">&#x2696;&#xFE0F;</div>
+                            <div className="stat-content">
+                              <div className="stat-value">{stats.weight.current} kg</div>
+                              <div className="stat-label">Hive Weight</div>
+                            </div>
+                          </div>
+                        )}
+                        <div className="stat-card">
+                          <div className="stat-icon">&#x1F4CA;</div>
+                          <div className="stat-content">
+                            <div className="stat-value">{stats?.count?.toLocaleString()}</div>
+                            <div className="stat-label">Readings ({dateRange}d)</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ============================================================
+                    BEEKEEPER: ENVIRONMENT (simple temp/humidity)
+                    ============================================================ */}
+                {activeTab === 'environment' && viewMode === 'beekeeper' && (
+                  <div className="chart-section">
+                    <div className="analytics-card full-width">
+                      <h3>Temperature &amp; Humidity</h3>
+                      <p className="chart-description">
+                        Ideal hive temperature: 33&ndash;36&deg;C (brood area). Humidity: 40&ndash;60%.
+                      </p>
+                      <ResponsiveContainer width="100%" height={350}>
+                        <ComposedChart data={readings}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                          <XAxis dataKey="time" tick={{fontSize: 11}} interval="preserveStartEnd" />
+                          <YAxis yAxisId="temp" orientation="left" domain={['auto','auto']}
+                            label={{value: '\u00B0C', position: 'insideTopLeft'}} />
+                          <YAxis yAxisId="hum" orientation="right" domain={[0,100]}
+                            label={{value: '%RH', position: 'insideTopRight'}} />
+                          <Tooltip content={<ChartTooltip />} />
+                          <Legend />
+                          <Line yAxisId="temp" type="monotone" dataKey="temperature"
+                            name="Temperature (\u00B0C)" stroke={COLORS.temperature} dot={false} strokeWidth={2} />
+                          <Line yAxisId="hum" type="monotone" dataKey="humidity"
+                            name="Humidity (%)" stroke={COLORS.humidity} dot={false} strokeWidth={2} />
+                          <Brush dataKey="time" height={30} stroke="#f59e0b" />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                )}
+
+                {/* ============================================================
+                    RESEARCHER: ENVIRONMENTAL
+                    ============================================================ */}
+                {activeTab === 'environmental' && viewMode === 'researcher' && (
                   <div className="chart-section">
                     <div className="analytics-card full-width">
                       <h3>Temperature &amp; Humidity Over Time</h3>
@@ -480,8 +669,10 @@ function Analytics({ user, onLogout }) {
                   </div>
                 )}
 
-                {/* ACOUSTIC */}
-                {activeTab === 'acoustic' && (
+                {/* ============================================================
+                    RESEARCHER: ACOUSTIC
+                    ============================================================ */}
+                {activeTab === 'acoustic' && viewMode === 'researcher' && (
                   <div className="chart-section">
                     <div className="analytics-card full-width">
                       <h3>Sound Level Over Time</h3>
@@ -489,9 +680,9 @@ function Analytics({ user, onLogout }) {
                         <AreaChart data={readings}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                           <XAxis dataKey="time" tick={{fontSize: 11}} interval="preserveStartEnd" />
-                          <YAxis label={{value: 'dB', position: 'insideTopLeft'}} />
+                          <YAxis label={{value: 'Level', position: 'insideTopLeft'}} />
                           <Tooltip content={<ChartTooltip />} />
-                          <Area type="monotone" dataKey="sound_level" name="Sound Level (dB)"
+                          <Area type="monotone" dataKey="sound_level" name="Sound Level"
                             stroke={COLORS.sound} fill={COLORS.sound} fillOpacity={0.15} strokeWidth={2} />
                           <Brush dataKey="time" height={30} stroke="#f59e0b" />
                         </AreaChart>
@@ -501,8 +692,7 @@ function Analytics({ user, onLogout }) {
                     <div className="analytics-card full-width">
                       <h3>Dominant Frequency Analysis</h3>
                       <p className="chart-description">
-                        Queen piping typically occurs at ~450 Hz. Worker buzzing at 200&ndash;250 Hz.
-                        Pre-swarm activity shows elevated frequencies above 300 Hz.
+                        Queen piping: ~450 Hz. Worker buzzing: 200&ndash;250 Hz. Pre-swarm: elevated above 300 Hz.
                       </p>
                       <ResponsiveContainer width="100%" height={300}>
                         <ComposedChart data={readings}>
@@ -523,10 +713,6 @@ function Analytics({ user, onLogout }) {
 
                     <div className="analytics-card full-width">
                       <h3>Classification Confidence</h3>
-                      <p className="chart-description">
-                        Confidence scores below 60% indicate uncertain classifications.
-                        Alerts are suppressed when confidence is below this threshold.
-                      </p>
                       <ResponsiveContainer width="100%" height={250}>
                         <AreaChart data={readings}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -540,51 +726,19 @@ function Analytics({ user, onLogout }) {
                         </AreaChart>
                       </ResponsiveContainer>
                     </div>
-
-                    {overview?.daily_summaries && (
-                      <div className="analytics-card full-width">
-                        <h3>Daily Activity &amp; Bee State</h3>
-                        <ResponsiveContainer width="100%" height={280}>
-                          <BarChart data={overview.daily_summaries}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                            <XAxis dataKey="date" tick={{fontSize: 11}} />
-                            <YAxis label={{value: 'Readings', position: 'insideTopLeft'}} />
-                            <Tooltip />
-                            <Bar dataKey="reading_count" name="Readings" fill="#f59e0b" radius={[4,4,0,0]} />
-                          </BarChart>
-                        </ResponsiveContainer>
-                        <div className="daily-states">
-                          {overview.daily_summaries.map((d, i) => (
-                            <div key={i} className="daily-state-item">
-                              <span className="daily-date">{d.date}</span>
-                              <span className={`state-badge ${BEE_STATE_NAMES[d.dominant_state] || d.dominant_state}`}>
-                                {(typeof d.dominant_state === 'number' ? (BEE_STATE_NAMES[d.dominant_state] || 'unknown') : String(d.dominant_state)).replace(/_/g, ' ')}
-                              </span>
-                              <span className="daily-risk">
-                                Risk: {d.max_absconding_risk.toFixed(0)}%
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
 
-                {/* SPECTRAL FEATURES */}
-                {activeTab === 'spectral' && (
+                {/* ============================================================
+                    RESEARCHER: SPECTRAL FEATURES (all features)
+                    ============================================================ */}
+                {activeTab === 'spectral' && viewMode === 'researcher' && (
                   <div className="chart-section">
                     <div className="analytics-card full-width">
                       <h3>
-                        Sound Center &amp; Purity
-                        <InfoTip text="Two key acoustic fingerprints of your colony. Sound Center (spectral centroid) is like the pitch of the hive — rising values mean excitement or pre-swarm. Sound Purity (harmonicity) measures how organized vs. chaotic the sound is — a pure-sounding hive usually has a healthy queen present." />
+                        Spectral Centroid &amp; Harmonicity
+                        <InfoTip text="Centroid is the pitch center of the hive sound. Harmonicity measures how tonal vs. noisy — queen piping scores 0.7+, weather noise scores below 0.15." />
                       </h3>
-                      <p className="chart-description">
-                        <strong>Sound Center (spectral centroid)</strong>: where most buzzing energy sits on the pitch scale.
-                        Normal foraging: 300–400 Hz. Above 450 Hz often signals excitement or swarming preparation.
-                        <strong> Sound Purity (harmonicity)</strong>: how tonal vs. noisy the hive sounds.
-                        High purity (0.7+) suggests queen piping or organized activity. Low purity may indicate stress or queen absence.
-                      </p>
                       <ResponsiveContainer width="100%" height={320}>
                         <ComposedChart data={readings}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -606,14 +760,9 @@ function Analytics({ user, onLogout }) {
 
                     <div className="analytics-card full-width">
                       <h3>
-                        Frequency Band Energy
-                        <InfoTip text="Think of this as the equalizer view of your hive. A healthy colony in full foraging mode concentrates buzzing in the 200–600 Hz range. High energy in the 0–200 Hz band can mean the queen is piping or bees are fanning. Lots of energy above 600 Hz may indicate the colony is stressed, defensive, or disturbed." />
+                        Mel-Band Energy Distribution
+                        <InfoTip text="6 mel-spaced frequency bands. Healthy colonies concentrate energy in 200-600 Hz. Flat distribution across all bands indicates broadband noise (rain, wind)." />
                       </h3>
-                      <p className="chart-description">
-                        How acoustic energy is distributed across frequency bands over time.
-                        Healthy colonies: most energy in 200–600 Hz (worker buzz). Low-band spikes (0–200 Hz):
-                        fanning or queen piping overtones. High-band spikes (600+ Hz): stress or defensive behavior.
-                      </p>
                       <ResponsiveContainer width="100%" height={320}>
                         <AreaChart data={readings}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -621,15 +770,15 @@ function Analytics({ user, onLogout }) {
                           <YAxis label={{value: 'Energy', position: 'insideTopLeft'}} />
                           <Tooltip content={<ChartTooltip />} />
                           <Legend />
-                          <Area type="monotone" dataKey="band_0_200" name="0–200 Hz" stackId="1"
+                          <Area type="monotone" dataKey="band_0_200" name="0-200 Hz" stackId="1"
                             stroke="#6366f1" fill="#6366f1" fillOpacity={0.6} />
-                          <Area type="monotone" dataKey="band_200_400" name="200–400 Hz" stackId="1"
+                          <Area type="monotone" dataKey="band_200_400" name="200-400 Hz" stackId="1"
                             stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.6} />
-                          <Area type="monotone" dataKey="band_400_600" name="400–600 Hz" stackId="1"
+                          <Area type="monotone" dataKey="band_400_600" name="400-600 Hz" stackId="1"
                             stroke="#10b981" fill="#10b981" fillOpacity={0.6} />
-                          <Area type="monotone" dataKey="band_600_800" name="600–800 Hz" stackId="1"
+                          <Area type="monotone" dataKey="band_600_800" name="600-800 Hz" stackId="1"
                             stroke="#ef4444" fill="#ef4444" fillOpacity={0.6} />
-                          <Area type="monotone" dataKey="band_800_1000" name="800–1000 Hz" stackId="1"
+                          <Area type="monotone" dataKey="band_800_1000" name="800-1000 Hz" stackId="1"
                             stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.6} />
                           <Area type="monotone" dataKey="band_1000_plus" name="1000+ Hz" stackId="1"
                             stroke="#6b7280" fill="#6b7280" fillOpacity={0.6} />
@@ -640,13 +789,6 @@ function Analytics({ user, onLogout }) {
                     <div className="analytics-row">
                       <div className="analytics-card">
                         <h3>Spectral Shape</h3>
-                        <p className="chart-description" style={{fontSize:'13px'}}>
-                          <strong>Spectral rolloff</strong>: frequency below which 85% of energy falls.
-                          <strong> Zero-crossing rate</strong>: how often the signal crosses zero —
-                          high values indicate noisy, less tonal sound typical of stressed or queenless colonies.
-                          <strong> Peak-to-avg</strong>: ratio of peak to average energy; high values suggest
-                          brief, intense sound events like queen piping.
-                        </p>
                         <ResponsiveContainer width="100%" height={250}>
                           <LineChart data={readings}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -654,68 +796,91 @@ function Analytics({ user, onLogout }) {
                             <YAxis />
                             <Tooltip content={<ChartTooltip />} />
                             <Legend />
-                            <Line type="monotone" dataKey="spectral_rolloff" name="Rolloff" stroke="#8b5cf6" dot={false} />
-                            <Line type="monotone" dataKey="zero_crossing_rate" name="Zero-Crossing Rate" stroke="#ef4444" dot={false} />
+                            <Line type="monotone" dataKey="spectral_rolloff" name="Rolloff (Hz)" stroke="#8b5cf6" dot={false} />
+                            <Line type="monotone" dataKey="spectral_flux" name="Spectral Flux" stroke="#06b6d4" dot={false} />
+                            <Line type="monotone" dataKey="zero_crossing_rate" name="ZCR" stroke="#ef4444" dot={false} />
                             <Line type="monotone" dataKey="peak_to_avg" name="Peak-to-Avg" stroke="#f59e0b" dot={false} />
                           </LineChart>
                         </ResponsiveContainer>
                       </div>
 
                       <div className="analytics-card">
-                        <h3>Temporal Energy &amp; Activity</h3>
-                        <p className="chart-description" style={{fontSize:'13px'}}>
-                          Short, mid, and long-term energy show how sound intensity changes across timescales.
-                          <strong> Activity increase</strong> flags when the colony is becoming more active
-                          than its recent baseline — a key pre-swarm signal.
-                          <strong> Absconding risk</strong> combines multiple signals to estimate the probability
-                          the colony is preparing to abandon the hive.
-                        </p>
+                        <h3>Spectral Distribution</h3>
                         <ResponsiveContainer width="100%" height={250}>
-                          <ComposedChart data={readings}>
+                          <LineChart data={readings}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                             <XAxis dataKey="time" tick={{fontSize: 11}} interval="preserveStartEnd" />
-                            <YAxis yAxisId="energy" orientation="left" />
-                            <YAxis yAxisId="risk" orientation="right" domain={[0,100]}
-                              label={{value: 'Risk %', position: 'insideTopRight'}} />
+                            <YAxis />
                             <Tooltip content={<ChartTooltip />} />
                             <Legend />
-                            <Line yAxisId="energy" type="monotone" dataKey="short_term_energy"
-                              name="Short-Term Energy" stroke="#10b981" dot={false} />
-                            <Line yAxisId="energy" type="monotone" dataKey="activity_increase"
-                              name="Activity Increase" stroke="#f59e0b" dot={false} />
-                            <Line yAxisId="risk" type="monotone" dataKey="absconding_risk"
-                              name="Absconding Risk %" stroke="#ef4444" dot={false} strokeWidth={2} />
-                          </ComposedChart>
+                            <Line type="monotone" dataKey="spectral_spread" name="Spread" stroke="#10b981" dot={false} />
+                            <Line type="monotone" dataKey="spectral_skewness" name="Skewness" stroke="#f97316" dot={false} />
+                            <Line type="monotone" dataKey="spectral_kurtosis" name="Kurtosis" stroke="#ec4899" dot={false} />
+                          </LineChart>
                         </ResponsiveContainer>
                       </div>
                     </div>
 
                     <div className="analytics-card full-width">
-                      <h3>Spectral Statistics Context</h3>
-                      <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px,1fr))', gap:'16px', padding:'8px 0'}}>
+                      <h3>Temporal Energy (Short / Mid / Long Term)</h3>
+                      <ResponsiveContainer width="100%" height={280}>
+                        <ComposedChart data={readings}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                          <XAxis dataKey="time" tick={{fontSize: 11}} interval="preserveStartEnd" />
+                          <YAxis yAxisId="energy" orientation="left" />
+                          <YAxis yAxisId="ratio" orientation="right"
+                            label={{value: 'Ratio', position: 'insideTopRight'}} />
+                          <Tooltip content={<ChartTooltip />} />
+                          <Legend />
+                          <Line yAxisId="energy" type="monotone" dataKey="short_term_energy"
+                            name="Short-Term" stroke="#10b981" dot={false} />
+                          <Line yAxisId="energy" type="monotone" dataKey="mid_term_energy"
+                            name="Mid-Term" stroke="#3b82f6" dot={false} />
+                          <Line yAxisId="energy" type="monotone" dataKey="long_term_energy"
+                            name="Long-Term" stroke="#8b5cf6" dot={false} />
+                          <Line yAxisId="ratio" type="monotone" dataKey="activity_increase"
+                            name="Activity Increase" stroke="#f59e0b" dot={false} strokeWidth={2} />
+                          <Line yAxisId="energy" type="monotone" dataKey="energy_entropy"
+                            name="Energy Entropy" stroke="#ef4444" dot={false} strokeDasharray="5 5" />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    {/* All spectral stats */}
+                    <div className="analytics-card full-width">
+                      <h3>Spectral Statistics Summary</h3>
+                      <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px,1fr))', gap:'12px', padding:'8px 0'}}>
                         {[
-                          {key:'spectral_centroid', label:'Sound Center', unit:'Hz', note:'Where most of the buzzing energy sits on the frequency scale. Think of it like the pitch "center" of the hive. A healthy foraging colony typically sits around 300–400 Hz. Rising above 450 Hz often means the bees are excited — possibly preparing to swarm.'},
-                          {key:'harmonicity', label:'Sound Purity', unit:'', note:'How musical vs. noisy the hive sounds. 0 = pure noise, 1 = perfectly tonal. Queen piping (a clear signal she\'s present) scores 0.7–0.9. A stressed or queenless colony produces more chaotic noise, usually below 0.3.'},
-                          {key:'spectral_spread', label:'Sound Spread', unit:'Hz', note:'How widely the buzzing is spread across different pitches. A focused spread means the colony is doing one main thing (foraging, resting). A very wide spread can indicate multiple activities happening at once or environmental disturbance.'},
-                          {key:'spectral_skewness', label:'Pitch Bias', unit:'', note:'Whether the sound energy leans toward low or high frequencies. Positive = more energy in high pitches (excited, active). Negative = more energy in low pitches (calm, fanning). Helps distinguish normal activity from defensive or pre-swarm states.'},
-                          {key:'energy_entropy', label:'Sound Chaos', unit:'', note:'How unpredictable and random the colony sounds. Low = organized, predictable hive activity. High = chaotic or highly variable sound patterns. Sudden spikes in chaos can indicate disturbance, queen loss, or swarming preparation.'},
-                          {key:'absconding_risk', label:'Leaving Risk', unit:'%', note:'Estimated chance the colony may abandon the hive entirely. This combines multiple signals including temperature stress, unusual sound patterns, and activity trends. Above 30% warrants a visual inspection; above 60% is urgent.'},
-                        ].map(({key, label, unit, note}) => {
+                          {key:'spectral_centroid', label:'Centroid', unit:'Hz'},
+                          {key:'harmonicity', label:'Harmonicity', unit:''},
+                          {key:'spectral_spread', label:'Spread', unit:'Hz'},
+                          {key:'spectral_skewness', label:'Skewness', unit:''},
+                          {key:'spectral_kurtosis', label:'Kurtosis', unit:''},
+                          {key:'spectral_rolloff', label:'Rolloff', unit:'Hz'},
+                          {key:'spectral_flux', label:'Flux', unit:''},
+                          {key:'zero_crossing_rate', label:'ZCR', unit:''},
+                          {key:'peak_to_avg', label:'Peak/Avg', unit:''},
+                          {key:'energy_entropy', label:'Entropy', unit:''},
+                          {key:'short_term_energy', label:'ST Energy', unit:''},
+                          {key:'mid_term_energy', label:'MT Energy', unit:''},
+                          {key:'long_term_energy', label:'LT Energy', unit:''},
+                          {key:'activity_increase', label:'Activity Inc.', unit:'x'},
+                        ].map(({key, label, unit}) => {
                           const vals = readings.filter(r => r[key] != null).map(r => r[key]);
-                          const avg = vals.length ? (vals.reduce((a,b) => a+b, 0)/vals.length).toFixed(2) : '--';
-                          const latest = vals.length ? vals[vals.length-1].toFixed(2) : '--';
+                          const avg = vals.length ? (vals.reduce((a,b) => a+b, 0)/vals.length).toFixed(3) : '--';
+                          const latest = vals.length ? vals[vals.length-1].toFixed(3) : '--';
+                          const min = vals.length ? Math.min(...vals).toFixed(3) : '--';
+                          const max = vals.length ? Math.max(...vals).toFixed(3) : '--';
                           return (
                             <div key={key} style={{
-                              background:'#f9fafb', borderRadius:'10px', padding:'14px',
-                              border:'1px solid #e5e7eb'
+                              background:'#f9fafb', borderRadius:'8px', padding:'12px',
+                              border:'1px solid #e5e7eb', fontSize: '13px',
                             }}>
-                              <div style={{fontWeight:700, fontSize:'14px', marginBottom:'4px', display:'flex', alignItems:'center'}}>
-                                {label}<InfoTip text={note} />
+                              <div style={{fontWeight:700, marginBottom:'4px'}}>{label}</div>
+                              <div style={{fontSize:'18px', fontWeight:'800', color:'#1f2937'}}>{latest}{unit}</div>
+                              <div style={{color:'#6b7280', marginTop:'2px'}}>
+                                avg {avg} | min {min} | max {max}
                               </div>
-                              <div style={{fontSize:'22px', fontWeight:'800', color:'#1f2937'}}>
-                                {latest}{unit}
-                              </div>
-                              <div style={{fontSize:'12px', color:'#6b7280', marginTop:'2px'}}>avg {avg}{unit}</div>
                             </div>
                           );
                         })}
@@ -724,7 +889,161 @@ function Analytics({ user, onLogout }) {
                   </div>
                 )}
 
-                {/* WEIGHT */}
+                {/* ============================================================
+                    RESEARCHER: BEHAVIORAL SCORES
+                    ============================================================ */}
+                {activeTab === 'behavioral' && viewMode === 'researcher' && (
+                  <div className="chart-section">
+                    <div className="analytics-card full-width">
+                      <h3>
+                        Foraging Score
+                        <InfoTip text="0-100 intensity of foraging activity. Based on mel band 0 (worker flight buzz at 200-250 Hz) scaled by time of day. Only active during daylight hours (6am-7pm)." />
+                      </h3>
+                      <ResponsiveContainer width="100%" height={280}>
+                        <AreaChart data={readings}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                          <XAxis dataKey="time" tick={{fontSize: 11}} interval="preserveStartEnd" />
+                          <YAxis domain={[0, 100]} label={{value: 'Score', position: 'insideTopLeft'}} />
+                          <Tooltip content={<ChartTooltip />} />
+                          <Area type="monotone" dataKey="foraging_score" name="Foraging Score"
+                            stroke={COLORS.foraging} fill={COLORS.foraging} fillOpacity={0.2} strokeWidth={2} />
+                          <Brush dataKey="time" height={30} stroke="#f59e0b" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <div className="analytics-card full-width">
+                      <h3>
+                        Robbing Risk
+                        <InfoTip text="0-100 probability of active robbing attack. Based on spectral flux spikes, elevated mid-high band energy, and low harmonicity (chaotic mob sound). Active during afternoon foraging hours." />
+                      </h3>
+                      <ResponsiveContainer width="100%" height={280}>
+                        <AreaChart data={readings}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                          <XAxis dataKey="time" tick={{fontSize: 11}} interval="preserveStartEnd" />
+                          <YAxis domain={[0, 100]} label={{value: '%', position: 'insideTopLeft'}} />
+                          <Tooltip content={<ChartTooltip />} />
+                          <ReferenceLine y={50} stroke="#ef4444" strokeDasharray="3 3"
+                            label={{value: "High Risk", position: "right", fill: "#ef4444", fontSize: 11}} />
+                          <Area type="monotone" dataKey="robbing_risk" name="Robbing Risk (%)"
+                            stroke={COLORS.robbing} fill={COLORS.robbing} fillOpacity={0.15} strokeWidth={2} />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <div className="analytics-row">
+                      <div className="analytics-card">
+                        <h3>
+                          Winter Cluster Health
+                          <InfoTip text="0-100 health score for winter cluster. Only active when hive temp < 15C. Based on band 0 dominance (thermal regulation hum), spectral stability, and sound level in the 15-45 range." />
+                        </h3>
+                        <ResponsiveContainer width="100%" height={250}>
+                          <AreaChart data={readings}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                            <XAxis dataKey="time" tick={{fontSize: 11}} interval="preserveStartEnd" />
+                            <YAxis domain={[0, 100]} />
+                            <Tooltip content={<ChartTooltip />} />
+                            <Area type="monotone" dataKey="winter_cluster" name="Winter Cluster"
+                              stroke={COLORS.winter} fill={COLORS.winter} fillOpacity={0.2} strokeWidth={2} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      <div className="analytics-card">
+                        <h3>Absconding Risk</h3>
+                        <ResponsiveContainer width="100%" height={250}>
+                          <AreaChart data={readings}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                            <XAxis dataKey="time" tick={{fontSize: 11}} interval="preserveStartEnd" />
+                            <YAxis domain={[0, 100]} />
+                            <Tooltip content={<ChartTooltip />} />
+                            <ReferenceLine y={30} stroke="#f97316" strokeDasharray="3 3"
+                              label={{value: "Inspect", position: "right", fill: "#f97316", fontSize: 11}} />
+                            <Area type="monotone" dataKey="absconding_risk" name="Absconding Risk (%)"
+                              stroke="#ef4444" fill="#ef4444" fillOpacity={0.15} strokeWidth={2} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ============================================================
+                    RESEARCHER: WEATHER GATE
+                    ============================================================ */}
+                {activeTab === 'weather' && viewMode === 'researcher' && (
+                  <div className="chart-section">
+                    <div className="analytics-card full-width" style={{
+                      background: '#f0f9ff', border: '1px solid #bae6fd',
+                    }}>
+                      <h3 style={{color: '#0369a1'}}>Weather Confidence Overview</h3>
+                      <p style={{color: '#0c4a6e', margin: 0}}>
+                        Weather confidence (0-100) indicates how likely the audio data is free from weather
+                        contamination. Readings below 50 are flagged as weather-affected. Currently <strong>{stats?.weatherAffectedPct ?? 0}%</strong> of
+                        readings are flagged. Avg confidence: <strong>{stats?.avgWeatherConf ?? '--'}</strong>.
+                      </p>
+                    </div>
+
+                    <div className="analytics-card full-width">
+                      <h3>
+                        Weather Confidence Over Time
+                        <InfoTip text="100 = clean audio (no weather). 0 = likely rain/wind contamination. Combines audio features (harmonicity, ZCR, band flatness) with environmental sensors (humidity >85%, falling pressure). Readings below 50 are excluded from health scoring." />
+                      </h3>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <ComposedChart data={readings}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                          <XAxis dataKey="time" tick={{fontSize: 11}} interval="preserveStartEnd" />
+                          <YAxis yAxisId="conf" domain={[0, 100]}
+                            label={{value: '%', position: 'insideTopLeft'}} />
+                          <YAxis yAxisId="hum" orientation="right" domain={[0, 100]}
+                            label={{value: '%RH', position: 'insideTopRight'}} />
+                          <Tooltip content={<ChartTooltip />} />
+                          <Legend />
+                          <ReferenceLine yAxisId="conf" y={50} stroke="#ef4444" strokeDasharray="3 3"
+                            label={{value: "Weather Threshold", position: "right", fill: "#ef4444", fontSize: 11}} />
+                          <Area yAxisId="conf" type="monotone" dataKey="weather_confidence"
+                            name="Weather Confidence (%)" stroke={COLORS.weather} fill={COLORS.weather}
+                            fillOpacity={0.15} strokeWidth={2} />
+                          <Line yAxisId="hum" type="monotone" dataKey="humidity"
+                            name="Humidity (%)" stroke={COLORS.humidity} dot={false} strokeWidth={1}
+                            strokeDasharray="3 3" />
+                          <Brush dataKey="time" height={30} stroke="#f59e0b" />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <div className="analytics-card full-width">
+                      <h3>Weather Indicators: Harmonicity vs ZCR vs Pressure</h3>
+                      <p className="chart-description">
+                        Low harmonicity + high ZCR + falling pressure = weather event.
+                        Bees: harmonicity &gt; 0.3, ZCR &lt; 0.25. Rain: harmonicity &lt; 0.1, ZCR &gt; 0.35.
+                      </p>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <ComposedChart data={readings}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                          <XAxis dataKey="time" tick={{fontSize: 11}} interval="preserveStartEnd" />
+                          <YAxis yAxisId="feat" domain={[0, 1]}
+                            label={{value: 'Value', position: 'insideTopLeft'}} />
+                          <YAxis yAxisId="press" orientation="right" domain={['auto', 'auto']}
+                            label={{value: 'hPa', position: 'insideTopRight'}} />
+                          <Tooltip content={<ChartTooltip />} />
+                          <Legend />
+                          <Line yAxisId="feat" type="monotone" dataKey="harmonicity"
+                            name="Harmonicity" stroke="#10b981" dot={false} strokeWidth={2} />
+                          <Line yAxisId="feat" type="monotone" dataKey="zero_crossing_rate"
+                            name="ZCR" stroke="#ef4444" dot={false} strokeWidth={2} />
+                          <Line yAxisId="press" type="monotone" dataKey="pressure"
+                            name="Pressure (hPa)" stroke={COLORS.pressure} dot={false} strokeWidth={1}
+                            strokeDasharray="3 3" />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                )}
+
+                {/* ============================================================
+                    SHARED: WEIGHT
+                    ============================================================ */}
                 {activeTab === 'weight' && (
                   <div className="chart-section">
                     {readings.some(r => r.weight != null) ? (
@@ -774,14 +1093,15 @@ function Analytics({ user, onLogout }) {
                   </div>
                 )}
 
-                {/* BATTERY */}
-                {activeTab === 'battery' && (
+                {/* ============================================================
+                    RESEARCHER: BATTERY
+                    ============================================================ */}
+                {activeTab === 'battery' && viewMode === 'researcher' && (
                   <div className="chart-section">
                     <div className="analytics-card full-width">
                       <h3>Battery Voltage Over Time</h3>
                       <p className="chart-description">
-                        Low battery threshold: 3.6V. Critical (LDO dropout): 3.3V.
-                        Readings above 4.8V indicate USB power.
+                        Low battery: 3.6V. Critical (LDO dropout): 3.3V. Above 4.8V = USB power.
                       </p>
                       <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={readings.filter(r => r.battery_voltage != null)}>
@@ -802,7 +1122,39 @@ function Analytics({ user, onLogout }) {
                   </div>
                 )}
 
-                {/* AI INSIGHTS */}
+                {/* ============================================================
+                    RESEARCHER: DATA QUALITY
+                    ============================================================ */}
+                {activeTab === 'quality' && viewMode === 'researcher' && (
+                  <div className="chart-section">
+                    <div className="analytics-card full-width">
+                      <h3>Signal Quality &amp; Ambient Noise</h3>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <ComposedChart data={readings}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                          <XAxis dataKey="time" tick={{fontSize: 11}} interval="preserveStartEnd" />
+                          <YAxis yAxisId="qual" domain={[0, 100]}
+                            label={{value: '%', position: 'insideTopLeft'}} />
+                          <YAxis yAxisId="noise" orientation="right"
+                            label={{value: 'Noise', position: 'insideTopRight'}} />
+                          <Tooltip content={<ChartTooltip />} />
+                          <Legend />
+                          <Line yAxisId="qual" type="monotone" dataKey="signal_quality"
+                            name="Signal Quality (%)" stroke="#10b981" dot={false} strokeWidth={2} />
+                          <Line yAxisId="qual" type="monotone" dataKey="weather_confidence"
+                            name="Weather Confidence (%)" stroke={COLORS.weather} dot={false} strokeWidth={2} />
+                          <Line yAxisId="noise" type="monotone" dataKey="ambient_noise_level"
+                            name="Ambient Noise" stroke="#6b7280" dot={false} strokeWidth={1} />
+                          <Brush dataKey="time" height={30} stroke="#f59e0b" />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                )}
+
+                {/* ============================================================
+                    SHARED: AI INSIGHTS
+                    ============================================================ */}
                 {activeTab === 'ai' && (
                   <div className="chart-section">
                     <div className="analytics-card full-width ai-card">
@@ -819,6 +1171,7 @@ function Analytics({ user, onLogout }) {
                           <p className="chart-description">
                             Claude AI analyzes your sensor readings and generates a comprehensive colony health
                             report with findings, concerns, and recommendations.
+                            {viewMode === 'researcher' && ' In researcher mode, the report includes spectral feature analysis, weather event correlation, and data quality assessment.'}
                           </p>
                           <button onClick={generateReport}
                             disabled={aiLoading || readings.length === 0}
@@ -840,52 +1193,64 @@ function Analytics({ user, onLogout }) {
                     </div>
                   </div>
                 )}
-              </>
-            )}
 
-            {/* Raw Data Table */}
-            {readings.length > 0 && activeTab !== 'ai' && (
-              <div className="analytics-card full-width">
-                <div className="table-header">
-                  <h3>Raw Readings</h3>
-                  <span className="reading-count">Showing last 50 of {readings.length}</span>
-                </div>
-                <div className="table-scroll">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Timestamp</th>
-                        <th>Temp (&deg;C)</th>
-                        <th>Humidity (%)</th>
-                        <th>Pressure (hPa)</th>
-                        <th>Sound (dB)</th>
-                        <th>Freq (Hz)</th>
-                        <th>Bee State</th>
-                        <th>Confidence</th>
-                        <th>Battery (V)</th>
-                        <th>Weight (kg)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {readings.slice(-50).reverse().map((r, i) => (
-                        <tr key={i}>
-                          <td className="td-timestamp">{new Date(r.timestamp).toLocaleString()}</td>
-                          <td>{r.temperature?.toFixed(1) ?? '\u2014'}</td>
-                          <td>{r.humidity?.toFixed(1) ?? '\u2014'}</td>
-                          <td>{r.pressure?.toFixed(1) ?? '\u2014'}</td>
-                          <td>{r.sound_level?.toFixed(1) ?? '\u2014'}</td>
-                          <td>{r.dominant_freq?.toFixed(0) ?? '\u2014'}</td>
-                          <td><span className={`state-badge ${BEE_STATE_NAMES[r.bee_state] || r.bee_state}`}>
-                            {(typeof r.bee_state === 'number' ? (BEE_STATE_NAMES[r.bee_state] || 'unknown') : String(r.bee_state || '')).replace(/_/g, ' ') ?? '\u2014'}</span></td>
-                          <td>{r.confidence?.toFixed(0) ?? '\u2014'}%</td>
-                          <td>{r.battery_voltage?.toFixed(2) ?? '\u2014'}</td>
-                          <td>{r.weight?.toFixed(1) ?? '\u2014'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                {/* ============================================================
+                    RAW DATA TABLE (Researcher only)
+                    ============================================================ */}
+                {viewMode === 'researcher' && readings.length > 0 && activeTab !== 'ai' && (
+                  <div className="analytics-card full-width">
+                    <div className="table-header">
+                      <h3>Raw Readings</h3>
+                      <span className="reading-count">Showing last 50 of {readings.length}</span>
+                    </div>
+                    <div className="table-scroll">
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Timestamp</th>
+                            <th>Temp</th>
+                            <th>Hum</th>
+                            <th>Press</th>
+                            <th>Sound</th>
+                            <th>Freq</th>
+                            <th>State</th>
+                            <th>Conf</th>
+                            <th>Harm</th>
+                            <th>Forage</th>
+                            <th>Rob</th>
+                            <th>Weather</th>
+                            <th>Battery</th>
+                            <th>Weight</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {readings.slice(-50).reverse().map((r, i) => (
+                            <tr key={i} style={r.weather_confidence != null && r.weather_confidence < 50 ? {background: '#fef3c7'} : {}}>
+                              <td className="td-timestamp">{new Date(r.timestamp).toLocaleString()}</td>
+                              <td>{r.temperature?.toFixed(1) ?? '\u2014'}</td>
+                              <td>{r.humidity?.toFixed(1) ?? '\u2014'}</td>
+                              <td>{r.pressure?.toFixed(0) ?? '\u2014'}</td>
+                              <td>{r.sound_level?.toFixed(1) ?? '\u2014'}</td>
+                              <td>{r.dominant_freq?.toFixed(0) ?? '\u2014'}</td>
+                              <td><span className={`state-badge ${BEE_STATE_NAMES[r.bee_state] || r.bee_state}`}>
+                                {(typeof r.bee_state === 'number' ? (BEE_STATE_NAMES[r.bee_state] || 'unknown') : String(r.bee_state || '')).replace(/_/g, ' ')}</span></td>
+                              <td>{r.confidence?.toFixed(0) ?? '\u2014'}%</td>
+                              <td>{r.harmonicity?.toFixed(2) ?? '\u2014'}</td>
+                              <td>{r.foraging_score ?? '\u2014'}</td>
+                              <td>{r.robbing_risk ?? '\u2014'}</td>
+                              <td style={{color: r.weather_confidence != null && r.weather_confidence < 50 ? '#dc2626' : '#16a34a'}}>
+                                {r.weather_confidence ?? '\u2014'}
+                              </td>
+                              <td>{r.battery_voltage?.toFixed(2) ?? '\u2014'}</td>
+                              <td>{r.weight?.toFixed(1) ?? '\u2014'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}
