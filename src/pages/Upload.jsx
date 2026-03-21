@@ -69,6 +69,7 @@ function Upload({ user, onLogout }) {
     'Context_Flags': 'context_flags', 'Confidence': 'confidence',
     'Foraging_Score': 'foraging_score', 'Robbing_Risk': 'robbing_risk',
     'Winter_Cluster': 'winter_cluster', 'Weather_Confidence': 'weather_confidence',
+    'Expansion_Pressure': 'expansion_pressure',
   };
 
   const BEE_STATE_MAP = {

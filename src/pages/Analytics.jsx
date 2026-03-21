@@ -206,6 +206,7 @@ function Analytics({ user, onLogout }) {
       { key: 'robbing_risk', label: 'Robbing Risk' },
       { key: 'winter_cluster', label: 'Winter Cluster' },
       { key: 'weather_confidence', label: 'Weather Confidence' },
+      { key: 'expansion_pressure', label: 'Expansion Pressure' },
     ] : [
       { key: 'timestamp', label: 'Date & Time' },
       { key: 'temperature', label: 'Temperature (C)' },
@@ -600,6 +601,42 @@ function Analytics({ user, onLogout }) {
                         </div>
                       </div>
                     )}
+
+                    {/* Expansion Advisory */}
+                    {(() => {
+                      const expReadings = readings.filter(r => r.expansion_pressure != null && r.expansion_pressure > 0);
+                      const avgExp = expReadings.length > 0
+                        ? Math.round(expReadings.reduce((a, b) => a + b.expansion_pressure, 0) / expReadings.length)
+                        : 0;
+                      const latestExp = expReadings.length > 0 ? expReadings[expReadings.length - 1].expansion_pressure : 0;
+                      const showExp = latestExp > 20 || avgExp > 20;
+                      const level = latestExp >= 70 ? 'urgent' : latestExp >= 40 ? 'watch' : 'growing';
+                      if (!showExp) return null;
+                      return (
+                        <div className="analytics-card full-width" style={{
+                          background: level === 'urgent' ? '#fef2f2' : level === 'watch' ? '#fffbeb' : '#f0fdf4',
+                          border: `1px solid ${level === 'urgent' ? '#fecaca' : level === 'watch' ? '#fde68a' : '#bbf7d0'}`,
+                        }}>
+                          <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+                            <span style={{fontSize: '28px'}}>{level === 'urgent' ? '\uD83D\uDEA8' : level === 'watch' ? '\uD83D\uDCE6' : '\uD83D\uDCC8'}</span>
+                            <div>
+                              <h3 style={{margin: 0, color: '#1f2937', fontSize: '16px'}}>
+                                {level === 'urgent' ? 'Add a Super Soon' :
+                                 level === 'watch' ? 'Colony Growing \u2014 Monitor Space' :
+                                 'Healthy Growth Detected'}
+                              </h3>
+                              <p style={{margin: '4px 0 0', color: '#6b7280', fontSize: '14px'}}>
+                                {level === 'urgent'
+                                  ? 'Weight gain, high foraging activity, and rising sound levels suggest your colony needs more space. Add a super within the next few days to prevent swarming.'
+                                  : level === 'watch'
+                                  ? 'Your colony is productive and growing. Keep an eye on space \u2014 you may need to add a super soon.'
+                                  : 'Good signs of growth and foraging activity. No immediate action needed.'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     {/* Gentle upgrade nudge for free users */}
                     {!isPro && (
@@ -1000,6 +1037,28 @@ function Analytics({ user, onLogout }) {
                         </ResponsiveContainer>
                       </div>
                     </div>
+
+                    <div className="analytics-card full-width">
+                      <h3>
+                        Expansion Pressure
+                        <InfoTip text="0-100 score estimating how urgently the colony needs more space. Combines weight gain trends, rising activity baseline, foraging intensity, and temperature pressure. Above 70 = add a super within days. Suppressed during weather events." />
+                      </h3>
+                      <ResponsiveContainer width="100%" height={280}>
+                        <ComposedChart data={readings}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                          <XAxis dataKey="time" tick={{fontSize: 11}} interval="preserveStartEnd" />
+                          <YAxis domain={[0, 100]} label={{value: 'Pressure', position: 'insideTopLeft'}} />
+                          <Tooltip content={<ChartTooltip />} />
+                          <ReferenceLine y={70} stroke="#ef4444" strokeDasharray="3 3"
+                            label={{value: "Add Super", position: "right", fill: "#ef4444", fontSize: 11}} />
+                          <ReferenceLine y={40} stroke="#f59e0b" strokeDasharray="3 3"
+                            label={{value: "Monitor", position: "right", fill: "#f59e0b", fontSize: 11}} />
+                          <Area type="monotone" dataKey="expansion_pressure" name="Expansion Pressure"
+                            stroke="#f97316" fill="#f97316" fillOpacity={0.15} strokeWidth={2} />
+                          <Brush dataKey="time" height={30} stroke="#f59e0b" />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
                 )}
 
@@ -1254,6 +1313,7 @@ function Analytics({ user, onLogout }) {
                             <th>Forage</th>
                             <th>Rob</th>
                             <th>Weather</th>
+                            <th>Expand</th>
                             <th>Battery</th>
                             <th>Weight</th>
                           </tr>
@@ -1275,6 +1335,9 @@ function Analytics({ user, onLogout }) {
                               <td>{r.robbing_risk ?? '\u2014'}</td>
                               <td style={{color: r.weather_confidence != null && r.weather_confidence < 50 ? '#dc2626' : '#16a34a'}}>
                                 {r.weather_confidence ?? '\u2014'}
+                              </td>
+                              <td style={{color: r.expansion_pressure >= 70 ? '#dc2626' : r.expansion_pressure >= 40 ? '#f59e0b' : '#16a34a'}}>
+                                {r.expansion_pressure ?? '\u2014'}
                               </td>
                               <td>{r.battery_voltage?.toFixed(2) ?? '\u2014'}</td>
                               <td>{r.weight?.toFixed(1) ?? '\u2014'}</td>

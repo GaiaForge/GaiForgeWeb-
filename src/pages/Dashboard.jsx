@@ -186,6 +186,70 @@ function Dashboard({ user, onLogout }) {
                     <div className="stat-label">Total Readings</div>
                   </div>
                 </div>
+                {overview.behavioral_scores && (
+                  <>
+                    <div className="stat-card">
+                      <div className="stat-icon">🌸</div>
+                      <div className="stat-content">
+                        <div className="stat-value"
+                          style={{color: overview.behavioral_scores.avg_foraging_score >= 60 ? '#16a34a' : overview.behavioral_scores.avg_foraging_score >= 30 ? '#d97706' : '#6b7280'}}>
+                          {overview.behavioral_scores.avg_foraging_score ?? '—'}
+                        </div>
+                        <div className="stat-label">Foraging Score</div>
+                      </div>
+                    </div>
+                    <div className="stat-card"
+                      style={overview.behavioral_scores.max_robbing_risk_pct > 50 ? {border: '2px solid #dc2626', background: '#fef2f2'} : {}}>
+                      <div className="stat-icon">⚔️</div>
+                      <div className="stat-content">
+                        <div className="stat-value"
+                          style={{color: overview.behavioral_scores.max_robbing_risk_pct > 75 ? '#dc2626' : overview.behavioral_scores.max_robbing_risk_pct > 50 ? '#ea580c' : '#16a34a'}}>
+                          {overview.behavioral_scores.max_robbing_risk_pct ?? '—'}%
+                        </div>
+                        <div className="stat-label">Robbing Risk (peak)</div>
+                      </div>
+                    </div>
+                    {overview.behavioral_scores.avg_winter_cluster_health > 0 && (
+                      <div className="stat-card">
+                        <div className="stat-icon">❄️</div>
+                        <div className="stat-content">
+                          <div className="stat-value"
+                            style={{color: overview.behavioral_scores.avg_winter_cluster_health >= 60 ? '#16a34a' : overview.behavioral_scores.avg_winter_cluster_health >= 30 ? '#d97706' : '#dc2626'}}>
+                            {overview.behavioral_scores.avg_winter_cluster_health}
+                          </div>
+                          <div className="stat-label">Winter Cluster Health</div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Expansion Advisory */}
+                {overview?.expansion_pressure != null && overview.expansion_pressure > 20 && (
+                  <div className="recent-section" style={{
+                    background: overview.expansion_pressure >= 70 ? '#fef2f2' : overview.expansion_pressure >= 40 ? '#fffbeb' : '#f0fdf4',
+                    border: `1px solid ${overview.expansion_pressure >= 70 ? '#fecaca' : overview.expansion_pressure >= 40 ? '#fde68a' : '#bbf7d0'}`,
+                    borderRadius: '12px', padding: '16px', marginBottom: '16px',
+                  }}>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+                      <span style={{fontSize: '28px'}}>{overview.expansion_pressure >= 70 ? '🚨' : overview.expansion_pressure >= 40 ? '📦' : '📈'}</span>
+                      <div>
+                        <h3 style={{margin: 0, color: '#1f2937', fontSize: '16px'}}>
+                          {overview.expansion_pressure >= 70 ? 'Add a Super Soon' :
+                           overview.expansion_pressure >= 40 ? 'Colony Growing — Monitor Space' :
+                           'Healthy Growth Detected'}
+                        </h3>
+                        <p style={{margin: '4px 0 0', color: '#6b7280', fontSize: '14px'}}>
+                          {overview.expansion_pressure >= 70
+                            ? 'Weight gain, high foraging activity, and rising sound levels suggest your colony is running out of space. Add a super within the next few days to prevent swarming.'
+                            : overview.expansion_pressure >= 40
+                            ? 'Your colony is productive and growing. Keep an eye on space — you may need to add a super soon if this trend continues.'
+                            : 'Good signs of growth and foraging activity. No immediate action needed.'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -239,8 +303,14 @@ function Dashboard({ user, onLogout }) {
                           </div>
                         </div>
                       </div>
-                      <div className="upload-date">
-                        Risk: {day.max_absconding_risk}%
+                      <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', fontSize: '13px'}}>
+                        <span style={{color: '#6b7280'}}>Abscond: <strong style={{color: day.max_absconding_risk > 30 ? '#dc2626' : '#374151'}}>{day.max_absconding_risk}%</strong></span>
+                        {day.max_robbing_risk > 0 && (
+                          <span style={{color: '#6b7280'}}>Robbing: <strong style={{color: day.max_robbing_risk > 50 ? '#dc2626' : '#374151'}}>{day.max_robbing_risk}%</strong></span>
+                        )}
+                        {day.avg_foraging_score > 0 && (
+                          <span style={{color: '#6b7280'}}>Foraging: <strong style={{color: '#16a34a'}}>{Math.round(day.avg_foraging_score)}</strong></span>
+                        )}
                       </div>
                     </div>
                   ))}
