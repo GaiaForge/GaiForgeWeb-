@@ -97,7 +97,8 @@ function Analytics({ user, onLogout }) {
   const [dateRange, setDateRange] = useState(30);
   const [activeTab, setActiveTab] = useState('environmental');
   const [error, setError] = useState('');
-  const [viewMode, setViewMode] = useState(user?.report_mode || 'beekeeper'); // synced from profile
+  const isPro = user?.subscription_tier === 'pro' || user?.is_admin;
+  const [viewMode, setViewMode] = useState(isPro ? (user?.report_mode || 'beekeeper') : 'beekeeper');
 
   const headers = {
     'Authorization': `Bearer ${user?.token}`,
@@ -167,7 +168,7 @@ function Analytics({ user, onLogout }) {
   // ===== FULL CSV EXPORT (Researcher mode exports ALL columns) =====
   const exportCSV = () => {
     if (readings.length === 0) return;
-    const columns = viewMode === 'researcher' ? [
+    const columns = (viewMode === 'researcher' && isPro) ? [
       { key: 'timestamp', label: 'Date & Time' },
       { key: 'temperature', label: 'Temperature (C)' },
       { key: 'humidity', label: 'Humidity (%)' },
@@ -309,12 +310,18 @@ function Analytics({ user, onLogout }) {
   }, [overview]);
 
   // ===== BEEKEEPER TABS =====
-  const beekeeperTabs = [
+  const freeBeekeeperTabs = [
+    ['overview', '\uD83D\uDC1D', 'Colony Status'],
+    ['environment', '\uD83C\uDF21\uFE0F', 'Environment'],
+    ['weight', '\u2696\uFE0F', 'Weight'],
+  ];
+  const proBeekeeperTabs = [
     ['overview', '\uD83D\uDC1D', 'Colony Status'],
     ['environment', '\uD83C\uDF21\uFE0F', 'Environment'],
     ['weight', '\u2696\uFE0F', 'Weight'],
     ['ai', '\uD83E\uDD16', 'AI Report'],
   ];
+  const beekeeperTabs = isPro ? proBeekeeperTabs : freeBeekeeperTabs;
 
   // ===== RESEARCHER TABS =====
   const researcherTabs = [
@@ -384,7 +391,7 @@ function Analytics({ user, onLogout }) {
             {/* Mode Toggle */}
             <div style={{
               display: 'flex', background: '#f3f4f6', borderRadius: '8px', padding: '2px',
-              border: '1px solid #e5e7eb',
+              border: '1px solid #e5e7eb', position: 'relative',
             }}>
               <button
                 onClick={() => setViewMode('beekeeper')}
@@ -396,14 +403,17 @@ function Analytics({ user, onLogout }) {
                 }}
               >Beekeeper</button>
               <button
-                onClick={() => setViewMode('researcher')}
+                onClick={() => {
+                  if (isPro) { setViewMode('researcher'); }
+                  else { setError('Researcher mode requires a Pro subscription. Upgrade in your Profile to unlock full analytics.'); }
+                }}
                 style={{
                   padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer',
                   fontSize: '13px', fontWeight: 600,
                   background: viewMode === 'researcher' ? '#8b5cf6' : 'transparent',
-                  color: viewMode === 'researcher' ? '#fff' : '#6b7280',
+                  color: viewMode === 'researcher' ? '#fff' : isPro ? '#6b7280' : '#d1d5db',
                 }}
-              >Researcher</button>
+              >Researcher {!isPro && '\uD83D\uDD12'}</button>
             </div>
             <select value={dateRange} onChange={e => setDateRange(Number(e.target.value))}
               className="range-select">
@@ -587,6 +597,31 @@ function Analytics({ user, onLogout }) {
                             <div className="stat-value">{stats?.count?.toLocaleString()}</div>
                             <div className="stat-label">Readings ({dateRange}d)</div>
                           </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Gentle upgrade nudge for free users */}
+                    {!isPro && (
+                      <div className="analytics-card full-width" style={{
+                        background: '#f9fafb', border: '1px solid #e5e7eb',
+                        padding: '20px 24px',
+                      }}>
+                        <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+                          <span style={{fontSize: '24px'}}>&#x1F52C;</span>
+                          <div style={{flex: 1}}>
+                            <div style={{fontWeight: 600, color: '#374151', fontSize: '14px'}}>
+                              Pro unlocks AI reports, spectral analysis, and researcher tools
+                            </div>
+                            <div style={{color: '#6b7280', fontSize: '13px', marginTop: '2px'}}>
+                              Get Claude-powered health assessments and full data export.
+                            </div>
+                          </div>
+                          <Link to="/profile" style={{
+                            padding: '8px 16px', background: '#f59e0b',
+                            color: '#fff', borderRadius: '8px', fontWeight: 600, textDecoration: 'none',
+                            fontSize: '13px', whiteSpace: 'nowrap',
+                          }}>Learn more</Link>
                         </div>
                       </div>
                     )}
