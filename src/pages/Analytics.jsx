@@ -611,10 +611,10 @@ function Analytics({ user, onLogout }) {
                           <span style={{fontSize: '24px'}}>&#x1F52C;</span>
                           <div style={{flex: 1}}>
                             <div style={{fontWeight: 600, color: '#374151', fontSize: '14px'}}>
-                              Pro unlocks AI reports, spectral analysis, and researcher tools
+                              Go deeper with Pro
                             </div>
                             <div style={{color: '#6b7280', fontSize: '13px', marginTop: '2px'}}>
-                              Get Claude-powered health assessments and full data export.
+                              AI colony reports, spectral analysis, weather detection, behavioral tracking, and full data export.
                             </div>
                           </div>
                           <Link to="/profile" style={{

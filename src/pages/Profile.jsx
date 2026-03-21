@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 
 const API_BASE = window.location.origin;
 
-function Profile({ user, onLogout }) {
+function Profile({ user, onLogout, onUserUpdate }) {
   const navigate = useNavigate();
   const [section, setSection] = useState('account'); // 'account' | 'password' | 'email' | 'danger'
+  const [reportMode, setReportMode] = useState(user?.report_mode || 'beekeeper');
 
   const [pwForm, setPwForm] = useState({ current_password: '', new_password: '', confirm: '' });
   const [emailForm, setEmailForm] = useState({ password: '', new_email: '' });
@@ -15,6 +16,20 @@ function Profile({ user, onLogout }) {
   const [copying, setCopying] = useState(false);
   const [newApiKey, setNewApiKey] = useState(null);
   const [deletePassword, setDeletePassword] = useState('');
+
+  // Audio calibration wizard
+  const [calHives, setCalHives] = useState([]);
+  const [calHiveId, setCalHiveId] = useState('');
+  const [calDuration, setCalDuration] = useState(30);
+  // calPhase state machine:
+  // idle → quiet_running → done_quiet →
+  // empty_idle → empty_running → done_empty →
+  // healthy_idle → healthy_running → done | error
+  const [calPhase, setCalPhase] = useState('idle');
+  const [calSecondsLeft, setCalSecondsLeft] = useState(0);
+  const [calResult, setCalResult] = useState(null);
+  const [calError, setCalError] = useState('');
+  const calTimerRef = useRef(null);
 
   const headers = {
     'Authorization': `Bearer ${user?.token}`,
@@ -101,6 +116,97 @@ function Profile({ user, onLogout }) {
     }
   };
 
+  const handleReportModeChange = async (mode) => {
+    setReportMode(mode);
+    const res = await fetch(`${API_BASE}/api/auth/report-mode`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ mode }),
+    });
+    if (res.ok) {
+      const saved = JSON.parse(localStorage.getItem('user') || '{}');
+      localStorage.setItem('user', JSON.stringify({ ...saved, report_mode: mode }));
+      flash(`Report mode set to ${mode === 'beekeeper' ? 'Beekeeper' : 'Researcher'}.`);
+    }
+  };
+
+  useEffect(() => {
+    if (section === 'calibrate') fetchCalHives();
+  }, [section]);
+
+  const fetchCalHives = async () => {
+    const res = await fetch(`${API_BASE}/api/hives`, { headers });
+    if (res.ok) {
+      const hives = await res.json();
+      setCalHives(hives.filter(h => !h.is_archived));
+      if (hives.length > 0 && !calHiveId) setCalHiveId(String(hives[0].id));
+    }
+  };
+
+  const RUNNING_PHASES = ['quiet_running', 'empty_running', 'healthy_running'];
+  const SAVING_PHASES  = ['quiet_saving', 'empty_saving', 'healthy_saving'];
+
+  const startPhase = (phaseKey) => {
+    setCalPhase(phaseKey + '_running');
+    setCalSecondsLeft(calDuration * 60);
+    setCalResult(null);
+    setCalError('');
+  };
+
+  const cancelCalibration = () => {
+    clearInterval(calTimerRef.current);
+    setCalPhase('idle');
+    setCalSecondsLeft(0);
+  };
+
+  // Countdown tick — fires for any _running phase
+  useEffect(() => {
+    const runningMatch = calPhase.match(/^(quiet|empty|healthy)_running$/);
+    if (!runningMatch) return;
+    const phaseKey = runningMatch[1];
+    calTimerRef.current = setInterval(() => {
+      setCalSecondsLeft(s => {
+        if (s <= 1) {
+          clearInterval(calTimerRef.current);
+          const profileType = phaseKey === 'quiet' ? 'quiet' : phaseKey === 'empty' ? 'empty_hive' : 'healthy_colony';
+          saveCalibration(profileType, phaseKey);
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(calTimerRef.current);
+  }, [calPhase]);
+
+  const saveCalibration = async (profileType, phaseKey) => {
+    setCalPhase(phaseKey + '_saving');
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/hives/${calHiveId}/calibrate?minutes=${calDuration}&profile_type=${profileType}`,
+        { method: 'POST', headers }
+      );
+      if (res.ok) {
+        const d = await res.json();
+        setCalResult(d);
+        if (phaseKey === 'quiet')  setCalPhase('done_quiet');
+        else if (phaseKey === 'empty') setCalPhase('done_empty');
+        else setCalPhase('done');
+      } else {
+        const d = await res.json().catch(() => ({}));
+        setCalError(d.detail || 'Scan failed — no readings found in this time window.');
+        setCalPhase('error');
+      }
+    } catch {
+      setCalError('Network error — could not reach the server.');
+      setCalPhase('error');
+    }
+  };
+
+  const formatCountdown = (s) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${String(sec).padStart(2, '0')}`;
+  };
+
   const handleLogout = () => { onLogout(); navigate('/login'); };
 
   const displayApiKey = newApiKey || user?.api_key || '';
@@ -164,6 +270,7 @@ function Profile({ user, onLogout }) {
               { key: 'password', icon: '🔒', label: 'Password' },
               { key: 'email', icon: '✉️', label: 'Change Email' },
               { key: 'apikey', icon: '🔑', label: 'API Key' },
+              { key: 'calibrate', icon: '🎙️', label: 'Audio Calibration' },
               { key: 'danger', icon: '⚠️', label: 'Danger Zone' },
             ].map(s => (
               <button key={s.key} onClick={() => { setSection(s.key); setMsg(''); setErr(''); }} style={{
@@ -216,6 +323,34 @@ function Profile({ user, onLogout }) {
                 </div>
               </div>
 
+              {/* AI Report Mode */}
+              <div className="device-selector" style={{ marginTop: '16px' }}>
+                <h3>AI Report Style</h3>
+                <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '16px' }}>
+                  Choose how the AI colony report is written. You can change this any time.
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  {[
+                    { mode: 'beekeeper', icon: '🐝', title: 'Beekeeper', desc: 'Plain English, real-world analogies, clear actions. Designed for the apiary.' },
+                    { mode: 'researcher', icon: '🔬', title: 'Researcher', desc: 'Raw metric values, spectral feature names, technical interpretation.' },
+                  ].map(({ mode, icon, title, desc }) => (
+                    <button key={mode} onClick={() => handleReportModeChange(mode)} style={{
+                      padding: '16px', borderRadius: '12px', textAlign: 'left', cursor: 'pointer',
+                      border: `2px solid ${reportMode === mode ? '#f59e0b' : '#e5e7eb'}`,
+                      background: reportMode === mode ? '#fef3c7' : '#f9fafb',
+                      transition: 'all 0.15s',
+                    }}>
+                      <div style={{ fontSize: '24px', marginBottom: '8px' }}>{icon}</div>
+                      <div style={{ fontWeight: 700, fontSize: '15px', color: '#1f2937', marginBottom: '4px' }}>{title}</div>
+                      <div style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.4' }}>{desc}</div>
+                      {reportMode === mode && (
+                        <div style={{ marginTop: '8px', fontSize: '12px', fontWeight: 700, color: '#92400e' }}>✓ Active</div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Upgrade / Plan Info */}
               {(!isPro || isExpired) && (
                 <div className="device-selector" style={{ marginTop: '16px', border: '2px solid #f59e0b' }}>
@@ -223,16 +358,21 @@ function Profile({ user, onLogout }) {
                   <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '20px' }}>
                     Unlock AI-powered colony reports, advanced analytics, and priority support.
                   </p>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '14px', marginBottom: '20px' }}>
                     {[
-                      { icon: '🤖', text: 'AI colony health reports (Claude-powered)' },
-                      { icon: '🔔', text: 'Unlimited alert rules with email notifications' },
-                      { icon: '📊', text: 'Full spectral analytics & trend history' },
-                      { icon: '🐝', text: 'Unlimited hives & data storage' },
+                      { icon: '🤖', title: 'AI Colony Reports', text: 'Claude analyzes your sensor data and writes a detailed health assessment with specific findings, concerns, and actionable recommendations tailored to your hive.' },
+                      { icon: '🔬', title: 'Researcher Mode', text: 'Full access to every spectral feature your device records — centroid, harmonicity, spectral flux, kurtosis, mel-band energy distribution, temporal energy tracking, and more. Export all 37 data columns as CSV.' },
+                      { icon: '🐝', title: 'Behavioral Scores', text: 'Track foraging intensity, robbing risk, winter cluster health, and absconding probability over time with dedicated charts and trend analysis.' },
+                      { icon: '🌧️', title: 'Weather Detection', text: 'Automatic weather event tagging separates rain and wind noise from real colony sounds, so your health scores and AI reports reflect actual bee behavior — not the weather.' },
+                      { icon: '📡', title: 'Data Quality Tools', text: 'Monitor signal quality, ambient noise levels, and classification confidence to know exactly how reliable each reading is.' },
+                      { icon: '🔔', title: 'Alerts & Unlimited Hives', text: 'Set custom alert rules with email notifications, and monitor as many hives as you need with no data storage limits.' },
                     ].map((f, i) => (
-                      <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', fontSize: '14px', color: '#374151' }}>
-                        <span style={{ fontSize: '18px' }}>{f.icon}</span>
-                        <span>{f.text}</span>
+                      <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', fontSize: '14px', color: '#374151' }}>
+                        <span style={{ fontSize: '22px', flexShrink: 0 }}>{f.icon}</span>
+                        <div>
+                          <div style={{ fontWeight: 700, marginBottom: '2px' }}>{f.title}</div>
+                          <div style={{ color: '#6b7280', fontSize: '13px', lineHeight: '1.5' }}>{f.text}</div>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -337,6 +477,290 @@ function Profile({ user, onLogout }) {
                 </div>
               </div>
             )}
+
+            {section === 'calibrate' && (() => {
+              const selectedHive = calHives.find(h => String(h.id) === String(calHiveId));
+              const speciesName = selectedHive?.bee_species?.replace(/_/g, ' ') || 'Western honeybee';
+              const isAfricanized = selectedHive?.bee_species === 'apis_mellifera_africanized';
+              const isStingless = selectedHive?.bee_species === 'meliponini';
+
+              const PHASES = {
+                quiet: {
+                  step: 1, phaseKey: 'quiet',
+                  title: 'Step 1 of 3 — Absolute Quiet Scan',
+                  scanning: 'Scanning mic noise floor',
+                  instructions: [
+                    'Take the device out of the hive and bring it indoors or to a very quiet location',
+                    'Place it face-down on a soft surface — no vibrations, fans, or machinery nearby',
+                    'Step out of the room and stay quiet for the full scan duration',
+                    'This measures the mic\'s own electronic noise floor, independent of location',
+                    'Do not power down the device during the scan',
+                  ],
+                  instColor: '#f5f3ff', instBorder: '#ddd6fe', instText: '#3730a3', instLabel: '#4f46e5',
+                  btnLabel: 'Start Quiet Scan',
+                  btnColor: '#6366f1',
+                },
+                empty_hive: {
+                  step: 2, phaseKey: 'empty',
+                  title: 'Step 2 of 3 — Empty Hive Scan',
+                  scanning: 'Scanning empty hive ambient',
+                  instructions: [
+                    'Place the device inside the same type of hive body this colony will live in',
+                    'The hive should be empty — no bees, no frames if possible, just the box',
+                    'Set it up in the exact outdoor location where the colony will be kept',
+                    'Close the hive and step well away — this captures location wind, resonance, and ambient sound',
+                    'Do not power down the device during the scan',
+                  ],
+                  instColor: '#eff6ff', instBorder: '#bfdbfe', instText: '#1e40af', instLabel: '#1d4ed8',
+                  btnLabel: 'Start Empty Hive Scan',
+                  btnColor: '#3b82f6',
+                },
+                healthy_colony: {
+                  step: 3, phaseKey: 'healthy',
+                  title: 'Step 3 of 3 — Healthy Colony Profile',
+                  scanning: 'Recording healthy colony profile',
+                  instructions: [
+                    `Place the device inside the hive in its normal monitoring position with the colony present`,
+                    'This colony must be confirmed healthy — queen present, normal foraging, no signs of stress or disease',
+                    'Close the hive and step away',
+                    'Make no artificial sounds or vibrations during the scan',
+                    'Do not power down the device during the scan',
+                  ],
+                  instColor: '#f0fdf4', instBorder: '#bbf7d0', instText: '#14532d', instLabel: '#15803d',
+                  btnLabel: 'Start Healthy Colony Scan',
+                  btnColor: '#10b981',
+                },
+              };
+
+              // Which step config to show in idle/transition states
+              const activeConfig = calPhase === 'done_quiet' ? PHASES.empty_hive
+                : calPhase === 'done_empty' ? PHASES.healthy_colony
+                : calPhase.startsWith('empty') ? PHASES.empty_hive
+                : calPhase.startsWith('healthy') ? PHASES.healthy_colony
+                : PHASES.quiet;
+
+              const isRunning = RUNNING_PHASES.includes(calPhase);
+              const isSaving  = SAVING_PHASES.includes(calPhase);
+              const isIdle    = calPhase === 'idle' || calPhase === 'done_quiet' || calPhase === 'done_empty';
+              const progress  = ((calDuration * 60 - calSecondsLeft) / (calDuration * 60)) * 100;
+
+              const stepsDone = {
+                quiet: ['done_quiet','done_empty','healthy_idle','healthy_running','healthy_saving','done'].includes(calPhase),
+                empty_hive: ['done_empty','healthy_idle','healthy_running','healthy_saving','done'].includes(calPhase),
+                healthy_colony: calPhase === 'done',
+              };
+
+              return (
+              <div className="device-selector">
+                <h3>Audio Calibration</h3>
+                <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '16px', lineHeight: '1.6' }}>
+                  Three-point calibration teaches the system your device's true noise floor, your hive's acoustic fingerprint, and what a healthy colony sounds like. All three baselines are used to interpret every future reading.
+                </p>
+
+                {/* 3-step indicator */}
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '20px' }}>
+                  {[
+                    { key: 'quiet', label: 'Quiet', color: '#6366f1' },
+                    { key: 'empty_hive', label: 'Empty Hive', color: '#3b82f6' },
+                    { key: 'healthy_colony', label: 'Healthy Colony', color: '#10b981' },
+                  ].map(({ key, label, color }) => {
+                    const done = stepsDone[key];
+                    return (
+                      <div key={key} style={{ flex: 1, textAlign: 'center', padding: '8px 4px', borderRadius: '8px',
+                        background: done ? '#d1fae5' : '#f3f4f6', border: `1px solid ${done ? '#6ee7b7' : '#e5e7eb'}` }}>
+                        <div style={{ fontWeight: 700, fontSize: '12px', color: done ? '#065f46' : '#6b7280' }}>
+                          {done ? '✓ ' : ''}{label}
+                        </div>
+                        {done && <div style={{ fontSize: '10px', color: '#10b981', fontWeight: 600 }}>STORED</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Idle setup panel */}
+                {isIdle && (
+                  <>
+                    <div style={{ fontWeight: 700, fontSize: '15px', color: '#1f2937', marginBottom: '12px' }}>{activeConfig.title}</div>
+
+                    <div style={{ background: activeConfig.instColor, border: `1px solid ${activeConfig.instBorder}`, borderRadius: '10px', padding: '16px', marginBottom: '16px' }}>
+                      <div style={{ fontWeight: 700, color: activeConfig.instLabel, marginBottom: '10px', fontSize: '14px' }}>Before you start:</div>
+                      <ol style={{ margin: 0, paddingLeft: '20px', fontSize: '14px', color: activeConfig.instText, lineHeight: '2' }}>
+                        {activeConfig.instructions.map((inst, i) => <li key={i}>{inst}</li>)}
+                      </ol>
+                    </div>
+
+                    {(isAfricanized || isStingless) && (
+                      <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', fontSize: '13px', color: '#dc2626' }}>
+                        {isAfricanized
+                          ? 'Africanised bees: 30 min strongly recommended — their elevated baseline activity requires more samples for an accurate healthy profile.'
+                          : 'Stingless bees: acoustic profile differs significantly from Apis. 30 min recommended. Note that Apis-derived bee state classifications do not apply.'}
+                      </div>
+                    )}
+
+                    {calPhase === 'idle' && (
+                      <div className="form-group" style={{ marginBottom: '16px' }}>
+                        <label style={{ fontWeight: 600, display: 'block', marginBottom: '6px' }}>Select Hive</label>
+                        {calHives.length === 0 ? (
+                          <p style={{ color: '#9ca3af', fontSize: '14px' }}>No hives found. Add a hive first.</p>
+                        ) : (
+                          <>
+                            <select value={calHiveId} onChange={e => setCalHiveId(e.target.value)} style={{
+                              padding: '10px 12px', border: '2px solid #e5e7eb', borderRadius: '10px',
+                              width: '100%', fontSize: '14px', background: '#fff', marginBottom: '8px',
+                            }}>
+                              {calHives.map(h => (
+                                <option key={h.id} value={h.id}>
+                                  {h.name}{h.location ? ` — ${h.location}` : ''}
+                                  {h.calibrated_at ? ` (calibrated ${new Date(h.calibrated_at).toLocaleDateString()})` : ' (not calibrated)'}
+                                </option>
+                              ))}
+                            </select>
+                            {selectedHive && (
+                              <div style={{ fontSize: '13px', color: '#6b7280', padding: '8px 12px', background: '#f9fafb', borderRadius: '8px' }}>
+                                Species: <strong style={{ color: '#1f2937' }}>{speciesName}</strong>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="form-group" style={{ marginBottom: '24px' }}>
+                      <label style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Scan Duration</label>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        {[
+                          { mins: 10, label: '10 min', sub: 'Quick' },
+                          { mins: 20, label: '20 min', sub: 'Balanced' },
+                          { mins: 30, label: '30 min', sub: 'Best accuracy' },
+                        ].map(({ mins, label, sub }) => (
+                          <button key={mins} onClick={() => setCalDuration(mins)} style={{
+                            flex: 1, padding: '12px 8px', borderRadius: '10px', cursor: 'pointer',
+                            border: `2px solid ${calDuration === mins ? activeConfig.btnColor : '#e5e7eb'}`,
+                            background: calDuration === mins ? activeConfig.instColor : '#f9fafb',
+                            textAlign: 'center',
+                          }}>
+                            <div style={{ fontWeight: 700, fontSize: '15px', color: '#1f2937' }}>{label}</div>
+                            <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>{sub}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <button onClick={() => startPhase(activeConfig.phaseKey)}
+                      disabled={!calHiveId || calHives.length === 0}
+                      style={{
+                        width: '100%', padding: '14px', border: 'none', borderRadius: '10px',
+                        background: calHiveId ? activeConfig.btnColor : '#e5e7eb',
+                        color: calHiveId ? '#fff' : '#9ca3af',
+                        fontWeight: 700, fontSize: '16px', cursor: calHiveId ? 'pointer' : 'not-allowed',
+                      }}>{activeConfig.btnLabel}</button>
+
+                    {(calPhase === 'done_quiet' || calPhase === 'done_empty') && (
+                      <button onClick={() => { setCalPhase('idle'); setCalResult(null); fetchCalHives(); }} style={{
+                        width: '100%', marginTop: '10px', padding: '12px', background: 'transparent',
+                        color: '#6b7280', border: '1px solid #e5e7eb', borderRadius: '10px',
+                        fontWeight: 600, fontSize: '14px', cursor: 'pointer',
+                      }}>Finish later — progress saved</button>
+                    )}
+                  </>
+                )}
+
+                {/* Running / saving */}
+                {(isRunning || isSaving) && (
+                  <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
+                      Step {activeConfig.step} of 3
+                    </div>
+                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#1f2937', marginBottom: '16px' }}>
+                      {isSaving ? 'Storing profile...' : activeConfig.scanning + ', please wait'}
+                    </div>
+
+                    <div style={{
+                      fontSize: '80px', fontWeight: 800, fontFamily: 'monospace',
+                      color: calSecondsLeft < 60 ? '#f59e0b' : activeConfig.btnColor,
+                      lineHeight: 1, marginBottom: '6px',
+                    }}>
+                      {isSaving ? '...' : formatCountdown(calSecondsLeft)}
+                    </div>
+                    <div style={{ color: '#9ca3af', fontSize: '13px', marginBottom: '24px' }}>
+                      {isSaving ? '' : 'remaining'}
+                    </div>
+
+                    <div style={{ background: '#e5e7eb', borderRadius: '8px', height: '6px', marginBottom: '20px' }}>
+                      <div style={{
+                        background: activeConfig.btnColor, borderRadius: '8px', height: '6px',
+                        width: `${isSaving ? 100 : progress}%`, transition: 'width 1s linear',
+                      }} />
+                    </div>
+
+                    <div style={{
+                      background: '#fef3c7', border: '1px solid #fcd34d',
+                      borderRadius: '10px', padding: '14px 16px', marginBottom: '16px', textAlign: 'left',
+                    }}>
+                      <div style={{ fontWeight: 700, color: '#92400e', fontSize: '14px', marginBottom: '4px' }}>
+                        Please maintain silence
+                      </div>
+                      <div style={{ fontSize: '13px', color: '#78350f', lineHeight: '1.6' }}>
+                        Do not power down the device. No machinery, mowing, loud voices, or vibrations near the device while scanning.
+                      </div>
+                    </div>
+
+                    {isRunning && (
+                      <button onClick={cancelCalibration} style={{
+                        padding: '10px 24px', background: '#f3f4f6', color: '#6b7280',
+                        border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '13px',
+                      }}>Cancel</button>
+                    )}
+                  </div>
+                )}
+
+                {/* Done — all three phases complete */}
+                {calPhase === 'done' && calResult && (
+                  <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                    <div style={{ fontSize: '52px', marginBottom: '8px' }}>✓</div>
+                    <div style={{ fontWeight: 800, fontSize: '20px', color: '#065f46', marginBottom: '4px' }}>
+                      Calibration Complete
+                    </div>
+                    <div style={{ color: '#6b7280', fontSize: '14px', marginBottom: '20px' }}>
+                      All three profiles stored for <strong>{selectedHive?.name || 'this hive'}</strong>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px', textAlign: 'left' }}>
+                      {[
+                        { label: 'Colony Avg Level', value: `${calResult.sound_level_db} dB` },
+                        { label: 'Readings Used', value: calResult.readings_used },
+                        { label: 'SNR Headroom', value: calResult.snr_headroom_db != null ? `${calResult.snr_headroom_db} dB` : 'Calculated after step 1' },
+                        { label: 'Species', value: speciesName },
+                      ].map(({ label, value }) => (
+                        <div key={label} style={{ background: '#f9fafb', borderRadius: '8px', padding: '12px', border: '1px solid #e5e7eb' }}>
+                          <div style={{ fontSize: '11px', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>{label}</div>
+                          <div style={{ fontWeight: 700, color: '#1f2937', fontSize: '13px' }}>{value}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '20px', lineHeight: '1.6' }}>
+                      The AI will now interpret all readings relative to this hive's three-point calibration — isolating true bee signal from device and location noise.
+                    </p>
+                    <button onClick={() => { setCalPhase('idle'); setCalResult(null); fetchCalHives(); }} style={{
+                      padding: '12px 28px', background: '#f59e0b', color: '#fff',
+                      border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 700,
+                    }}>Calibrate Another Hive</button>
+                  </div>
+                )}
+
+                {calPhase === 'error' && (
+                  <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                    <div style={{ fontSize: '40px', marginBottom: '12px' }}>⚠️</div>
+                    <div style={{ fontWeight: 700, fontSize: '16px', color: '#dc2626', marginBottom: '8px' }}>Scan Failed</div>
+                    <div style={{ color: '#6b7280', fontSize: '14px', marginBottom: '24px', lineHeight: '1.6' }}>{calError}</div>
+                    <button onClick={() => setCalPhase('idle')} style={{
+                      padding: '10px 24px', background: '#f3f4f6', color: '#374151',
+                      border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600,
+                    }}>Try Again</button>
+                  </div>
+                )}
+              </div>
+              );
+            })()}
 
             {section === 'danger' && (
               <div className="device-selector" style={{ border: '2px solid #fca5a5' }}>
