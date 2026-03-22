@@ -151,7 +151,7 @@ function Upload({ user, onLogout }) {
         }
 
         const data = await res.json();
-        totalInserted += data.inserted || 0;
+        totalInserted += data.synced || data.inserted || 0;
         totalDuplicates += data.duplicates || 0;
       }
 
