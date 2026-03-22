@@ -45,11 +45,17 @@ function Upload({ user, onLogout }) {
   };
 
   const CSV_TO_API = {
+    // Firmware CSV headers
     'DateTime': 'timestamp', 'Temp_C': 'temperature',
     'Humidity_%': 'humidity', 'Pressure_hPa': 'pressure',
     'Sound_Hz': 'dominant_freq', 'Sound_Level': 'sound_level',
     'Bee_State': 'bee_state', 'Battery_V': 'battery_voltage',
     'Alerts': 'alert_flags', 'Weight_kg': 'weight_kg',
+    // App CSV headers
+    'Timestamp': 'timestamp', 'Temperature (C)': 'temperature',
+    'Humidity (%)': 'humidity', 'Pressure (hPa)': 'pressure',
+    'Frequency (Hz)': 'dominant_freq', 'Sound Level (%)': 'sound_level',
+    'Battery (V)': 'battery_voltage',
     'Spec_Centroid': 'spectral_centroid', 'Peak_Avg_Ratio': 'peak_to_avg',
     'Harmonicity': 'harmonicity',
     'Band_0_200': 'band_0_200', 'Band_200_400': 'band_200_400',
@@ -74,13 +80,13 @@ function Upload({ user, onLogout }) {
 
   const BEE_STATE_MAP = {
     'UNKNOWN': 0, 'QUIET': 1, 'NORMAL': 2, 'ACTIVE': 3,
-    'QUEEN_PRESENT': 4, 'PRE_SWARM': 5, 'DEFENSIVE': 6,
-    'STRESSED': 7, 'QUEEN_MISSING': 8,
+    'QUEEN_PRESENT': 4, 'QUEENPRESENT': 4, 'PRE_SWARM': 5, 'PRESWARM': 5,
+    'DEFENSIVE': 6, 'STRESSED': 7, 'QUEEN_MISSING': 8, 'QUEENMISSING': 8,
   };
 
   const parseCSV = (text) => {
     const allLines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n');
-    const headerIdx = allLines.findIndex(function(l) { return l.startsWith('DateTime,'); });
+    const headerIdx = allLines.findIndex(function(l) { return l.startsWith('DateTime,') || l.startsWith('Timestamp,'); });
     if (headerIdx === -1) return [];
     const lines = allLines.slice(headerIdx);
     if (lines.length < 2) return [];
