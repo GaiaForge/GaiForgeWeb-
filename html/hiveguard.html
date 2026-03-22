@@ -69,8 +69,8 @@
 
       <div class="product-section fade-in">
         <h2>Overview</h2>
-        <p>HiveGuard listens to your bees. By analysing the acoustic signature of a colony in real time, it can tell you whether the queen is present, if swarming is imminent, or if the colony is under stress — all without disturbing the hive. Combined with environmental sensors and hive weight tracking, HiveGuard gives beekeepers a complete picture of colony health from their phone.</p>
-        <p>Data syncs to the cloud for long-term trend analysis across your entire apiary. Designed for the field — weatherproof, battery-powered, and built to run for months on a set of AA batteries.</p>
+        <p>HiveGuard listens to your bees. Using research-grade bioacoustic analysis — mel-frequency spectral decomposition, harmonic series scoring, and multi-frame spectral averaging — it identifies queen status, swarming intent, and colony stress in real time, without opening the hive. Combined with environmental sensors and hive weight tracking, HiveGuard gives beekeepers and researchers a complete picture of colony health.</p>
+        <p>Data syncs to the cloud for long-term trend analysis across your entire apiary. The web portal supports both <strong>Beekeeper Mode</strong> (plain-language health summaries and actionable guidance) and <strong>Researcher Mode</strong> (raw spectral features, 38-column CSV exports, frequency band analysis, and classification confidence scores). Designed for the field — weatherproof, battery-powered, and built to run for months.</p>
       </div>
 
       <!-- Key Features -->
@@ -79,22 +79,22 @@
         <div class="row">
           <div class="col">
             <ul class="feature-list">
-              <li><strong>Colony Sound Analysis</strong>: Continuously monitors the acoustic signature of the hive to detect changes in colony behaviour and mood</li>
-              <li><strong>Queen Detection</strong>: Identifies queen piping and queen presence from the hive's sound profile — know immediately if your queen is lost</li>
-              <li><strong>Swarm Prediction</strong>: Detects pre-swarm acoustic patterns days before the colony leaves, giving you time to intervene</li>
+              <li><strong>Mel-Frequency Acoustic Analysis</strong>: 1024-point FFT with 6 mel-spaced filter banks, harmonic series detection, and 4-frame spectral averaging — research-grade signal processing running on-device at the edge</li>
+              <li><strong>Queen Detection</strong>: Identifies queen piping via weighted harmonic scoring (2nd–5th harmonics) in the 400–500 Hz band — confirmed against spectral centroid and band energy ratios</li>
+              <li><strong>Swarm Prediction</strong>: Onset detection via spectral flux spike analysis catches pre-swarm events that moving averages miss, with circadian-adjusted thresholds to reduce false positives</li>
               <li><strong>Predictive Expansion</strong>: Tells you when to add supers by tracking weight gain, foraging intensity, and colony growth — 3 to 5 days notice before the colony gets congested</li>
-              <li><strong>Stress &amp; Defence Alerts</strong>: Recognises agitated or stressed colonies from sound alone — pesticide exposure, predators, disease</li>
-              <li><strong>Smart Alerts</strong>: Only notifies you when it's confident — no false alarms from wind, rain, or passing traffic</li>
+              <li><strong>Tiered Alert System</strong>: Approaching, warning, and critical alerts with tappable detail cards explaining exactly what triggered the alert and what action to take</li>
+              <li><strong>Smart Alerts</strong>: Weather-aware filtering automatically excludes rain, wind, and storm readings — colony scores reflect real bee behaviour, not the forecast</li>
             </ul>
           </div>
           <div class="col">
             <ul class="feature-list">
-              <li><strong>Weather-Aware Monitoring</strong>: Automatically detects rain, wind, and storms and excludes contaminated readings from health assessments — your colony scores reflect real bee behaviour, not the weather</li>
-              <li><strong>3-Point Audio Calibration</strong>: Calibrates per-device, per-hive, and per-species for accurate baselines — works with European, African, Carniolan, Italian bees, and custom profiles</li>
-              <li><strong>AI-Powered Colony Reports</strong>: Get detailed health assessments written in plain language with specific findings and actionable recommendations, tailored to your colony's data</li>
-              <li><strong>Environmental Monitoring</strong>: Tracks temperature, humidity, and barometric pressure inside and around the hive</li>
+              <li><strong>3-Point Audio Calibration</strong>: Silence → empty hive → healthy colony. Each profile is stored in on-device NVS flash and replayed on boot — the noise floor is an exact recording, not an estimate. Supports European, African, Carniolan, Italian, and custom bee profiles</li>
+              <li><strong>Dual-Mode Cloud Portal</strong>: <em>Beekeeper Mode</em> shows plain-language health summaries and AI recommendations. <em>Researcher Mode</em> exposes raw spectral features, classification confidence, band energy distributions, and full 38-column CSV data exports</li>
+              <li><strong>AI-Powered Colony Reports</strong>: Detailed health assessments written in plain language with specific findings and actionable recommendations, tailored to your colony's data</li>
+              <li><strong>Environmental Monitoring</strong>: Tracks temperature, humidity, and barometric pressure with configurable alert thresholds and approaching-threshold warnings</li>
               <li><strong>Hive Weight</strong>: Load cell integration detects nectar flows, consumption patterns, and sudden weight drops that indicate swarming</li>
-              <li><strong>Mobile App &amp; Cloud Dashboard</strong>: Live data on your phone via Bluetooth, plus a web portal to monitor all your hives from anywhere with health scores, trends, and AI insights</li>
+              <li><strong>Mobile App &amp; Cloud Dashboard</strong>: Live data on your phone via Bluetooth with real-time spectral visualisation, plus a web portal to monitor all your hives from anywhere</li>
             </ul>
           </div>
         </div>
@@ -107,22 +107,27 @@
           <div class="application-card">
             <div class="application-icon"><i class="fas fa-microphone"></i></div>
             <h4>Listen</h4>
-            <p>A sensitive microphone inside the hive captures the colony's sound signature throughout the day</p>
+            <p>A MEMS PDM microphone inside the hive captures audio at 16 kHz. A 1024-point FFT produces ~15 Hz frequency resolution — enough to distinguish queen piping from worker buzz</p>
           </div>
           <div class="application-card">
             <div class="application-icon"><i class="fas fa-brain"></i></div>
-            <h4>Understand</h4>
-            <p>On-device analysis identifies what the bees are telling you — queen status, stress, swarming intent, or healthy activity</p>
+            <h4>Analyse</h4>
+            <p>On-device classification runs mel-frequency decomposition, harmonic scoring, and spectral flux analysis on every audio frame — no cloud dependency, no latency</p>
+          </div>
+          <div class="application-card">
+            <div class="application-icon"><i class="fas fa-sliders-h"></i></div>
+            <h4>Calibrate</h4>
+            <p>Three-point calibration (silence, empty hive, healthy colony) establishes per-device baselines stored in flash. The noise floor is an exact recording replayed on every boot</p>
           </div>
           <div class="application-card">
             <div class="application-icon"><i class="fas fa-mobile-alt"></i></div>
             <h4>Alert</h4>
-            <p>Get notified on your phone when something needs attention. Walk up to the hive and see live data via Bluetooth</p>
+            <p>Tiered alerts (approaching, warning, critical) notify you only when confident. Walk up to the hive and see live spectral data via Bluetooth</p>
           </div>
           <div class="application-card">
             <div class="application-icon"><i class="fas fa-chart-line"></i></div>
             <h4>Track</h4>
-            <p>Data syncs to the cloud so you can see trends over weeks and months — catch problems before they become emergencies</p>
+            <p>38-column CSV logs on-device for months. Data syncs to the cloud portal where AI generates plain-language colony reports or raw spectral exports for research</p>
           </div>
         </div>
       </div>
@@ -206,14 +211,14 @@
       <div class="product-section fade-in">
         <h2>What's Included</h2>
         <ul class="specifications-list">
-          <li>HiveGuard monitoring unit with integrated microphone, environmental sensors, and on-device colony analysis</li>
-          <li>Weight sensing support for nectar flow and swarming detection</li>
+          <li>HiveGuard monitoring unit with MEMS PDM microphone, BME280 environmental sensors, and nRF54L15 processor running on-device colony analysis</li>
+          <li>Weight sensing support via load cell for nectar flow and swarming detection</li>
           <li>Weatherproof enclosure designed for year-round outdoor use</li>
-          <li>Mobile app for iOS and Android (free) with live Bluetooth dashboard</li>
-          <li>Cloud portal with health scores, analytics, and AI colony reports</li>
-          <li>On-device data logging for offline operation in remote apiaries</li>
-          <li>Battery-powered with months of field life — solar-ready for permanent installations</li>
-          <li>3-point audio calibration for per-species accuracy</li>
+          <li>Mobile app for iOS and Android (free) with live Bluetooth dashboard, spectral visualisation, and tiered alert system</li>
+          <li>Cloud portal with dual modes — Beekeeper (plain language) and Researcher (raw data) — plus AI colony reports</li>
+          <li>On-device data logging (38-column CSV) with months of storage for offline operation in remote apiaries</li>
+          <li>Battery-powered with ultra-low-power idle (~5 &micro;A) — months of field life, solar-ready for permanent installations</li>
+          <li>3-point audio calibration with direct noise floor replay from NVS flash — per-device, per-hive, per-species accuracy</li>
         </ul>
       </div>
 
@@ -234,7 +239,7 @@
           <div class="application-card">
             <div class="application-icon"><i class="fas fa-microscope"></i></div>
             <h4>Research &amp; Conservation</h4>
-            <p>Continuous non-invasive data collection for pollinator research, population studies, and conservation efforts</p>
+            <p>Researcher Mode exposes raw spectral features, band energies, harmonicity, spectral flux, and classification confidence. Export 38-column CSV datasets for your own analysis pipelines. Non-invasive continuous data collection for pollinator studies</p>
           </div>
           <div class="application-card">
             <div class="application-icon"><i class="fas fa-graduation-cap"></i></div>
