@@ -48,7 +48,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       setState(() {
         _sensors = sensors;
         // Default select first sensor
-        _selectedSensorIds.add(sensors.first.id!);
+        _selectedSensorIds.add(sensors.first.id);
         _assignSensorColors();
       });
       await _loadData();
@@ -69,7 +69,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     
     int i = 0;
     for (var sensor in _sensors) {
-      _sensorColors[sensor.id!] = colors[i % colors.length];
+      _sensorColors[sensor.id] = colors[i % colors.length];
       i++;
     }
   }
@@ -276,7 +276,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 if (isSelected) {
                   _selectedSensorIds.remove(sensor.id);
                 } else {
-                  _selectedSensorIds.add(sensor.id!);
+                  _selectedSensorIds.add(sensor.id);
                 }
               });
               _loadData();

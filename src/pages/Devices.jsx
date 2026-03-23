@@ -9,7 +9,7 @@ function Devices({ user, onLogout }) {
   const [hives, setHives] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
-  const [newHive, setNewHive] = useState({ name: '', location: '' });
+  const [newHive, setNewHive] = useState({ name: '', location: '', bee_species: 'apis_mellifera' });
   const [error, setError] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editValues, setEditValues] = useState({});
@@ -53,9 +53,25 @@ function Devices({ user, onLogout }) {
     }
   };
 
+  const SPECIES = [
+    { value: 'apis_mellifera',             label: 'Apis mellifera (Western honeybee)' },
+    { value: 'apis_mellifera_italian',     label: 'Italian honeybee' },
+    { value: 'apis_mellifera_carniolan',   label: 'Carniolan honeybee' },
+    { value: 'apis_mellifera_buckfast',    label: 'Buckfast honeybee' },
+    { value: 'apis_mellifera_africanized', label: 'Africanised honeybee' },
+    { value: 'apis_cerana',               label: 'Apis cerana (Asian honeybee)' },
+    { value: 'apis_dorsata',              label: 'Apis dorsata (Giant honeybee)' },
+    { value: 'apis_florea',              label: 'Apis florea (Dwarf honeybee)' },
+    { value: 'meliponini',               label: 'Stingless bees (Meliponini)' },
+    { value: 'bombus',                   label: 'Bumblebee (Bombus)' },
+    { value: 'other',                    label: 'Other / Unknown' },
+  ];
+
+  const speciesLabel = (key) => SPECIES.find(s => s.value === key)?.label || key;
+
   const startEdit = (hive) => {
     setEditingId(hive.id);
-    setEditValues({ name: hive.name, location: hive.location || '' });
+    setEditValues({ name: hive.name, location: hive.location || '', bee_species: hive.bee_species || 'apis_mellifera' });
   };
 
   const saveEdit = async (hiveId) => {
@@ -69,6 +85,14 @@ function Devices({ user, onLogout }) {
     await fetch(`${API_BASE}/api/hives/${hive.id}`, {
       method: 'PATCH', headers,
       body: JSON.stringify({ is_archived: !hive.is_archived }),
+    });
+    fetchHives();
+  };
+
+  const toggleWeightSensor = async (hive) => {
+    await fetch(`${API_BASE}/api/hives/${hive.id}`, {
+      method: 'PATCH', headers,
+      body: JSON.stringify({ has_weight_sensor: !hive.has_weight_sensor }),
     });
     fetchHives();
   };
@@ -177,6 +201,17 @@ function Devices({ user, onLogout }) {
                   placeholder="e.g. South field"
                   style={{ padding: '12px', border: '2px solid #e5e7eb', borderRadius: '10px', width: '100%' }} />
               </div>
+              <div className="form-group" style={{ marginBottom: '14px' }}>
+                <label>Bee Species</label>
+                <select value={newHive.bee_species}
+                  onChange={e => setNewHive({ ...newHive, bee_species: e.target.value })}
+                  style={{ padding: '12px', border: '2px solid #e5e7eb', borderRadius: '10px', width: '100%', background: '#fff' }}>
+                  {SPECIES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                </select>
+                <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>
+                  Used to calibrate acoustic classification thresholds per species.
+                </div>
+              </div>
               <button type="submit" style={{
                 padding: '12px 24px', background: '#10b981', color: '#fff',
                 border: 'none', borderRadius: '10px', fontWeight: 600, cursor: 'pointer',
@@ -212,6 +247,11 @@ function Devices({ user, onLogout }) {
                           onChange={e => setEditValues({ ...editValues, location: e.target.value })}
                           placeholder="location"
                           style={{ padding: '6px 10px', border: '2px solid #e5e7eb', borderRadius: '8px' }} />
+                        <select value={editValues.bee_species || 'apis_mellifera'}
+                          onChange={e => setEditValues({ ...editValues, bee_species: e.target.value })}
+                          style={{ padding: '6px 10px', border: '2px solid #e5e7eb', borderRadius: '8px', background: '#fff' }}>
+                          {SPECIES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                        </select>
                         <button onClick={() => saveEdit(hive.id)} style={{
                           padding: '6px 14px', background: '#10b981', color: '#fff',
                           border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600,
@@ -230,16 +270,28 @@ function Devices({ user, onLogout }) {
                           }}>Archived</span>}
                         </div>
                         <div className="upload-meta">
-                          {hive.location || 'No location'} · {hive.reading_count.toLocaleString()} readings
+                          {hive.location || 'No location'} · {speciesLabel(hive.bee_species)} · {hive.reading_count.toLocaleString()} readings
+                          {hive.calibrated_at
+                            ? ` · Calibrated ${new Date(hive.calibrated_at).toLocaleDateString()}`
+                            : ' · Not calibrated'}
                         </div>
                       </>
                     )}
                   </div>
-                  <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', gap: '8px', flexShrink: 0, flexWrap: 'wrap' }}>
                     <button onClick={() => startEdit(hive)} title="Rename" style={{
                       padding: '6px 10px', background: '#f3f4f6', border: 'none',
                       borderRadius: '8px', cursor: 'pointer', fontSize: '14px',
                     }}>✏️</button>
+                    <button onClick={() => toggleWeightSensor(hive)}
+                      title={hive.has_weight_sensor ? 'Disable weight sensor addon' : 'Enable weight sensor addon'}
+                      style={{
+                        padding: '6px 10px',
+                        background: hive.has_weight_sensor ? '#eff6ff' : '#f3f4f6',
+                        color: hive.has_weight_sensor ? '#1d4ed8' : '#6b7280',
+                        border: `2px solid ${hive.has_weight_sensor ? '#93c5fd' : '#e5e7eb'}`,
+                        borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
+                      }}>⚖️ Weight {hive.has_weight_sensor ? 'On' : 'Off'}</button>
                     <button onClick={() => toggleArchive(hive)} title={hive.is_archived ? 'Unarchive' : 'Archive'} style={{
                       padding: '6px 10px', background: hive.is_archived ? '#d1fae5' : '#fef3c7',
                       color: hive.is_archived ? '#065f46' : '#92400e',

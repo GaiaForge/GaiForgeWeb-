@@ -60,22 +60,18 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> with 
   }
 
   Future<void> _checkAssignedCameras() async {
-    if (_currentZone.id != null) {
-      final cameras = await _databaseHelper.getZoneCameras(_currentZone.id!);
-      setState(() {
-        _hasAssignedCameras = cameras.isNotEmpty;
-      });
+    final cameras = await _databaseHelper.getZoneCameras(_currentZone.id!);
+    setState(() {
+      _hasAssignedCameras = cameras.isNotEmpty;
+    });
     }
-  }
 
   Future<void> _checkSeedlingMat() async {
-    if (_currentZone.id != null) {
-      final settings = await _databaseHelper.getSeedlingMatSettings(_currentZone.id!);
-      setState(() {
-        _hasSeedlingMat = settings != null && settings['enabled'] == 1;
-      });
+    final settings = await _databaseHelper.getSeedlingMatSettings(_currentZone.id!);
+    setState(() {
+      _hasSeedlingMat = settings != null && settings['enabled'] == 1;
+    });
     }
-  }
 
   Future<void> _loadGrowInfo() async {
     if (_currentZone.growId != null) {
@@ -125,7 +121,7 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> with 
       case 'Seedling Mat':
         newStatus = !_hasSeedlingMat;
         // Get existing settings or create default
-        final existing = await _databaseHelper.getSeedlingMatSettings(_currentZone.id!);
+        final existing = await _databaseHelper.getSeedlingMatSettings(_currentZone.id);
         final settings = existing ?? {
           'zone_id': _currentZone.id,
           'mode': 'manual',
@@ -374,7 +370,7 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> with 
               MaterialPageRoute(builder: (_) => CameraSetupScreen(zone: _currentZone))
             );
             // Refresh zone data on return in case enabled state changed inside setup
-             final updatedZone = await _databaseHelper.getZone(_currentZone.id!);
+             final updatedZone = await _databaseHelper.getZone(_currentZone.id);
              if (updatedZone != null) {
                setState(() => _currentZone = updatedZone);
              }
@@ -405,7 +401,7 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> with 
               MaterialPageRoute(builder: (_) => FertigationSetupScreen(zone: _currentZone)),
             );
             // Refresh zone
-             final updatedZone = await _databaseHelper.getZone(_currentZone.id!);
+             final updatedZone = await _databaseHelper.getZone(_currentZone.id);
              if (updatedZone != null) {
                setState(() => _currentZone = updatedZone);
              }
@@ -418,7 +414,7 @@ class _ZoneConfigurationScreenState extends State<ZoneConfigurationScreen> with 
               MaterialPageRoute(builder: (_) => GuardianSetupScreen(zone: _currentZone)),
             );
             // Refresh zone
-             final updatedZone = await _databaseHelper.getZone(_currentZone.id!);
+             final updatedZone = await _databaseHelper.getZone(_currentZone.id);
              if (updatedZone != null) {
                setState(() => _currentZone = updatedZone);
              }

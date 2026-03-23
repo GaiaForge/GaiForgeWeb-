@@ -821,7 +821,6 @@ class _GlassCard extends StatelessWidget {
 
   const _GlassCard({
     required this.child,
-    this.padding = const EdgeInsets.all(24),
   });
 
   @override

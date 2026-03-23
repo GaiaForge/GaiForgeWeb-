@@ -9,6 +9,8 @@ import Devices from './pages/Devices';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import Alerts from './pages/Alerts';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import './App.css';
 
 function App() {
@@ -40,7 +42,7 @@ function App() {
           }).then(res => {
             if (res.ok) {
               return res.json().then(profile => {
-                const updated = { ...parsed, subscription_tier: profile.subscription_tier, subscription_expires_at: profile.subscription_expires_at || null, is_admin: profile.is_admin || false };
+                const updated = { ...parsed, subscription_tier: profile.subscription_tier, subscription_expires_at: profile.subscription_expires_at || null, is_admin: profile.is_admin || false, report_mode: profile.report_mode || 'beekeeper' };
                 setUser(updated);
                 setIsAuthenticated(true);
                 localStorage.setItem('user', JSON.stringify(updated));
@@ -70,6 +72,8 @@ function App() {
           <Route path="/register" element={
             isAuthenticated ? <Navigate to="/dashboard" /> : <Register onRegister={handleLogin} />
           } />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/dashboard" element={
             isAuthenticated ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
           } />

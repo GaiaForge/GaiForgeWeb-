@@ -281,7 +281,7 @@ class _SensingScreenState extends State<SensingScreen> {
 
                 try {
                   final newSensor = Sensor(
-                    id: isEditing ? sensor!.id : 0, // ID ignored on insert
+                    id: isEditing ? sensor.id : 0, // ID ignored on insert
                     zoneId: widget.zone.id!,
                     sensorType: selectedType,
                     name: nameController.text,
@@ -291,7 +291,7 @@ class _SensingScreenState extends State<SensingScreen> {
                     enabled: isEnabled,
                     hubId: selectedHubId,
                     inputChannel: selectedChannelId, // Storing channel number
-                    createdAt: isEditing ? sensor!.createdAt : DateTime.now().millisecondsSinceEpoch ~/ 1000,
+                    createdAt: isEditing ? sensor.createdAt : DateTime.now().millisecondsSinceEpoch ~/ 1000,
                     updatedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
                   );
 

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../database_helper.dart';
-import '../../models/guardian/guardian_settings.dart';
 import '../../models/guardian/guardian_context.dart';
 import '../../models/guardian/guardian_status.dart';
 import '../../models/guardian/guardian_alert.dart';

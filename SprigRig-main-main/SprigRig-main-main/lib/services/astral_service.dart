@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import '../models/sensor.dart';
 import '../models/location_settings.dart';
 import '../services/database_helper.dart';
 

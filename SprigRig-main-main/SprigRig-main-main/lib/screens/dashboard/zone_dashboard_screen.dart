@@ -171,7 +171,7 @@ class _ZoneDashboardScreenState extends State<ZoneDashboardScreen> {
       // Simulate sensor readings for display
       final Map<int, Map<String, dynamic>> simulatedReadings = {};
       for (var sensor in sensors) {
-        simulatedReadings[sensor.id!] = _getSimulatedReadingsForSensor(sensor.sensorType);
+        simulatedReadings[sensor.id] = _getSimulatedReadingsForSensor(sensor.sensorType);
       }
 
       // Load lighting status
@@ -486,7 +486,7 @@ class _ZoneDashboardScreenState extends State<ZoneDashboardScreen> {
                         // Guardian Tile
                         if (_zone.hasGuardian) ...[
                           GuardianTile(
-                            zoneId: _zone.id!,
+                            zoneId: _zone.id,
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(

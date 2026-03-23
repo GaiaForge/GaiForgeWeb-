@@ -126,11 +126,8 @@ class IntervalSchedulerService {
     try {
       final zones = await _db.getZones();
       for (var zone in zones) {
-        if (zone.id == null) continue;
-
-        // 1. Lighting
-        final lightingSchedules = await _db.getLightingSchedules(zone.id!);
-        final lightControls = await _db.getZoneControls(zone.id!);
+        final lightingSchedules = await _db.getLightingSchedules(zone.id);
+        final lightControls = await _db.getZoneControls(zone.id);
         final lights = lightControls.where((c) => c.controlTypeId == 1 || c.controlTypeId == 2).toList();
 
         for (var light in lights) {
@@ -151,7 +148,7 @@ class IntervalSchedulerService {
         }
 
         // 2. Irrigation
-        final irrigationSchedules = await _db.getIrrigationSchedules(zone.id!);
+        final irrigationSchedules = await _db.getIrrigationSchedules(zone.id);
         for (var schedule in irrigationSchedules) {
           if (!schedule.isEnabled || schedule.pumpId == null) continue;
           final channel = await _db.getIoChannelById(schedule.pumpId!);
@@ -175,8 +172,8 @@ class IntervalSchedulerService {
         }
 
         // 3. Ventilation
-        final ventSchedules = await _db.getVentilationSchedules(zone.id!);
-        final fanControls = await _db.getZoneControls(zone.id!);
+        final ventSchedules = await _db.getVentilationSchedules(zone.id);
+        final fanControls = await _db.getZoneControls(zone.id);
         final fans = fanControls.where((c) => c.controlTypeId == 3 || c.controlTypeId == 4).toList();
         
         for (var fan in fans) {
@@ -359,10 +356,9 @@ class IntervalSchedulerService {
     try {
       final zones = await _db.getZones();
       for (var zone in zones) {
-        if (zone.id == null) continue;
-        await _checkLighting(zone.id!);
-        await _checkIrrigation(zone.id!);
-        await _checkVentilation(zone.id!);
+        await _checkLighting(zone.id);
+        await _checkIrrigation(zone.id);
+        await _checkVentilation(zone.id);
       }
     } catch (e, stackTrace) {
       debugPrint('IntervalSchedulerService Error in _fullStateCheck: $e');

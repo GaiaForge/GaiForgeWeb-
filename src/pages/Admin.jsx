@@ -16,6 +16,11 @@ function Admin({ user, onLogout }) {
   const [keyMessage, setKeyMessage] = useState(null);
   const [subEdit, setSubEdit] = useState(null); // { userId, tier, expires, notes }
 
+  // Audit log
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditFilter, setAuditFilter] = useState('');
+
   // Data management
   const [allHives, setAllHives] = useState([]);
   const [archiveHiveId, setArchiveHiveId] = useState('');
@@ -193,6 +198,45 @@ function Admin({ user, onLogout }) {
     } finally {
       setArchiving(false);
     }
+  };
+
+  const fetchAuditLog = async (action) => {
+    setAuditLoading(true);
+    try {
+      const params = new URLSearchParams({ limit: '200' });
+      if (action) params.set('action', action);
+      const res = await fetch(`${API_BASE}/api/admin/audit-log?${params}`, { headers });
+      if (res.ok) setAuditLogs(await res.json());
+    } catch {} finally { setAuditLoading(false); }
+  };
+
+  const exportUserData = async (userId) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/users/${userId}/export`, { headers });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `user_${userId}_data_export.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch {}
+  };
+
+  const deleteUserData = async (userId, email) => {
+    if (!window.confirm(`GDPR Erasure: This will permanently delete ALL data for ${email} including hives, readings, and their account. This cannot be undone. Continue?`)) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/users/${userId}/data`, { method: 'DELETE', headers });
+      if (res.ok) {
+        fetchData();
+        alert(`All data for ${email} has been deleted.`);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.detail || 'Deletion failed');
+      }
+    } catch { alert('Connection error'); }
   };
 
   const handleLogout = () => { onLogout(); navigate('/login'); };
@@ -453,10 +497,20 @@ function Admin({ user, onLogout }) {
                           >
                             Edit Sub
                           </button>
+                          <button className="btn-small" onClick={() => exportUserData(u.id)}
+                            style={{background:'#3b82f6',color:'#fff',border:'none',borderRadius:'6px',padding:'4px 10px',fontSize:'12px',cursor:'pointer'}}>
+                            Export
+                          </button>
                           {u.id !== 1 && (
+                            <>
                             <button className="btn-small btn-toggle" onClick={() => toggleActive(u.id)}>
                               {u.is_active ? 'Disable' : 'Enable'}
                             </button>
+                            <button className="btn-small" onClick={() => deleteUserData(u.id, u.email)}
+                              style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:'6px',padding:'4px 10px',fontSize:'12px',cursor:'pointer'}}>
+                              Erase
+                            </button>
+                            </>
                           )}
                         </div>
                       </td>
@@ -502,6 +556,67 @@ function Admin({ user, onLogout }) {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Security Audit Log */}
+            <div className="admin-card">
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px'}}>
+                <h3 style={{margin:0}}>Security Audit Log</h3>
+                <div style={{display:'flex', gap:'8px', alignItems:'center'}}>
+                  <select value={auditFilter} onChange={e => setAuditFilter(e.target.value)}
+                    style={{padding:'8px 12px', border:'2px solid #e5e7eb', borderRadius:'8px', fontSize:'13px'}}>
+                    <option value="">All actions</option>
+                    <option value="login">Logins</option>
+                    <option value="login_failed">Failed logins</option>
+                    <option value="register">Registrations</option>
+                    <option value="change_password">Password changes</option>
+                    <option value="change_password_failed">Failed password changes</option>
+                    <option value="forgot_password">Password resets</option>
+                    <option value="reset_password">Password reset completions</option>
+                    <option value="change_email">Email changes</option>
+                    <option value="delete_account">Account deletions</option>
+                    <option value="regenerate_api_key">API key regenerations</option>
+                  </select>
+                  <button onClick={() => fetchAuditLog(auditFilter)}
+                    style={{padding:'8px 16px', background:'#f59e0b', color:'#fff', border:'none', borderRadius:'8px', fontWeight:600, cursor:'pointer', fontSize:'13px'}}>
+                    {auditLoading ? 'Loading...' : 'Load Log'}
+                  </button>
+                </div>
+              </div>
+              {auditLogs.length > 0 ? (
+                <div style={{maxHeight:'400px', overflowY:'auto'}}>
+                  <table className="admin-table" style={{fontSize:'13px'}}>
+                    <thead>
+                      <tr>
+                        <th>Time</th>
+                        <th>Action</th>
+                        <th>Email</th>
+                        <th>IP</th>
+                        <th>Status</th>
+                        <th>Detail</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {auditLogs.map(log => (
+                        <tr key={log.id} style={{background: log.success ? undefined : 'rgba(239,68,68,0.08)'}}>
+                          <td style={{whiteSpace:'nowrap'}}>{new Date(log.timestamp).toLocaleString()}</td>
+                          <td><span style={{
+                            padding:'2px 8px', borderRadius:'4px', fontSize:'11px', fontWeight:600,
+                            background: log.success ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
+                            color: log.success ? '#10b981' : '#ef4444',
+                          }}>{log.action}</span></td>
+                          <td>{log.email || '-'}</td>
+                          <td style={{fontFamily:'monospace', fontSize:'12px'}}>{log.ip_address || '-'}</td>
+                          <td>{log.success ? '✓' : '✗'}</td>
+                          <td style={{color:'#6b7280', maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis'}}>{log.detail || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p style={{color:'#6b7280', fontSize:'14px'}}>Click "Load Log" to view security audit events.</p>
+              )}
             </div>
           </>
         )}

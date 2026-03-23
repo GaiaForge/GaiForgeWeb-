@@ -223,7 +223,7 @@ class CameraService {
         if (camera.enabled) {
           try {
             // If we have a grow, start timelapse
-            if (primaryGrowId != null && camera.id != null) {
+            if (camera.id != null) {
               await startTimelapse(camera.id!, primaryGrowId);
             }
           } catch (e) {

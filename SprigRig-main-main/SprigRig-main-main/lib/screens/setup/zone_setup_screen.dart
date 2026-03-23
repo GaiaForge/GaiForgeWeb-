@@ -85,7 +85,7 @@ class _ZoneSetupScreenState extends State<ZoneSetupScreen> {
     );
 
     if (confirm == true) {
-      await _databaseHelper.deleteZone(zone.id!); 
+      await _databaseHelper.deleteZone(zone.id); 
       await _loadZones();
     }
   }
