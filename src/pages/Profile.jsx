@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 
@@ -17,19 +17,6 @@ function Profile({ user, onLogout, onUserUpdate }) {
   const [newApiKey, setNewApiKey] = useState(null);
   const [deletePassword, setDeletePassword] = useState('');
 
-  // Audio calibration wizard
-  const [calHives, setCalHives] = useState([]);
-  const [calHiveId, setCalHiveId] = useState('');
-  const [calDuration, setCalDuration] = useState(30);
-  // calPhase state machine:
-  // idle → quiet_running → done_quiet →
-  // empty_idle → empty_running → done_empty →
-  // healthy_idle → healthy_running → done | error
-  const [calPhase, setCalPhase] = useState('idle');
-  const [calSecondsLeft, setCalSecondsLeft] = useState(0);
-  const [calResult, setCalResult] = useState(null);
-  const [calError, setCalError] = useState('');
-  const calTimerRef = useRef(null);
 
   const headers = {
     'Authorization': `Bearer ${user?.token}`,
@@ -129,83 +116,6 @@ function Profile({ user, onLogout, onUserUpdate }) {
     }
   };
 
-  useEffect(() => {
-    if (section === 'calibrate') fetchCalHives();
-  }, [section]);
-
-  const fetchCalHives = async () => {
-    const res = await fetch(`${API_BASE}/api/hives`, { headers });
-    if (res.ok) {
-      const hives = await res.json();
-      setCalHives(hives.filter(h => !h.is_archived));
-      if (hives.length > 0 && !calHiveId) setCalHiveId(String(hives[0].id));
-    }
-  };
-
-  const RUNNING_PHASES = ['quiet_running', 'empty_running', 'healthy_running'];
-  const SAVING_PHASES  = ['quiet_saving', 'empty_saving', 'healthy_saving'];
-
-  const startPhase = (phaseKey) => {
-    setCalPhase(phaseKey + '_running');
-    setCalSecondsLeft(calDuration * 60);
-    setCalResult(null);
-    setCalError('');
-  };
-
-  const cancelCalibration = () => {
-    clearInterval(calTimerRef.current);
-    setCalPhase('idle');
-    setCalSecondsLeft(0);
-  };
-
-  // Countdown tick — fires for any _running phase
-  useEffect(() => {
-    const runningMatch = calPhase.match(/^(quiet|empty|healthy)_running$/);
-    if (!runningMatch) return;
-    const phaseKey = runningMatch[1];
-    calTimerRef.current = setInterval(() => {
-      setCalSecondsLeft(s => {
-        if (s <= 1) {
-          clearInterval(calTimerRef.current);
-          const profileType = phaseKey === 'quiet' ? 'quiet' : phaseKey === 'empty' ? 'empty_hive' : 'healthy_colony';
-          saveCalibration(profileType, phaseKey);
-          return 0;
-        }
-        return s - 1;
-      });
-    }, 1000);
-    return () => clearInterval(calTimerRef.current);
-  }, [calPhase]);
-
-  const saveCalibration = async (profileType, phaseKey) => {
-    setCalPhase(phaseKey + '_saving');
-    try {
-      const res = await fetch(
-        `${API_BASE}/api/hives/${calHiveId}/calibrate?minutes=${calDuration}&profile_type=${profileType}`,
-        { method: 'POST', headers }
-      );
-      if (res.ok) {
-        const d = await res.json();
-        setCalResult(d);
-        if (phaseKey === 'quiet')  setCalPhase('done_quiet');
-        else if (phaseKey === 'empty') setCalPhase('done_empty');
-        else setCalPhase('done');
-      } else {
-        const d = await res.json().catch(() => ({}));
-        setCalError(d.detail || 'Scan failed — no readings found in this time window.');
-        setCalPhase('error');
-      }
-    } catch {
-      setCalError('Network error — could not reach the server.');
-      setCalPhase('error');
-    }
-  };
-
-  const formatCountdown = (s) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${m}:${String(sec).padStart(2, '0')}`;
-  };
 
   const handleLogout = () => { onLogout(); navigate('/login'); };
 
@@ -270,7 +180,6 @@ function Profile({ user, onLogout, onUserUpdate }) {
               { key: 'password', icon: '🔒', label: 'Password' },
               { key: 'email', icon: '✉️', label: 'Change Email' },
               { key: 'apikey', icon: '🔑', label: 'API Key' },
-              { key: 'calibrate', icon: '🎙️', label: 'Audio Calibration' },
               { key: 'danger', icon: '⚠️', label: 'Danger Zone' },
             ].map(s => (
               <button key={s.key} onClick={() => { setSection(s.key); setMsg(''); setErr(''); }} style={{
@@ -478,8 +387,9 @@ function Profile({ user, onLogout, onUserUpdate }) {
               </div>
             )}
 
-            {section === 'calibrate' && (() => {
-              const selectedHive = calHives.find(h => String(h.id) === String(calHiveId));
+            {/* AudioRation removed — calibration is done via BLE in the mobile app */}
+            {false && (() => {
+              const selectedHive = null;
               const speciesName = selectedHive?.bee_species?.replace(/_/g, ' ') || 'Western honeybee';
               const isAfricanized = selectedHive?.bee_species === 'apis_mellifera_africanized';
               const isStingless = selectedHive?.bee_species === 'meliponini';
