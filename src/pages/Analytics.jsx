@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import Plotly from 'plotly.js-dist-min';
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -328,6 +329,7 @@ function Analytics({ user, onLogout }) {
   const researcherTabs = [
     ['environmental', '\uD83C\uDF21\uFE0F', 'Environmental'],
     ['acoustic', '\uD83D\uDD0A', 'Acoustic'],
+    ['spectrogram', '\uD83C\uDF08', 'Spectrogram'],
     ['spectral', '\uD83D\uDCCA', 'Spectral Features'],
     ['behavioral', '\uD83D\uDC1D', 'Behavioral Scores'],
     ['weather', '\uD83C\uDF27\uFE0F', 'Weather Gate'],
@@ -804,6 +806,10 @@ function Analytics({ user, onLogout }) {
                 {/* ============================================================
                     RESEARCHER: SPECTRAL FEATURES (all features)
                     ============================================================ */}
+                {activeTab === 'spectrogram' && viewMode === 'researcher' && (
+                  <SpectrogramView readings={readings} hiveId={selectedHive} headers={headers} />
+                )}
+
                 {activeTab === 'spectral' && viewMode === 'researcher' && (
                   <div className="chart-section">
                     <div className="analytics-card full-width">
@@ -1353,6 +1359,248 @@ function Analytics({ user, onLogout }) {
           </>
         )}
       </main>
+    </div>
+  );
+}
+
+// =============================================================================
+// Spectrogram View — Plotly.js mel spectrogram heatmap with annotations
+// =============================================================================
+
+function SpectrogramView({ readings, hiveId, headers }) {
+  const spectroRef = useRef(null);
+  const centroidRef = useRef(null);
+  const [journalEntries, setJournalEntries] = useState([]);
+  const [showAnnotations, setShowAnnotations] = useState(true);
+
+  const API_BASE = window.location.origin;
+  const MEL_BANDS = ['100-362', '362-734', '734-1253', '1253-1979', '1979-2999', '2999+'];
+  const BAND_KEYS = ['band_0_200', 'band_200_400', 'band_400_600', 'band_600_800', 'band_800_1000', 'band_1000_plus'];
+
+  // Fetch journal entries for annotation overlay
+  useEffect(() => {
+    if (!hiveId) return;
+    fetch(`${API_BASE}/api/journal/${hiveId}`, { headers })
+      .then(r => r.ok ? r.json() : [])
+      .then(setJournalEntries)
+      .catch(() => {});
+  }, [hiveId]);
+
+  // Render spectrogram with Plotly
+  useEffect(() => {
+    if (!spectroRef.current || readings.length < 2) return;
+
+    const timestamps = readings.map(r => new Date(r.timestamp));
+    const z = BAND_KEYS.map(key => readings.map(r => r[key] || 0));
+
+    // Build annotations from journal entries
+    const shapes = [];
+    const annotations = [];
+    if (showAnnotations) {
+      journalEntries.forEach(entry => {
+        const t = new Date(entry.timestamp);
+        const catColors = {
+          inspection: '#3b82f6', treatment: '#8b5cf6', feeding: '#f59e0b',
+          observation: '#10b981', event: '#06b6d4', concern: '#ef4444',
+        };
+        shapes.push({
+          type: 'line', x0: t, x1: t, y0: -0.5, y1: 5.5,
+          line: { color: catColors[entry.category] || '#6b7280', width: 2, dash: 'dot' },
+        });
+        annotations.push({
+          x: t, y: 5.8, text: entry.category[0].toUpperCase(),
+          showarrow: false,
+          font: { size: 10, color: catColors[entry.category] || '#6b7280', family: 'sans-serif' },
+          bgcolor: 'rgba(255,255,255,0.8)', borderpad: 2,
+        });
+      });
+    }
+
+    Plotly.react(spectroRef.current, [{
+      z, x: timestamps, y: MEL_BANDS,
+      type: 'heatmap',
+      colorscale: [
+        [0, '#0d1117'], [0.15, '#1a1a4e'], [0.3, '#3b0764'],
+        [0.45, '#7c2d12'], [0.6, '#f59e0b'], [0.8, '#fbbf24'], [1, '#fef3c7'],
+      ],
+      colorbar: { title: 'Energy', titleside: 'right', thickness: 15, len: 0.9 },
+      hoverongaps: false,
+      hovertemplate: '%{y}<br>%{x|%H:%M:%S}<br>Energy: %{z:.4f}<extra></extra>',
+    }], {
+      title: { text: 'Mel Spectrogram', font: { size: 16, color: '#1f2937' } },
+      xaxis: {
+        title: 'Time',
+        type: 'date',
+        rangeslider: { visible: true, thickness: 0.08 },
+      },
+      yaxis: {
+        title: 'Mel Band (Hz)',
+        type: 'category',
+        categoryorder: 'array',
+        categoryarray: MEL_BANDS,
+      },
+      shapes, annotations,
+      margin: { l: 80, r: 30, t: 50, b: 80 },
+      paper_bgcolor: '#ffffff',
+      plot_bgcolor: '#ffffff',
+      height: 450,
+    }, {
+      responsive: true,
+      displayModeBar: true,
+      modeBarButtonsToAdd: ['toImage'],
+      toImageButtonOptions: {
+        format: 'svg', filename: 'hiveguard_spectrogram', width: 1200, height: 500, scale: 2,
+      },
+    });
+  }, [readings, journalEntries, showAnnotations]);
+
+  // Spectral centroid timeline with Plotly
+  useEffect(() => {
+    if (!centroidRef.current || readings.length < 2) return;
+
+    const timestamps = readings.map(r => new Date(r.timestamp));
+    const centroid = readings.map(r => r.spectral_centroid || 0);
+    const harmonicity = readings.map(r => r.harmonicity || 0);
+    const soundLevel = readings.map(r => r.sound_level || 0);
+
+    Plotly.react(centroidRef.current, [
+      {
+        x: timestamps, y: centroid, type: 'scatter', mode: 'lines',
+        name: 'Spectral Centroid (Hz)', line: { color: '#8b5cf6', width: 2 },
+        yaxis: 'y',
+      },
+      {
+        x: timestamps, y: harmonicity, type: 'scatter', mode: 'lines',
+        name: 'Harmonicity', line: { color: '#10b981', width: 2 },
+        yaxis: 'y2',
+      },
+      {
+        x: timestamps, y: soundLevel, type: 'bar',
+        name: 'Sound Level (%)', marker: { color: 'rgba(245,158,11,0.3)' },
+        yaxis: 'y3',
+      },
+    ], {
+      title: { text: 'Spectral Centroid & Harmonicity Timeline', font: { size: 16, color: '#1f2937' } },
+      xaxis: { title: 'Time', type: 'date', rangeslider: { visible: true, thickness: 0.08 } },
+      yaxis: { title: 'Centroid (Hz)', side: 'left', showgrid: false },
+      yaxis2: { title: 'Harmonicity', side: 'right', overlaying: 'y', range: [0, 1], showgrid: false },
+      yaxis3: { overlaying: 'y', visible: false, range: [0, 200] },
+      legend: { orientation: 'h', y: -0.25 },
+      margin: { l: 60, r: 60, t: 50, b: 80 },
+      paper_bgcolor: '#ffffff',
+      plot_bgcolor: '#ffffff',
+      height: 380,
+    }, {
+      responsive: true,
+      displayModeBar: true,
+      toImageButtonOptions: { format: 'svg', filename: 'hiveguard_centroid', width: 1200, height: 450, scale: 2 },
+    });
+  }, [readings]);
+
+  const exportCSV = () => {
+    if (readings.length === 0) return;
+    const keys = ['timestamp', 'dominant_freq', 'sound_level', 'spectral_centroid', 'harmonicity',
+      ...BAND_KEYS, 'spectral_rolloff', 'spectral_flux', 'zero_crossing_rate',
+      'spectral_spread', 'spectral_skewness', 'spectral_kurtosis',
+      'short_term_energy', 'mid_term_energy', 'long_term_energy', 'energy_entropy',
+      'activity_increase', 'bee_state', 'confidence'];
+    const header = keys.join(',');
+    const rows = readings.map(r => keys.map(k => r[k] ?? '').join(','));
+    const csv = header + '\n' + rows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `hiveguard_spectral_export_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+  };
+
+  if (readings.length < 2) {
+    return (
+      <div className="chart-section">
+        <div className="analytics-card full-width" style={{textAlign:'center', padding:'60px'}}>
+          <h3>Not enough data for spectrogram</h3>
+          <p style={{color:'#6b7280'}}>Collect more readings to generate spectral visualizations.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="chart-section">
+      {/* Controls */}
+      <div style={{display:'flex', gap:'12px', marginBottom:'16px', alignItems:'center', flexWrap:'wrap'}}>
+        <label style={{display:'flex', alignItems:'center', gap:'6px', fontSize:'13px', color:'#374151', cursor:'pointer'}}>
+          <input type="checkbox" checked={showAnnotations}
+            onChange={e => setShowAnnotations(e.target.checked)} />
+          Show journal annotations
+        </label>
+        <button onClick={exportCSV} style={{
+          padding:'8px 16px', background:'#3b82f6', color:'#fff',
+          border:'none', borderRadius:'8px', fontWeight:600, cursor:'pointer', fontSize:'13px',
+          marginLeft:'auto',
+        }}>
+          Export Spectral CSV
+        </button>
+      </div>
+
+      {/* Mel Spectrogram Heatmap */}
+      <div className="analytics-card full-width">
+        <h3>Mel Spectrogram</h3>
+        <p style={{fontSize:'12px', color:'#6b7280', margin:'-4px 0 12px'}}>
+          Time-frequency heatmap showing energy distribution across mel-spaced bands.
+          Use the range slider to zoom. Click the camera icon to export as SVG.
+          {showAnnotations && journalEntries.length > 0 &&
+            ` Showing ${journalEntries.length} journal annotations as dotted lines.`}
+        </p>
+        <div ref={spectroRef} />
+      </div>
+
+      {/* Centroid + Harmonicity Timeline */}
+      <div className="analytics-card full-width" style={{marginTop:'16px'}}>
+        <h3>Spectral Centroid & Harmonicity</h3>
+        <p style={{fontSize:'12px', color:'#6b7280', margin:'-4px 0 12px'}}>
+          Centroid shows where the sound's "center of gravity" sits. Harmonicity measures tonal purity — queen piping scores 0.7+, weather noise below 0.15.
+        </p>
+        <div ref={centroidRef} />
+      </div>
+
+      {/* Quick Stats */}
+      <div className="analytics-card full-width" style={{marginTop:'16px'}}>
+        <h3>Session Statistics</h3>
+        <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(150px,1fr))', gap:'10px'}}>
+          {(() => {
+            const vals = (key) => readings.filter(r => r[key] != null && r[key] !== 0).map(r => r[key]);
+            const stat = (key, label, unit, dec) => {
+              const v = vals(key);
+              if (!v.length) return null;
+              const avg = v.reduce((a,b)=>a+b,0)/v.length;
+              const std = Math.sqrt(v.reduce((a,b)=>a+(b-avg)**2,0)/v.length);
+              return (
+                <div key={key} style={{background:'#f9fafb', borderRadius:'8px', padding:'10px', border:'1px solid #e5e7eb'}}>
+                  <div style={{fontSize:'11px', fontWeight:600, color:'#6b7280'}}>{label}</div>
+                  <div style={{fontSize:'16px', fontWeight:700, color:'#1f2937'}}>
+                    {avg.toFixed(dec)}{unit}
+                  </div>
+                  <div style={{fontSize:'10px', color:'#9ca3af'}}>
+                    &sigma; {std.toFixed(dec)} | {Math.min(...v).toFixed(dec)}&ndash;{Math.max(...v).toFixed(dec)}
+                  </div>
+                </div>
+              );
+            };
+            return [
+              stat('spectral_centroid', 'Centroid', ' Hz', 0),
+              stat('harmonicity', 'Harmonicity', '', 3),
+              stat('dominant_freq', 'Dom. Freq', ' Hz', 0),
+              stat('sound_level', 'Sound Level', '%', 1),
+              stat('spectral_flux', 'Flux', '', 1),
+              stat('zero_crossing_rate', 'ZCR', '', 4),
+              stat('spectral_spread', 'Spread', ' Hz', 0),
+              stat('energy_entropy', 'Entropy', '', 4),
+              stat('activity_increase', 'Activity', 'x', 3),
+            ].filter(Boolean);
+          })()}
+        </div>
+      </div>
     </div>
   );
 }
