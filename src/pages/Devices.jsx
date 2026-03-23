@@ -138,6 +138,7 @@ function Devices({ user, onLogout }) {
       <Link to="/analytics" className="nav-item"><span className="nav-icon">🔬</span> Analytics</Link>
       <Link to="/upload" className="nav-item"><span className="nav-icon">⬆️</span> Upload Data</Link>
       <Link to="/devices" className="nav-item active"><span className="nav-icon">📟</span> My Hives</Link>
+          <Link to="/journal" className="nav-item"><span className="nav-icon">📝</span> Journal</Link>
       <Link to="/alerts" className="nav-item"><span className="nav-icon">🔔</span> Alerts</Link>
       <Link to="/profile" className="nav-item"><span className="nav-icon">👤</span> Profile</Link>
       {user?.is_admin && <Link to="/admin" className="nav-item"><span className="nav-icon">⚙️</span> Admin</Link>}
