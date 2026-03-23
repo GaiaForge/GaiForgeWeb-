@@ -182,12 +182,12 @@ function Analytics({ user, onLogout }) {
       { key: 'spectral_centroid', label: 'Spectral Centroid' },
       { key: 'peak_to_avg', label: 'Peak to Avg Ratio' },
       { key: 'harmonicity', label: 'Harmonicity' },
-      { key: 'band_0_200', label: 'Band 0-200 Hz' },
-      { key: 'band_200_400', label: 'Band 200-400 Hz' },
-      { key: 'band_400_600', label: 'Band 400-600 Hz' },
-      { key: 'band_600_800', label: 'Band 600-800 Hz' },
-      { key: 'band_800_1000', label: 'Band 800-1000 Hz' },
-      { key: 'band_1000_plus', label: 'Band 1000+ Hz' },
+      { key: 'band_0_200', label: 'Mel 100-362 Hz' },
+      { key: 'band_200_400', label: 'Mel 362-734 Hz' },
+      { key: 'band_400_600', label: 'Mel 734-1253 Hz' },
+      { key: 'band_600_800', label: 'Mel 1253-1979 Hz' },
+      { key: 'band_800_1000', label: 'Mel 1979-2999 Hz' },
+      { key: 'band_1000_plus', label: 'Mel 2999+ Hz' },
       { key: 'spectral_rolloff', label: 'Spectral Rolloff' },
       { key: 'spectral_flux', label: 'Spectral Flux' },
       { key: 'zero_crossing_rate', label: 'Zero Crossing Rate' },
@@ -842,17 +842,17 @@ function Analytics({ user, onLogout }) {
                           <YAxis label={{value: 'Energy', position: 'insideTopLeft'}} />
                           <Tooltip content={<ChartTooltip />} />
                           <Legend />
-                          <Area type="monotone" dataKey="band_0_200" name="0-200 Hz" stackId="1"
+                          <Area type="monotone" dataKey="band_0_200" name="100-362 Hz" stackId="1"
                             stroke="#6366f1" fill="#6366f1" fillOpacity={0.6} />
-                          <Area type="monotone" dataKey="band_200_400" name="200-400 Hz" stackId="1"
+                          <Area type="monotone" dataKey="band_200_400" name="362-734 Hz" stackId="1"
                             stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.6} />
-                          <Area type="monotone" dataKey="band_400_600" name="400-600 Hz" stackId="1"
+                          <Area type="monotone" dataKey="band_400_600" name="734-1253 Hz" stackId="1"
                             stroke="#10b981" fill="#10b981" fillOpacity={0.6} />
-                          <Area type="monotone" dataKey="band_600_800" name="600-800 Hz" stackId="1"
+                          <Area type="monotone" dataKey="band_600_800" name="1253-1979 Hz" stackId="1"
                             stroke="#ef4444" fill="#ef4444" fillOpacity={0.6} />
-                          <Area type="monotone" dataKey="band_800_1000" name="800-1000 Hz" stackId="1"
+                          <Area type="monotone" dataKey="band_800_1000" name="1979-2999 Hz" stackId="1"
                             stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.6} />
-                          <Area type="monotone" dataKey="band_1000_plus" name="1000+ Hz" stackId="1"
+                          <Area type="monotone" dataKey="band_1000_plus" name="2999+ Hz" stackId="1"
                             stroke="#6b7280" fill="#6b7280" fillOpacity={0.6} />
                         </AreaChart>
                       </ResponsiveContainer>
