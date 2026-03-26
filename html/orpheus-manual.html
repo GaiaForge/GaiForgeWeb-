@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orpheus User Manual | GaiaForge</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .manual-content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+      font-family: 'Open Sans', sans-serif;
+      color: #333;
+      line-height: 1.8;
+    }
+    .manual-content h1 {
+      font-family: 'Cinzel', serif;
+      color: var(--primary-green);
+      font-size: 2.2rem;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .manual-subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 40px;
+      font-size: 1.1rem;
+    }
+    .manual-content h2 {
+      font-family: 'Cinzel', serif;
+      color: var(--primary-green);
+      font-size: 1.5rem;
+      margin-top: 50px;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid rgba(76, 140, 74, 0.2);
+    }
+    .manual-content h3 {
+      font-family: 'Montserrat', sans-serif;
+      color: #444;
+      font-size: 1.15rem;
+      margin-top: 30px;
+      margin-bottom: 10px;
+    }
+    .manual-content ul, .manual-content ol {
+      padding-left: 25px;
+      margin-bottom: 20px;
+    }
+    .manual-content li {
+      margin-bottom: 8px;
+    }
+    .manual-content p {
+      margin-bottom: 15px;
+    }
+    .note-box {
+      background: #f0f7f0;
+      border-left: 4px solid var(--primary-green);
+      padding: 15px 20px;
+      margin: 20px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .warning-box {
+      background: #fff8e1;
+      border-left: 4px solid #e6a817;
+      padding: 15px 20px;
+      margin: 20px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .toc {
+      background: #f8f9fa;
+      padding: 25px 30px;
+      border-radius: 12px;
+      margin-bottom: 40px;
+    }
+    .toc h3 { margin-top: 0; }
+    .toc ol { margin-bottom: 0; }
+    .toc a { color: var(--primary-green); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    .back-link {
+      text-align: center;
+      margin-top: 50px;
+    }
+    .back-link a {
+      color: var(--primary-green);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    @media print {
+      .site-header, .site-footer, .back-link { display: none; }
+      .manual-content { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <a href="index.html"><img src="images/gaiaforge-logo.png" alt="GaiaForge Logo"></a>
+        </div>
+        <nav class="main-nav">
+          <button class="menu-toggle" aria-label="Toggle navigation">
+            <span></span><span></span><span></span><span></span>
+          </button>
+          <ul class="nav-menu">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="our-story.html">Our Story</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle active">Products</a>
+              <ul class="dropdown-menu">
+                <li><a href="orpheus.html" class="active">Orpheus</a></li>
+                <li><a href="sprigrig.html">SprigRig</a></li>
+                <li><a href="hiveguard.html">HiveGuard</a></li>
+              </ul>
+            </li>
+            <li><a href="/portal" target="_blank">Portal</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <div class="manual-content">
+    <h1>Orpheus Audio Player</h1>
+    <p class="manual-subtitle">User Manual &mdash; Version 1.8 &mdash; 2026</p>
+
+    <div class="toc">
+      <h3>Contents</h3>
+      <ol>
+        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#legal">Legal and Ethical Use</a></li>
+        <li><a href="#overview">System Overview</a></li>
+        <li><a href="#getting-started">Getting Started</a></li>
+        <li><a href="#interface">Main Interface</a></li>
+        <li><a href="#playback">Playback Modes</a></li>
+        <li><a href="#companion-app">Companion App</a></li>
+        <li><a href="#settings">System Settings</a></li>
+        <li><a href="#power">Power Management</a></li>
+        <li><a href="#field">Field Deployment Tips</a></li>
+        <li><a href="#troubleshooting">Troubleshooting</a></li>
+        <li><a href="#maintenance">Maintenance</a></li>
+        <li><a href="#support">Support</a></li>
+      </ol>
+    </div>
+
+    <h2 id="introduction">1. Introduction</h2>
+    <p>Welcome to the Orpheus Audio Player System — a fully assembled, ruggedized solution for scheduled wildlife audio playback. Orpheus was originally developed for ornithological research in demanding field environments, with all hardware and software components engineered to function together seamlessly. This manual provides guidance on operating and maintaining the device, along with important information on lawful and ethical usage.</p>
+
+    <h2 id="legal">2. Legal and Ethical Use</h2>
+    <p>Orpheus is intended for research, educational, and lawful observation of wildlife. Some jurisdictions regulate or prohibit the use of recorded calls to attract, capture, or hunt animals. Users are solely responsible for ensuring they comply with all applicable local, regional, and national laws regarding wildlife protection, conservation, and hunting. This may include:</p>
+    <ul>
+      <li>Obtaining any necessary permits or licenses</li>
+      <li>Adhering to restrictions on using audio lures for disturbing or capturing protected species</li>
+      <li>Following ethical guidelines to avoid undue stress on wildlife</li>
+    </ul>
+    <div class="warning-box">
+      <strong>Disclaimer:</strong> GaiaForge Technology assumes no liability for damages, fines, or legal consequences resulting from misuse or unauthorized use of this device. By operating the Orpheus Audio Player, you acknowledge responsibility for its deployment and agree to abide by relevant laws.
+    </div>
+
+    <h2 id="overview">3. System Overview</h2>
+    <p>Orpheus is delivered as a fully integrated unit featuring all core hardware and software:</p>
+    <ul>
+      <li><strong>Raspberry Pi Zero 2 W</strong> serving as the primary processor, running DietPi Linux</li>
+      <li><strong>ESP32 microcontroller</strong> for power management, BLE communication, and sleep/wake scheduling</li>
+      <li><strong>DS3234 Real-Time Clock (RTC)</strong> with battery backup for accurate timekeeping during sleep</li>
+      <li>Class D audio amplifier and speaker system</li>
+      <li>High-capacity LiFePO4 battery with solar charging</li>
+      <li>Touchscreen display for on-device control</li>
+      <li>Weatherproof enclosure and connectors</li>
+    </ul>
+    <p>Available in <strong>Basic</strong> and <strong>Pro</strong> versions, the system supports the following capabilities:</p>
+    <ul>
+      <li><strong>Manual Playback:</strong> Direct user control over audio (Pro includes PA mode and Bluetooth speaker connection)</li>
+      <li><strong>Interval Playback:</strong> Time-based scheduling</li>
+      <li><strong>Astral Playback:</strong> Scheduling based on local sunrise/sunset</li>
+      <li><strong>Seasonal Playback:</strong> Timing aligned to natural or custom seasons</li>
+      <li><strong>Recording Mode:</strong> Capturing environmental audio for analysis (Pro only)</li>
+      <li><strong>Analytics:</strong> Tracking and exporting playback data (Pro only)</li>
+      <li><strong>Companion App:</strong> Remote control and monitoring via Bluetooth from your phone</li>
+      <li><strong>Power Management:</strong> Optimizing battery usage via smart sleep/wake cycles</li>
+    </ul>
+
+    <h2 id="getting-started">4. Getting Started</h2>
+    <h3>Unboxing and Setup</h3>
+    <ol>
+      <li><strong>Inspect the Device:</strong> Remove Orpheus from the packaging and ensure all components (enclosure, speaker connections, connectors) are intact.</li>
+      <li><strong>Power Connection:</strong> Connect the provided LiFePO4 battery using the XT60 connector. Connect the MC4 solar connectors observing polarity.</li>
+      <li><strong>First Boot:</strong> Press the power switch. The touchscreen will display the Orpheus interface after approximately 60 seconds.</li>
+      <li><strong>Location Setup:</strong> Go to <strong>Settings &rarr; Astral Setup</strong> and enter your GPS coordinates (latitude, longitude) and timezone for correct sunrise/sunset calculations.</li>
+      <li><strong>Speaker Check:</strong> Connect speakers to the waterproof connectors. Confirm audio output by playing the test tone in Manual mode.</li>
+      <li><strong>Set Time (if needed):</strong> The device includes a battery-backed real-time clock (RTC) that maintains accurate time. If the time appears incorrect, set it manually under <strong>Settings &rarr; Time &amp; Date</strong>.</li>
+    </ol>
+    <div class="note-box">
+      <strong>Note:</strong> Orpheus comes preloaded with all necessary software. No image flashing or assembly is required.
+    </div>
+
+    <h2 id="interface">5. Main Interface</h2>
+    <ul>
+      <li><strong>Mode Selector:</strong> Touchscreen menu offering Manual, Interval, Astral, Seasonal, or Recording modes.</li>
+      <li><strong>Toolbar:</strong> Quick access to System Settings, File Management, Analytics, and Power options.</li>
+      <li><strong>Status Area:</strong> Displays current date/time, active playback status, and battery level.</li>
+      <li><strong>Main Panel:</strong> Changes based on the mode selected.</li>
+    </ul>
+
+    <h2 id="playback">6. Playback Modes</h2>
+
+    <h3>Manual Playback</h3>
+    <ol>
+      <li>Select <strong>Load Audio</strong> to choose a file.</li>
+      <li>Use <strong>Play</strong>, <strong>Pause</strong>, or <strong>Stop</strong> buttons.</li>
+      <li>Track information appears in the Status Area.</li>
+    </ol>
+
+    <h3>Interval Playback</h3>
+    <ol>
+      <li>Select <strong>Set Interval</strong> to create a time-based schedule (daily, weekdays, weekends, or custom).</li>
+      <li>Set start/end times and assign audio files or playlists.</li>
+      <li>Orpheus automatically plays audio during those intervals.</li>
+    </ol>
+
+    <h3>Astral Playback</h3>
+    <ol>
+      <li>Under <strong>Set Astral Interval</strong>, choose Sunrise or Sunset as your baseline.</li>
+      <li>Define how many hours before/after these times playback should occur.</li>
+      <li>Orpheus recalculates sunrise/sunset daily using your GPS coordinates.</li>
+    </ol>
+    <div class="note-box">
+      <strong>Tip:</strong> For dawn chorus studies, set playback to begin 30 minutes before sunrise. Orpheus will automatically shift the schedule as sunrise times change with the seasons.
+    </div>
+
+    <h3>Seasonal Playback</h3>
+    <ol>
+      <li>Choose <strong>Natural Seasons</strong> (Spring, Summer, Fall, Winter) or enable <strong>Custom Seasons</strong> to define your own date ranges.</li>
+      <li>Assign audio files, playlists, or interval schedules to each season.</li>
+      <li>Particularly useful for matching migration patterns or breeding seasons.</li>
+    </ol>
+
+    <h3>Recording Mode (Pro Only)</h3>
+    <ol>
+      <li><strong>Select USB Device:</strong> Connect a USB flash drive for recording storage.</li>
+      <li><strong>Adjust Audio Quality:</strong> Select bit depth (16-bit, 24-bit, or 32-bit float) and sample rate.</li>
+      <li><strong>Schedule Recording:</strong> Set when recording should begin and end, or record manually.</li>
+      <li><strong>Start Recording:</strong> Captures environmental sounds; the status area shows elapsed time and remaining space.</li>
+      <li><strong>Stop Recording:</strong> Finalizes and saves the audio file to USB.</li>
+    </ol>
+
+    <h2 id="companion-app">7. Companion App</h2>
+    <p>Orpheus includes a companion mobile app for remote control and monitoring via Bluetooth Low Energy (BLE).</p>
+
+    <h3>Getting the App</h3>
+    <ul>
+      <li><strong>Android:</strong> Download the APK from <a href="orpheus.html">gaiaforge.tech/orpheus</a> and install it on your device. You may need to enable "Install from unknown sources" in your phone's settings.</li>
+      <li><strong>iOS:</strong> Available on the App Store (coming soon).</li>
+    </ul>
+
+    <h3>Connecting to Your Device</h3>
+    <ol>
+      <li>Open the Orpheus app on your phone.</li>
+      <li>The app will scan for nearby Orpheus devices via Bluetooth.</li>
+      <li>Tap your device in the list (e.g., "Orpheus-91BD").</li>
+      <li>The app will connect via BLE, wake the device if sleeping, and activate the WiFi hotspot.</li>
+      <li>Join the Orpheus WiFi hotspot on your phone (e.g., <strong>Orpheus-XXXX</strong>, where XXXX is your device ID). The hotspot is an open network with no password.</li>
+      <li>The app will automatically connect to the full dashboard over WiFi.</li>
+    </ol>
+
+    <h3>App Features</h3>
+    <ul>
+      <li>View real-time battery voltage, charge state, and solar input</li>
+      <li>Configure playback modes and schedules remotely</li>
+      <li>Set device time, timezone, and location</li>
+      <li>Send commands: sleep, wake, restart</li>
+      <li>View environmental sensor data (Pro)</li>
+      <li>Access diagnostics and system status</li>
+    </ul>
+    <div class="note-box">
+      <strong>Note:</strong> The WiFi hotspot automatically turns off after 5 minutes of inactivity to save power. Use the app to reactivate it when needed.
+    </div>
+
+    <h2 id="settings">8. System Settings</h2>
+
+    <h3>Audio File Management</h3>
+    <ul>
+      <li>Access via the "Audio" icon or from the main menu.</li>
+      <li>Review, delete, and manage files stored on Orpheus.</li>
+      <li><strong>USB Import:</strong> Connect a USB flash drive to add audio tracks.</li>
+      <li><strong>USB Export:</strong> Copy audio tracks from the device to a USB flash drive.</li>
+      <li>Supported formats: WAV and MP3.</li>
+    </ul>
+
+    <h3>Astral Setup</h3>
+    <ul>
+      <li>Enter or confirm GPS coordinates and local timezone.</li>
+      <li>Define a device nickname (e.g., "Zone 1") for easy identification.</li>
+      <li>The device uses these coordinates to calculate accurate sunrise and sunset times for your location.</li>
+    </ul>
+
+    <h3>Time and Date</h3>
+    <ul>
+      <li>Orpheus includes a battery-backed DS3234 real-time clock that maintains accurate time even when the device is powered off or in deep sleep.</li>
+      <li>The RTC battery lasts 3-6 years under normal use.</li>
+      <li>Time can be set manually through the touchscreen or synced via the companion app.</li>
+      <li>The system clock automatically syncs from the RTC on every boot and periodically during operation.</li>
+    </ul>
+
+    <h3>GPIO Settings</h3>
+    <ul>
+      <li>The GPIO controls the amplifier power relay. This can be toggled on/off in settings.</li>
+      <li>Only disable if you are using an external amplifier.</li>
+    </ul>
+
+    <h3>Analytics (Pro Only)</h3>
+    <ul>
+      <li><strong>Enable Logging:</strong> Store detailed data on playback events with timestamps and location.</li>
+      <li><strong>Filter Logs:</strong> Browse logs by date.</li>
+      <li><strong>Export:</strong> Save logs to USB or double-tap for a preview on the touchscreen.</li>
+    </ul>
+
+    <h2 id="power">9. Power Management</h2>
+    <p>Orpheus uses a sophisticated power management system built around the ESP32 microcontroller and DS3234 real-time clock.</p>
+
+    <h3>How It Works</h3>
+    <ol>
+      <li>When playback is complete or during scheduled downtime, the Raspberry Pi calculates the next required wake time and sends it to the ESP32.</li>
+      <li>The Raspberry Pi shuts down completely, and the ESP32 cuts power to it.</li>
+      <li>The ESP32 enters a low-power state, monitoring the RTC for the next scheduled wake time.</li>
+      <li>When the wake time arrives, the ESP32 restores power to the Raspberry Pi, which boots and resumes operation.</li>
+    </ol>
+
+    <h3>Deep Sleep Mode</h3>
+    <ul>
+      <li>Enable or disable deep sleep under <strong>Settings &rarr; Power Management</strong>.</li>
+      <li>When enabled, the device automatically sleeps between scheduled events, drastically reducing power consumption.</li>
+      <li>The manual wake button on the enclosure can bring the system online at any time.</li>
+      <li>The companion app can also wake the device remotely via BLE.</li>
+    </ul>
+
+    <h3>Solar Charging</h3>
+    <ul>
+      <li>Connect solar panels via the MC4 connectors, observing correct polarity.</li>
+      <li>The Pro version includes real-time solar monitoring showing voltage, current, and power flow.</li>
+      <li>For optimal results, position the solar panel facing south (Northern Hemisphere) or north (Southern Hemisphere) at an angle matching your latitude.</li>
+    </ul>
+
+    <div class="note-box">
+      <strong>Battery Life Tip:</strong> Longer intervals between playback events yield greater battery savings. A typical deployment with 2-3 hours of daily playback and adequate solar input can run indefinitely.
+    </div>
+
+    <h2 id="field">10. Field Deployment Tips</h2>
+    <ul>
+      <li><strong>Initial Monitoring:</strong> For the first few days after deployment, check battery levels and playback logs to confirm the system is operating as expected.</li>
+      <li><strong>Weather Protection:</strong> Orpheus ships in a weather-sealed enclosure. Ensure all connectors remain properly seated and sealed.</li>
+      <li><strong>Speaker Placement:</strong> Position speakers to project sound toward the target area. Avoid placing speakers directly on the ground where moisture can collect.</li>
+      <li><strong>WiFi Hotspot:</strong> Each Orpheus unit broadcasts its own WiFi hotspot (SSID format: <strong>Orpheus-XXXX</strong>). Connect to this network from your phone to access the companion app dashboard. The hotspot has a range of approximately 30 meters and automatically deactivates after 5 minutes to conserve power.</li>
+      <li><strong>Data Collection:</strong> Regularly export logs and recordings via USB for analysis.</li>
+      <li><strong>Time Accuracy:</strong> The onboard RTC maintains time to within a few seconds per month. If the device has been in storage for an extended period, verify the time after the first boot.</li>
+    </ul>
+
+    <h2 id="troubleshooting">11. Troubleshooting</h2>
+
+    <h3>System Won't Power On</h3>
+    <ol>
+      <li>Check the battery connection and verify the power switch is on.</li>
+      <li>Press the manual wake button on the enclosure.</li>
+      <li>If the system still won't start, press the master power switch to perform a full reset.</li>
+      <li>Contact support if none of these methods work.</li>
+    </ol>
+
+    <h3>No Audio Output</h3>
+    <ul>
+      <li>Confirm GPIO amplifier control is enabled under <strong>Settings &rarr; GPIO Settings</strong>.</li>
+      <li>Verify volume levels are not set to zero.</li>
+      <li>Ensure Mute is not activated in the current playback mode.</li>
+      <li>Check speaker connections at the waterproof connectors.</li>
+    </ul>
+
+    <h3>Scheduled Playback Not Triggering</h3>
+    <ul>
+      <li>Verify the system time is correct under <strong>Settings &rarr; Time &amp; Date</strong>.</li>
+      <li>Check that GPS coordinates and timezone are set correctly.</li>
+      <li>Review the interval or astral/seasonal configuration for errors.</li>
+      <li>Ensure the assigned audio file is not corrupted (WAV or MP3 format only).</li>
+    </ul>
+
+    <h3>Time Appears Incorrect After Reboot</h3>
+    <ul>
+      <li>The system automatically syncs from the RTC on boot. If time is wrong, the RTC battery may need replacement.</li>
+      <li>Set the time manually via the touchscreen or companion app, which will also update the RTC.</li>
+      <li>Check the RTC status indicator under <strong>Settings &rarr; Time &amp; Date</strong>.</li>
+    </ul>
+
+    <h3>Companion App Won't Connect</h3>
+    <ul>
+      <li>Ensure Bluetooth is enabled on your phone and the phone is within range (approximately 10 meters).</li>
+      <li>On Android, grant "Nearby devices" and "Location" permissions to the Orpheus app.</li>
+      <li>After connecting via BLE, join the Orpheus WiFi hotspot on your phone.</li>
+      <li>If the dashboard doesn't load, wait 15-20 seconds &mdash; the WiFi connection can take a moment to establish.</li>
+    </ul>
+
+    <h3>Recording Issues (Pro Only)</h3>
+    <ul>
+      <li>Confirm sufficient storage space on the USB device.</li>
+      <li>Check microphone or external audio input connections.</li>
+      <li>Ensure the USB device is properly formatted (FAT32 or exFAT recommended).</li>
+    </ul>
+
+    <h2 id="maintenance">12. Maintenance</h2>
+
+    <h3>Software Updates</h3>
+    <p>Software updates are deployed by your GaiaForge representative using the Orpheus Updater tool. During a service visit or when connected to your device's WiFi hotspot, the representative will transfer updated files and rebuild the application. No user action is typically required.</p>
+    <p>If you need to perform an update yourself, contact <a href="mailto:contact@gaiaforge.tech">contact@gaiaforge.tech</a> for instructions.</p>
+
+    <h3>File Management</h3>
+    <ul>
+      <li>Regularly remove unused audio or log files to free storage space.</li>
+      <li>Back up important configurations and recordings to USB.</li>
+    </ul>
+
+    <h3>Hardware Maintenance</h3>
+    <ul>
+      <li>Periodically inspect connectors and seals for wear or moisture ingress.</li>
+      <li>Clean solar panels to maintain charging efficiency.</li>
+      <li>The RTC battery (CR2032) should be replaced every 3-6 years if timekeeping becomes unreliable.</li>
+    </ul>
+
+    <h2 id="support">13. Support</h2>
+    <ul>
+      <li>Email: <a href="mailto:contact@gaiaforge.tech">contact@gaiaforge.tech</a></li>
+      <li>Visit <a href="orpheus.html">gaiaforge.tech/orpheus</a> for the latest downloads and documentation.</li>
+      <li>For questions on legal usage, contact local authorities or your institution's compliance office.</li>
+    </ul>
+
+    <div class="warning-box">
+      <strong>Legal Compliance:</strong> Use of recorded calls for wildlife attraction, capture, or hunting may be restricted or prohibited in your jurisdiction. Obtain all necessary permits. You are responsible for complying with environmental, conservation, and hunting regulations. High-volume or constant playback may disturb wildlife &mdash; use responsibly to minimize ecological impact.
+    </div>
+
+    <p style="text-align: center; color: #999; margin-top: 50px;">&copy; 2026 GaiaForge Technology. All rights reserved.</p>
+
+    <div class="back-link">
+      <a href="orpheus.html">&larr; Back to Orpheus Product Page</a>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-column">
+          <h4 class="footer-title">About <span class="brand-name">GaiaForge</span></h4>
+          <p class="footer-description">Tools for those who protect life on Earth</p>
+        </div>
+        <div class="footer-column">
+          <h4 class="footer-title">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="orpheus.html">Orpheus</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4 class="footer-title">Contact Us</h4>
+          <ul class="footer-links">
+            <li><i class="fas fa-envelope"></i> <a href="mailto:contact@gaiaforge.tech">contact@gaiaforge.tech</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; <span id="current-year">2026</span> <span class="brand-name">GaiaForge</span><sup>&reg;</sup>. All Rights Reserved.</p>
+      </div>
+    </div>
+  </footer>
+  <script src="js/main.js"></script>
+  <script>document.getElementById('current-year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
