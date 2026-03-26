@@ -167,9 +167,9 @@
     <h2 id="overview">3. System Overview</h2>
     <p>Orpheus is delivered as a fully integrated unit featuring all core hardware and software:</p>
     <ul>
-      <li><strong>Raspberry Pi Zero 2 W</strong> serving as the primary processor, running DietPi Linux</li>
-      <li><strong>ESP32 microcontroller</strong> for power management, BLE communication, and sleep/wake scheduling</li>
-      <li><strong>DS3234 Real-Time Clock (RTC)</strong> with battery backup for accurate timekeeping during sleep</li>
+      <li>Onboard processor with dedicated power management controller</li>
+      <li>Battery-backed real-time clock (RTC) for accurate timekeeping during sleep</li>
+      <li>Bluetooth Low Energy (BLE) for companion app connectivity</li>
       <li>Class D audio amplifier and speaker system</li>
       <li>High-capacity LiFePO4 battery with solar charging</li>
       <li>Touchscreen display for on-device control</li>
@@ -303,7 +303,7 @@
 
     <h3>Time and Date</h3>
     <ul>
-      <li>Orpheus includes a battery-backed DS3234 real-time clock that maintains accurate time even when the device is powered off or in deep sleep.</li>
+      <li>Orpheus includes a battery-backed real-time clock that maintains accurate time even when the device is powered off or in deep sleep.</li>
       <li>The RTC battery lasts 3-6 years under normal use.</li>
       <li>Time can be set manually through the touchscreen or synced via the companion app.</li>
       <li>The system clock automatically syncs from the RTC on every boot and periodically during operation.</li>
@@ -323,14 +323,14 @@
     </ul>
 
     <h2 id="power">9. Power Management</h2>
-    <p>Orpheus uses a sophisticated power management system built around the ESP32 microcontroller and DS3234 real-time clock.</p>
+    <p>Orpheus uses a sophisticated power management system with a dedicated low-power controller and battery-backed real-time clock.</p>
 
     <h3>How It Works</h3>
     <ol>
-      <li>When playback is complete or during scheduled downtime, the Raspberry Pi calculates the next required wake time and sends it to the ESP32.</li>
-      <li>The Raspberry Pi shuts down completely, and the ESP32 cuts power to it.</li>
-      <li>The ESP32 enters a low-power state, monitoring the RTC for the next scheduled wake time.</li>
-      <li>When the wake time arrives, the ESP32 restores power to the Raspberry Pi, which boots and resumes operation.</li>
+      <li>When playback is complete or during scheduled downtime, the system calculates the next required wake time and stores it in the power controller.</li>
+      <li>The main processor shuts down completely, and the power controller cuts power to it.</li>
+      <li>The power controller enters a low-power state, monitoring the clock for the next scheduled wake time.</li>
+      <li>When the wake time arrives, the power controller restores power and the system boots and resumes operation.</li>
     </ol>
 
     <h3>Deep Sleep Mode</h3>
@@ -426,7 +426,7 @@
     <ul>
       <li>Periodically inspect connectors and seals for wear or moisture ingress.</li>
       <li>Clean solar panels to maintain charging efficiency.</li>
-      <li>The RTC battery (CR2032) should be replaced every 3-6 years if timekeeping becomes unreliable.</li>
+      <li>The internal clock battery should be replaced every 3-6 years if timekeeping becomes unreliable. Contact GaiaForge for service.</li>
     </ul>
 
     <h2 id="support">13. Support</h2>
