@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ProductSelector from './pages/ProductSelector';
 import Dashboard from './pages/Dashboard';
 import Analytics from './pages/Analytics';
 import Upload from './pages/Upload';
@@ -10,6 +11,8 @@ import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import Alerts from './pages/Alerts';
 import Journal from './pages/Journal';
+import OrpheusDashboard from './pages/OrpheusDashboard';
+import SprigRigDashboard from './pages/SprigRigDashboard';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import './App.css';
@@ -68,13 +71,17 @@ function App() {
       <div className="App">
         <Routes>
           <Route path="/login" element={
-            isAuthenticated ? <Navigate to="/dashboard" /> : <Login onLogin={handleLogin} />
+            isAuthenticated ? <Navigate to="/products" /> : <Login onLogin={handleLogin} />
           } />
           <Route path="/register" element={
-            isAuthenticated ? <Navigate to="/dashboard" /> : <Register onRegister={handleLogin} />
+            isAuthenticated ? <Navigate to="/products" /> : <Register onRegister={handleLogin} />
           } />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/products" element={
+            isAuthenticated ? <ProductSelector user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
+          } />
+          {/* HiveGuard routes */}
           <Route path="/dashboard" element={
             isAuthenticated ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
           } />
@@ -87,14 +94,23 @@ function App() {
           <Route path="/devices" element={
             isAuthenticated ? <Devices user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
           } />
-          <Route path="/profile" element={
-            isAuthenticated ? <Profile user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
-          } />
           <Route path="/journal" element={
             isAuthenticated ? <Journal user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
           } />
           <Route path="/alerts" element={
             isAuthenticated ? <Alerts user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
+          } />
+          {/* Orpheus routes */}
+          <Route path="/orpheus" element={
+            isAuthenticated ? <OrpheusDashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
+          } />
+          {/* SprigRig routes */}
+          <Route path="/sprigrig" element={
+            isAuthenticated ? <SprigRigDashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
+          } />
+          {/* Shared routes */}
+          <Route path="/profile" element={
+            isAuthenticated ? <Profile user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
           } />
           <Route path="/admin" element={
             isAuthenticated ? <Admin user={user} onLogout={handleLogout} /> : <Navigate to="/login" />

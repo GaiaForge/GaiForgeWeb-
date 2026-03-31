@@ -42,7 +42,7 @@ function Login({ onLogin }) {
         subscription_tier: data.subscription_tier || 'free', is_admin: data.is_admin || false,
       };
       onLogin(userData);
-      navigate('/dashboard');
+      navigate('/products');
     } catch (err) {
       setError(err.message || 'Login failed');
     } finally {

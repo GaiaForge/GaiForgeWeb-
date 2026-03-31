@@ -62,7 +62,7 @@ function Register({ onRegister }) {
         subscription_tier: data.subscription_tier || 'free', is_admin: data.is_admin || false,
       };
       onRegister(userData);
-      navigate('/dashboard');
+      navigate('/products');
     } catch (err) {
       setError(err.message || 'Registration failed');
     } finally {
