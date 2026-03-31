@@ -14,33 +14,15 @@ function OrpheusDashboard({ user, onLogout }) {
     {
       version: '2.1.0',
       date: '2026-03-15',
-      variant: 'Pro',
-      filename: 'Orpheus-Pro-USB-Update-v2.1.0.zip',
+      filename: 'Orpheus-USB-Update-v2.1.0.zip',
       size: '14.2 MB',
       notes: 'Improved scheduling reliability, power management optimizations.',
     },
     {
-      version: '2.1.0',
-      date: '2026-03-15',
-      variant: 'Basic',
-      filename: 'Orpheus-Basic-USB-Update-v2.1.0.zip',
-      size: '12.8 MB',
-      notes: 'Improved scheduling reliability, power management optimizations.',
-    },
-    {
       version: '2.0.3',
       date: '2026-02-01',
-      variant: 'Pro',
-      filename: 'Orpheus-Pro-USB-Update-v2.0.3.zip',
+      filename: 'Orpheus-USB-Update-v2.0.3.zip',
       size: '13.9 MB',
-      notes: 'Bug fix for playlist shuffle mode, audio fade improvements.',
-    },
-    {
-      version: '2.0.3',
-      date: '2026-02-01',
-      variant: 'Basic',
-      filename: 'Orpheus-Basic-USB-Update-v2.0.3.zip',
-      size: '12.5 MB',
       notes: 'Bug fix for playlist shuffle mode, audio fade improvements.',
     },
   ];
@@ -137,8 +119,9 @@ function OrpheusDashboard({ user, onLogout }) {
             <div className="orpheus-info-banner">
               <div className="info-icon">💡</div>
               <div>
-                <strong>How USB updates work:</strong> Download the .zip file for your device variant (Basic or Pro).
+                <strong>How USB updates work:</strong> Download the .zip file below.
                 Extract to a USB drive and insert into your Orpheus device. The device will apply the update on next boot.
+                The same firmware works for both Basic and Pro — the variant is set during commissioning.
                 Update packages are password-protected — use the password provided with your device.
               </div>
             </div>
@@ -150,9 +133,7 @@ function OrpheusDashboard({ user, onLogout }) {
                   <div key={i} className="orpheus-download-row">
                     <div className="orpheus-download-info">
                       <div className="orpheus-download-icon">
-                        <span className={`variant-badge ${update.variant.toLowerCase()}`}>
-                          {update.variant}
-                        </span>
+                        <span className="variant-badge firmware">v{update.version}</span>
                       </div>
                       <div>
                         <div className="upload-name">
