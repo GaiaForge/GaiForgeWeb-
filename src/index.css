@@ -57,3 +57,19 @@
 .btn-download{padding:10px 24px;background:linear-gradient(135deg,#1e40af,#1e3a8a);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s;white-space:nowrap}
 .btn-download:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(30,64,175,0.4)}
 @media(max-width:768px){.orpheus-download-row{flex-direction:column;gap:12px;align-items:flex-start}.btn-download{width:100%;text-align:center}}
+
+/* ===== Firmware Upload Dropzone (Admin) ===== */
+.fw-dropzone{background:#fff;border:3px dashed #d1d5db;border-radius:16px;padding:48px 32px;text-align:center;cursor:pointer;transition:all .3s;margin-bottom:24px}
+.fw-dropzone:hover{border-color:#3b82f6;background:#f8fafc}
+.fw-dropzone.dragging{border-color:#3b82f6;background:#eff6ff;box-shadow:0 0 0 4px rgba(59,130,246,0.15)}
+.fw-dropzone.has-file{border-style:solid;border-color:#10b981;background:#f0fdf4;cursor:default}
+.fw-dropzone-icon{font-size:48px;margin-bottom:12px}
+.fw-dropzone h3{color:#1f2937;font-size:18px;margin-bottom:6px}
+.fw-dropzone p{color:#6b7280;font-size:14px}
+.fw-dropzone-selected{display:flex;align-items:center;gap:16px;text-align:left}
+.fw-file-icon{font-size:36px;flex-shrink:0}
+.fw-remove-btn{margin-left:auto;width:32px;height:32px;border-radius:50%;border:none;background:#fee2e2;color:#dc2626;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.fw-remove-btn:hover{background:#fecaca}
+.fw-form{background:#fff;border-radius:16px;padding:28px;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+.fw-textarea{width:100%;padding:14px 16px;border:2px solid #e2e8f0;border-radius:12px;font-size:15px;font-family:inherit;transition:all .3s;background:#fff;color:#0f172a;resize:vertical}
+.fw-textarea:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 4px rgba(59,130,246,0.1)}

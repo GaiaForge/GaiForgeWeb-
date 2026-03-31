@@ -1,31 +1,159 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+
+const API_BASE = window.location.origin;
 
 function OrpheusDashboard({ user, onLogout }) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('downloads');
+  const [firmwareUpdates, setFirmwareUpdates] = useState([]);
+  const [loadingFirmware, setLoadingFirmware] = useState(true);
+
+  // Admin upload state
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploadVersion, setUploadVersion] = useState('');
+  const [uploadNotes, setUploadNotes] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [uploadSuccess, setUploadSuccess] = useState('');
+  const [dragging, setDragging] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const headers = {
+    'Authorization': `Bearer ${user?.token}`,
+  };
 
   const handleLogout = () => {
     onLogout();
     navigate('/login');
   };
 
-  const firmwareUpdates = [
-    {
-      version: '2.1.0',
-      date: '2026-03-15',
-      filename: 'Orpheus-USB-Update-v2.1.0.zip',
-      size: '14.2 MB',
-      notes: 'Improved scheduling reliability, power management optimizations.',
-    },
-    {
-      version: '2.0.3',
-      date: '2026-02-01',
-      filename: 'Orpheus-USB-Update-v2.0.3.zip',
-      size: '13.9 MB',
-      notes: 'Bug fix for playlist shuffle mode, audio fade improvements.',
-    },
-  ];
+  const fetchFirmware = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/downloads/orpheus/manifest.json?t=${Date.now()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setFirmwareUpdates(data.releases || []);
+      } else {
+        setFirmwareUpdates([]);
+      }
+    } catch {
+      setFirmwareUpdates([]);
+    } finally {
+      setLoadingFirmware(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchFirmware();
+  }, [fetchFirmware]);
+
+  // Drag and drop handlers
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith('.zip')) {
+      setUploadFile(file);
+      setUploadError('');
+    } else {
+      setUploadError('Please drop a .zip file');
+    }
+  };
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setUploadFile(file);
+      setUploadError('');
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!uploadFile) {
+      setUploadError('Please select a file');
+      return;
+    }
+    if (!uploadVersion.trim()) {
+      setUploadError('Please enter a version number');
+      return;
+    }
+    if (!/^\d+\.\d+\.\d+$/.test(uploadVersion.trim())) {
+      setUploadError('Version must be in format X.Y.Z (e.g. 2.1.0)');
+      return;
+    }
+
+    setUploading(true);
+    setUploadError('');
+    setUploadSuccess('');
+
+    const formData = new FormData();
+    formData.append('file', uploadFile);
+    formData.append('version', uploadVersion.trim());
+    formData.append('notes', uploadNotes.trim());
+
+    try {
+      const res = await fetch(`${API_BASE}/api/orpheus/firmware/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${user?.token}` },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || 'Upload failed');
+      }
+
+      setUploadSuccess(`v${uploadVersion.trim()} uploaded successfully`);
+      setUploadFile(null);
+      setUploadVersion('');
+      setUploadNotes('');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      fetchFirmware();
+    } catch (err) {
+      setUploadError(err.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDelete = async (filename) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/orpheus/firmware/${encodeURIComponent(filename)}`, {
+        method: 'DELETE',
+        headers,
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || 'Delete failed');
+      }
+      setDeleteConfirm(null);
+      fetchFirmware();
+    } catch (err) {
+      setUploadError(err.message || 'Delete failed');
+      setDeleteConfirm(null);
+    }
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + ' MB';
+    if (bytes >= 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return bytes + ' B';
+  };
 
   const docs = [
     {
@@ -57,7 +185,7 @@ function OrpheusDashboard({ user, onLogout }) {
       href: '/downloads/Orpheus-v1.8.0.apk',
       size: '56 MB',
     },
-    ios: null, // coming soon
+    ios: null,
   };
 
   return (
@@ -88,6 +216,14 @@ function OrpheusDashboard({ user, onLogout }) {
           >
             <span className="nav-icon">📱</span> Mobile App
           </button>
+          {user?.is_admin && (
+            <button
+              className={`nav-item nav-btn ${activeTab === 'admin-upload' ? 'active' : ''}`}
+              onClick={() => setActiveTab('admin-upload')}
+            >
+              <span className="nav-icon">⬆️</span> Upload Firmware
+            </button>
+          )}
           <Link to="/profile" className="nav-item">
             <span className="nav-icon">👤</span> Profile
           </Link>
@@ -128,37 +264,194 @@ function OrpheusDashboard({ user, onLogout }) {
 
             <div className="actions-section">
               <h2>Firmware &amp; Software Updates</h2>
-              <div className="orpheus-downloads-list">
-                {firmwareUpdates.map((update, i) => (
-                  <div key={i} className="orpheus-download-row">
-                    <div className="orpheus-download-info">
-                      <div className="orpheus-download-icon">
-                        <span className="variant-badge firmware">v{update.version}</span>
+              {loadingFirmware ? (
+                <div className="loading-state">Loading available updates...</div>
+              ) : firmwareUpdates.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-icon">📦</div>
+                  <h2>No updates available yet</h2>
+                  <p>Check back soon for firmware and software updates.</p>
+                </div>
+              ) : (
+                <div className="orpheus-downloads-list">
+                  {firmwareUpdates.map((update, i) => (
+                    <div key={i} className="orpheus-download-row">
+                      <div className="orpheus-download-info">
+                        <div className="orpheus-download-icon">
+                          <span className="variant-badge firmware">v{update.version}</span>
+                        </div>
+                        <div>
+                          <div className="upload-name">
+                            {update.filename}
+                          </div>
+                          <div className="upload-meta">
+                            v{update.version} &middot; {update.date} &middot; {update.size}
+                          </div>
+                          {update.notes && (
+                            <div className="upload-meta" style={{ marginTop: '4px' }}>
+                              {update.notes}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <div className="upload-name">
-                          {update.filename}
-                        </div>
-                        <div className="upload-meta">
-                          v{update.version} &middot; {update.date} &middot; {update.size}
-                        </div>
-                        <div className="upload-meta" style={{ marginTop: '4px' }}>
-                          {update.notes}
-                        </div>
-                      </div>
+                      <a
+                        href={`/downloads/orpheus/${update.filename}`}
+                        className="btn-download"
+                        download
+                      >
+                        Download
+                      </a>
                     </div>
-                    <a
-                      href={`/downloads/orpheus/${update.filename}`}
-                      className="btn-download"
-                      download
-                    >
-                      Download
-                    </a>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </>
+        )}
+
+        {/* Admin Upload Tab */}
+        {activeTab === 'admin-upload' && user?.is_admin && (
+          <div className="actions-section">
+            <h2>Upload New Firmware</h2>
+            <p style={{ color: '#6b7280', marginBottom: '24px' }}>
+              Upload a password-protected .zip containing firmware and application files.
+              It will appear in the downloads list for all registered users.
+            </p>
+
+            {uploadError && <div className="error-message">{uploadError}</div>}
+            {uploadSuccess && (
+              <div className="orpheus-info-banner" style={{ background: '#ecfdf5', borderColor: '#a7f3d0', color: '#065f46', marginBottom: '20px' }}>
+                <div className="info-icon">✅</div>
+                <div><strong>{uploadSuccess}</strong></div>
+              </div>
+            )}
+
+            {/* Dropzone */}
+            <div
+              className={`fw-dropzone ${dragging ? 'dragging' : ''} ${uploadFile ? 'has-file' : ''}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".zip"
+                onChange={handleFileSelect}
+                style={{ display: 'none' }}
+              />
+              {uploadFile ? (
+                <div className="fw-dropzone-selected">
+                  <div className="fw-file-icon">📦</div>
+                  <div>
+                    <div className="upload-name">{uploadFile.name}</div>
+                    <div className="upload-meta">{formatFileSize(uploadFile.size)}</div>
+                  </div>
+                  <button
+                    className="fw-remove-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setUploadFile(null);
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}
+                  >
+                    &times;
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="fw-dropzone-icon">⬆️</div>
+                  <h3>Drag &amp; drop a .zip file here</h3>
+                  <p>or click to browse</p>
+                </>
+              )}
+            </div>
+
+            {/* Version & Notes */}
+            <div className="fw-form">
+              <div className="form-group">
+                <label htmlFor="fw-version">Version Number</label>
+                <input
+                  type="text"
+                  id="fw-version"
+                  value={uploadVersion}
+                  onChange={(e) => setUploadVersion(e.target.value)}
+                  placeholder="e.g. 2.1.0"
+                  disabled={uploading}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="fw-notes">Release Notes (optional)</label>
+                <textarea
+                  id="fw-notes"
+                  value={uploadNotes}
+                  onChange={(e) => setUploadNotes(e.target.value)}
+                  placeholder="Brief description of changes..."
+                  rows={3}
+                  disabled={uploading}
+                  className="fw-textarea"
+                />
+              </div>
+              <button
+                className="btn-upload"
+                onClick={handleUpload}
+                disabled={uploading || !uploadFile}
+              >
+                {uploading ? 'Uploading...' : 'Upload Firmware'}
+              </button>
+            </div>
+
+            {/* Existing releases management */}
+            {firmwareUpdates.length > 0 && (
+              <div style={{ marginTop: '40px' }}>
+                <h2>Manage Releases</h2>
+                <div className="orpheus-downloads-list" style={{ marginTop: '16px' }}>
+                  {firmwareUpdates.map((update, i) => (
+                    <div key={i} className="orpheus-download-row">
+                      <div className="orpheus-download-info">
+                        <div className="orpheus-download-icon">
+                          <span className="variant-badge firmware">v{update.version}</span>
+                        </div>
+                        <div>
+                          <div className="upload-name">{update.filename}</div>
+                          <div className="upload-meta">
+                            {update.date} &middot; {update.size}
+                          </div>
+                        </div>
+                      </div>
+                      {deleteConfirm === update.filename ? (
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            className="btn-download"
+                            style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)' }}
+                            onClick={() => handleDelete(update.filename)}
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            className="btn-download"
+                            style={{ background: '#6b7280' }}
+                            onClick={() => setDeleteConfirm(null)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          className="btn-download"
+                          style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)' }}
+                          onClick={() => setDeleteConfirm(update.filename)}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
         {/* Documentation Tab */}
