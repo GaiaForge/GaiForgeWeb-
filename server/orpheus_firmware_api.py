@@ -91,58 +91,54 @@ async def upload_firmware(
     if not file.filename.endswith(".zip"):
         raise HTTPException(status_code=400, detail="Only .zip files are accepted")
 
-    # Sanitize filename
-    safe_filename = f"Orpheus-USB-Update-v{version}.zip"
-    dest = DOWNLOADS_DIR / safe_filename
+    # The device expects the file at: orpheus_update/orpheus_update.zip
+    update_dir = DOWNLOADS_DIR / "orpheus_update"
+    update_dir.mkdir(parents=True, exist_ok=True)
+    dest = update_dir / "orpheus_update.zip"
 
-    # Ensure downloads directory exists
-    DOWNLOADS_DIR.mkdir(parents=True, exist_ok=True)
+    # Archive the previous version if it exists
+    if dest.exists():
+        manifest = load_manifest()
+        old_releases = manifest.get("releases", [])
+        if old_releases:
+            old_version = old_releases[0].get("version", "unknown")
+            archive_name = f"orpheus_update_v{old_version}.zip"
+            archive_dir = DOWNLOADS_DIR / "archive"
+            archive_dir.mkdir(parents=True, exist_ok=True)
+            dest.rename(archive_dir / archive_name)
 
-    # Save the file
+    # Save the new file
     content = await file.read()
     dest.write_bytes(content)
 
-    # Update manifest
+    # Update manifest — only keep the current release
     manifest = load_manifest()
-
-    # Remove existing entry for this version if re-uploading
-    manifest["releases"] = [r for r in manifest["releases"] if r["version"] != version]
-
-    # Add new entry at the top
-    manifest["releases"].insert(0, {
+    manifest["releases"] = [{
         "version": version,
         "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-        "filename": safe_filename,
+        "filename": "orpheus_update/orpheus_update.zip",
         "size": f"{len(content) / 1048576:.1f} MB",
         "notes": notes,
-    })
-
-    # Sort by version descending
-    manifest["releases"].sort(key=lambda r: [int(x) for x in r["version"].split(".")], reverse=True)
+    }]
 
     save_manifest(manifest)
 
-    return {"status": "ok", "filename": safe_filename, "version": version}
+    return {"status": "ok", "filename": "orpheus_update.zip", "version": version}
 
 
 @app.delete("/api/orpheus/firmware/{filename}")
 async def delete_firmware(request: Request, filename: str):
     await verify_admin(request)
 
-    # Sanitize — only allow expected filenames
-    if not filename.startswith("Orpheus-") or not filename.endswith(".zip"):
-        raise HTTPException(status_code=400, detail="Invalid filename")
+    # Only the current update file can be deleted
+    update_file = DOWNLOADS_DIR / "orpheus_update" / "orpheus_update.zip"
+    if update_file.exists():
+        update_file.unlink()
 
-    filepath = DOWNLOADS_DIR / filename
-    if filepath.exists():
-        filepath.unlink()
+    # Clear manifest
+    save_manifest({"releases": []})
 
-    # Remove from manifest
-    manifest = load_manifest()
-    manifest["releases"] = [r for r in manifest["releases"] if r["filename"] != filename]
-    save_manifest(manifest)
-
-    return {"status": "ok", "deleted": filename}
+    return {"status": "ok", "deleted": "orpheus_update.zip"}
 
 
 if __name__ == "__main__":

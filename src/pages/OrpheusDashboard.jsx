@@ -49,6 +49,17 @@ function OrpheusDashboard({ user, onLogout }) {
     fetchFirmware();
   }, [fetchFirmware]);
 
+  // Prevent browser from opening dropped files anywhere on the page
+  useEffect(() => {
+    const prevent = (e) => { e.preventDefault(); e.stopPropagation(); };
+    window.addEventListener('dragover', prevent);
+    window.addEventListener('drop', prevent);
+    return () => {
+      window.removeEventListener('dragover', prevent);
+      window.removeEventListener('drop', prevent);
+    };
+  }, []);
+
   // Drag and drop handlers
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -256,7 +267,8 @@ function OrpheusDashboard({ user, onLogout }) {
               <div className="info-icon">💡</div>
               <div>
                 <strong>How USB updates work:</strong> Download the .zip file below.
-                Extract to a USB drive and insert into your Orpheus device. The device will apply the update on next boot.
+                Create a folder called <code style={{background:'#e2e8f0',padding:'2px 6px',borderRadius:'4px'}}>orpheus_update</code> on your USB drive and place the zip inside it.
+                Insert the USB into your Orpheus device and use the Settings &gt; Update tab to apply.
                 The same firmware works for both Basic and Pro — the variant is set during commissioning.
               </div>
             </div>
