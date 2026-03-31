@@ -1,14 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const products = [
+const allProducts = [
   {
     id: 'orpheus',
     name: 'Orpheus',
     description: 'IoT audio playback system for wildlife research. Manage your devices and download the latest firmware updates.',
     image: '/images/Orpheus.png',
     route: '/orpheus',
-    available: true,
   },
   {
     id: 'hiveguard',
@@ -16,7 +15,6 @@ const products = [
     description: 'Bioacoustic beehive monitor. View hive analytics, upload sensor data, and track colony health.',
     image: '/images/hiveguard_logo.png',
     route: '/dashboard',
-    available: true,
   },
   {
     id: 'sprigrig',
@@ -24,12 +22,25 @@ const products = [
     description: 'Modular controlled environment agriculture system. Monitor and manage your growing environment.',
     image: '/images/SprigRig.png',
     route: '/sprigrig',
-    available: false,
   },
 ];
 
 function ProductSelector({ user, onLogout }) {
   const navigate = useNavigate();
+  const userProducts = user?.products || [];
+  const isAdmin = user?.is_admin;
+
+  // Admins see all products; regular users only see their unlocked ones
+  const visibleProducts = isAdmin
+    ? allProducts
+    : allProducts.filter(p => userProducts.includes(p.id));
+
+  // If user has exactly one product, skip selector and go directly
+  useEffect(() => {
+    if (!isAdmin && visibleProducts.length === 1) {
+      navigate(visibleProducts[0].route, { replace: true });
+    }
+  }, [isAdmin, visibleProducts, navigate]);
 
   const handleLogout = () => {
     onLogout();
@@ -60,32 +71,34 @@ function ProductSelector({ user, onLogout }) {
           <p>Choose a product to access its portal</p>
         </div>
 
-        <div className="selector-grid">
-          {products.map((product) => (
-            <div
-              key={product.id}
-              className={`selector-card ${!product.available ? 'coming-soon' : ''}`}
-              onClick={() => product.available && navigate(product.route)}
-              role="button"
-              tabIndex={product.available ? 0 : -1}
-              onKeyDown={(e) => e.key === 'Enter' && product.available && navigate(product.route)}
-            >
-              <div className="selector-card-image">
-                <img src={product.image} alt={product.name} />
-              </div>
-              <div className="selector-card-body">
-                <h3>{product.name}</h3>
-                <p>{product.description}</p>
-                {!product.available && (
-                  <span className="selector-badge-soon">Coming Soon</span>
-                )}
-                {product.available && (
+        {visibleProducts.length === 0 ? (
+          <div style={{ textAlign: 'center', color: '#94a3b8', padding: '40px 0' }}>
+            <p style={{ fontSize: '18px', marginBottom: '12px' }}>No devices registered yet.</p>
+            <p style={{ fontSize: '14px' }}>Contact GaiaForge support if you believe this is an error.</p>
+          </div>
+        ) : (
+          <div className="selector-grid" style={visibleProducts.length < 3 ? { gridTemplateColumns: `repeat(${visibleProducts.length}, 1fr)`, maxWidth: `${visibleProducts.length * 360}px`, margin: '0 auto 48px' } : {}}>
+            {visibleProducts.map((product) => (
+              <div
+                key={product.id}
+                className="selector-card"
+                onClick={() => navigate(product.route)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && navigate(product.route)}
+              >
+                <div className="selector-card-image">
+                  <img src={product.image} alt={product.name} />
+                </div>
+                <div className="selector-card-body">
+                  <h3>{product.name}</h3>
+                  <p>{product.description}</p>
                   <span className="selector-badge-open">Open Portal &rarr;</span>
-                )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         <div className="selector-footer">
           <a href="/">Back to GaiaForge.co.za</a>

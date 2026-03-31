@@ -39,7 +39,9 @@ function Login({ onLogin }) {
         name: email.split('@')[0],
         token: data.access_token,
         api_key: data.api_key,
-        subscription_tier: data.subscription_tier || 'free', is_admin: data.is_admin || false,
+        subscription_tier: data.subscription_tier || 'free',
+        is_admin: data.is_admin || false,
+        products: data.products || [],
       };
       onLogin(userData);
       navigate('/products');

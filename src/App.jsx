@@ -46,7 +46,7 @@ function App() {
           }).then(res => {
             if (res.ok) {
               return res.json().then(profile => {
-                const updated = { ...parsed, subscription_tier: profile.subscription_tier, subscription_expires_at: profile.subscription_expires_at || null, is_admin: profile.is_admin || false, report_mode: profile.report_mode || 'beekeeper' };
+                const updated = { ...parsed, subscription_tier: profile.subscription_tier, subscription_expires_at: profile.subscription_expires_at || null, is_admin: profile.is_admin || false, report_mode: profile.report_mode || 'beekeeper', products: profile.products || [] };
                 setUser(updated);
                 setIsAuthenticated(true);
                 localStorage.setItem('user', JSON.stringify(updated));
