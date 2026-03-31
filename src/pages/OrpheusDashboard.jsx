@@ -258,7 +258,6 @@ function OrpheusDashboard({ user, onLogout }) {
                 <strong>How USB updates work:</strong> Download the .zip file below.
                 Extract to a USB drive and insert into your Orpheus device. The device will apply the update on next boot.
                 The same firmware works for both Basic and Pro — the variant is set during commissioning.
-                Update packages are password-protected — use the password provided with your device.
               </div>
             </div>
 
