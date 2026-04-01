@@ -28,6 +28,9 @@ function Admin({ user, onLogout }) {
   const [serialAdding, setSerialAdding] = useState(false);
   const [serialMsg, setSerialMsg] = useState(null);
   const [serialDeleting, setSerialDeleting] = useState(null);
+  const [serialFilter, setSerialFilter] = useState('');
+  const [serialProductFilter, setSerialProductFilter] = useState('');
+  const [serialStatusFilter, setSerialStatusFilter] = useState('');
 
   // Data management
   const [allHives, setAllHives] = useState([]);
@@ -638,12 +641,30 @@ function Admin({ user, onLogout }) {
               </div>
 
               <div className="admin-card">
-                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px'}}>
+                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px', flexWrap:'wrap', gap:'12px'}}>
                   <div>
                     <h3 style={{margin:0}}>All Serials</h3>
                     <p style={{fontSize:'13px', color:'#6b7280', marginTop:'4px'}}>
                       {allSerials.length} total &middot; {allSerials.filter(s => s.claimed_by).length} claimed &middot; {allSerials.filter(s => !s.claimed_by).length} available
                     </p>
+                  </div>
+                  <div style={{display:'flex', gap:'8px', flexWrap:'wrap'}}>
+                    <input type="text" value={serialFilter} onChange={e => setSerialFilter(e.target.value)}
+                      placeholder="Search serial, customer, notes..."
+                      style={{padding:'8px 12px', border:'2px solid #e5e7eb', borderRadius:'8px', fontSize:'13px', minWidth:'220px'}} />
+                    <select value={serialProductFilter} onChange={e => setSerialProductFilter(e.target.value)}
+                      style={{padding:'8px 12px', border:'2px solid #e5e7eb', borderRadius:'8px', fontSize:'13px'}}>
+                      <option value="">All products</option>
+                      <option value="orpheus">Orpheus</option>
+                      <option value="hiveguard">HiveGuard</option>
+                      <option value="sprigrig">SprigRig</option>
+                    </select>
+                    <select value={serialStatusFilter} onChange={e => setSerialStatusFilter(e.target.value)}
+                      style={{padding:'8px 12px', border:'2px solid #e5e7eb', borderRadius:'8px', fontSize:'13px'}}>
+                      <option value="">All statuses</option>
+                      <option value="claimed">Claimed</option>
+                      <option value="available">Available</option>
+                    </select>
                   </div>
                 </div>
                 <div style={{overflowX:'auto'}}>
@@ -660,10 +681,25 @@ function Admin({ user, onLogout }) {
                       </tr>
                     </thead>
                     <tbody>
-                      {allSerials.length === 0 ? (
-                        <tr><td colSpan="7" style={{color:'#9ca3af', textAlign:'center', padding:'24px'}}>No device serials registered yet.</td></tr>
+                      {(() => {
+                        const q = serialFilter.toLowerCase();
+                        const filtered = allSerials.filter(s => {
+                          if (serialProductFilter && s.product !== serialProductFilter) return false;
+                          if (serialStatusFilter === 'claimed' && !s.claimed_by) return false;
+                          if (serialStatusFilter === 'available' && s.claimed_by) return false;
+                          if (q) {
+                            const claimedUser = s.claimed_by ? users.find(u => u.id === s.claimed_by) : null;
+                            const searchStr = [s.serial, s.product, s.notes || '', claimedUser?.name || '', claimedUser?.email || ''].join(' ').toLowerCase();
+                            if (!searchStr.includes(q)) return false;
+                          }
+                          return true;
+                        });
+                        return filtered.length === 0 ? (
+                        <tr><td colSpan="7" style={{color:'#9ca3af', textAlign:'center', padding:'24px'}}>
+                          {allSerials.length === 0 ? 'No device serials registered yet.' : 'No serials match your filters.'}
+                        </td></tr>
                       ) : (
-                        allSerials.map(s => {
+                        filtered.map(s => {
                           const claimedUser = s.claimed_by ? users.find(u => u.id === s.claimed_by) : null;
                           return (
                             <tr key={s.id}>
@@ -707,7 +743,8 @@ function Admin({ user, onLogout }) {
                             </tr>
                           );
                         })
-                      )}
+                      );
+                      })()}
                     </tbody>
                   </table>
                 </div>
