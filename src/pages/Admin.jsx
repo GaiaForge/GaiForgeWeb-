@@ -22,6 +22,9 @@ function Admin({ user, onLogout }) {
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditFilter, setAuditFilter] = useState('');
 
+  // Serials
+  const [allSerials, setAllSerials] = useState([]);
+
   // Data management
   const [allHives, setAllHives] = useState([]);
   const [archiveHiveId, setArchiveHiveId] = useState('');
@@ -42,10 +45,11 @@ function Admin({ user, onLogout }) {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [statsRes, usersRes, hivesRes] = await Promise.all([
+      const [statsRes, usersRes, hivesRes, serialsRes] = await Promise.all([
         fetch(`${API_BASE}/api/admin/stats`, { headers }),
         fetch(`${API_BASE}/api/admin/users`, { headers }),
         fetch(`${API_BASE}/api/admin/hives`, { headers }),
+        fetch(`${API_BASE}/api/admin/serials`, { headers }),
       ]);
 
       if (statsRes.status === 403 || usersRes.status === 403) {
@@ -57,6 +61,7 @@ function Admin({ user, onLogout }) {
       if (statsRes.ok) setStats(await statsRes.json());
       if (usersRes.ok) setUsers(await usersRes.json());
       if (hivesRes.ok) setAllHives(await hivesRes.json());
+      if (serialsRes.ok) setAllSerials(await serialsRes.json());
     } catch (err) {
       setError('Failed to load admin data.');
     } finally {
@@ -544,10 +549,14 @@ function Admin({ user, onLogout }) {
             {/* ==================== SERIALS TAB ==================== */}
             {activeTab === 'serials' && (
               <div className="admin-card">
-                <h3>Device Serials</h3>
-                <p style={{fontSize:'14px', color:'#6b7280', marginBottom:'20px'}}>
-                  All pre-registered device serial numbers across all products.
-                </p>
+                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px'}}>
+                  <div>
+                    <h3 style={{margin:0}}>Device Serials</h3>
+                    <p style={{fontSize:'13px', color:'#6b7280', marginTop:'4px'}}>
+                      {allSerials.length} total &middot; {allSerials.filter(s => s.claimed_by).length} claimed &middot; {allSerials.filter(s => !s.claimed_by).length} available
+                    </p>
+                  </div>
+                </div>
                 <div style={{overflowX:'auto'}}>
                   <table className="admin-table" style={{fontSize:'13px'}}>
                     <thead>
@@ -555,16 +564,19 @@ function Admin({ user, onLogout }) {
                         <th>Product</th>
                         <th>Serial</th>
                         <th>Status</th>
-                        <th>Claimed By</th>
-                        <th>Registered</th>
+                        <th>Customer</th>
+                        <th>Notes</th>
+                        <th>Added</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {users.flatMap(u => (u.serials || []).map(s => ({...s, userName: u.name, userEmail: u.email}))).length > 0 || true ? (
-                        <>
-                          {/* Claimed serials from users */}
-                          {users.flatMap(u => (u.serials || []).map(s => ({...s, userName: u.name, userEmail: u.email}))).map((s, i) => (
-                            <tr key={`claimed-${i}`}>
+                      {allSerials.length === 0 ? (
+                        <tr><td colSpan="6" style={{color:'#9ca3af', textAlign:'center', padding:'24px'}}>No device serials registered yet.</td></tr>
+                      ) : (
+                        allSerials.map(s => {
+                          const claimedUser = s.claimed_by ? users.find(u => u.id === s.claimed_by) : null;
+                          return (
+                            <tr key={s.id}>
                               <td>
                                 <span style={{
                                   padding:'2px 8px', borderRadius:'4px', fontSize:'11px', fontWeight:600,
@@ -573,16 +585,28 @@ function Admin({ user, onLogout }) {
                                 }}>{s.product}</span>
                               </td>
                               <td><code style={{fontSize:'12px'}}>{s.serial}</code></td>
-                              <td><span style={{color:'#10b981', fontWeight:600, fontSize:'12px'}}>Claimed</span></td>
-                              <td>{s.userName} ({s.userEmail})</td>
-                              <td>{s.claimed_at ? new Date(s.claimed_at).toLocaleDateString() : '—'}</td>
+                              <td>
+                                {s.claimed_by ? (
+                                  <span style={{color:'#10b981', fontWeight:600, fontSize:'12px'}}>Claimed</span>
+                                ) : (
+                                  <span style={{color:'#f59e0b', fontWeight:600, fontSize:'12px'}}>Available</span>
+                                )}
+                              </td>
+                              <td>
+                                {claimedUser ? (
+                                  <div>
+                                    <div>{claimedUser.name}</div>
+                                    <div style={{fontSize:'11px', color:'#9ca3af'}}>{claimedUser.email}</div>
+                                    {s.claimed_at && <div style={{fontSize:'10px', color:'#9ca3af'}}>claimed {new Date(s.claimed_at).toLocaleDateString()}</div>}
+                                  </div>
+                                ) : <span style={{color:'#9ca3af'}}>—</span>}
+                              </td>
+                              <td style={{fontSize:'12px', color:'#6b7280', maxWidth:'250px'}}>{s.notes || '—'}</td>
+                              <td style={{fontSize:'12px', color:'#9ca3af'}}>{new Date(s.created_at).toLocaleDateString()}</td>
                             </tr>
-                          ))}
-                          {users.flatMap(u => (u.serials || [])).length === 0 && (
-                            <tr><td colSpan="5" style={{color:'#9ca3af', textAlign:'center', padding:'24px'}}>No device serials registered yet. Use the API to add serials.</td></tr>
-                          )}
-                        </>
-                      ) : null}
+                          );
+                        })
+                      )}
                     </tbody>
                   </table>
                 </div>
