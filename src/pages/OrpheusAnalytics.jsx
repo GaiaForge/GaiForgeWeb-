@@ -239,7 +239,7 @@ function OrpheusAnalytics({ user, onLogout }) {
             onClick={() => setActiveTab('events')}>
             <span className="nav-icon">📋</span> System Log
           </button>
-          <Link to="/profile" className="nav-item">
+          <Link to="/profile?from=orpheus" className="nav-item">
             <span className="nav-icon">👤</span> Profile
           </Link>
           {user?.is_admin && <Link to="/admin" className="nav-item">

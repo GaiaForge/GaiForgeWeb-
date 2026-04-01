@@ -238,7 +238,7 @@ function OrpheusDashboard({ user, onLogout }) {
           <Link to="/orpheus/analytics" className="nav-item">
             <span className="nav-icon">📊</span> Analytics
           </Link>
-          <Link to="/profile" className="nav-item">
+          <Link to="/profile?from=orpheus" className="nav-item">
             <span className="nav-icon">👤</span> Profile
           </Link>
           {user?.is_admin && <Link to="/admin" className="nav-item">

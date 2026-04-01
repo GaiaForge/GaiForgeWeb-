@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import './Dashboard.css';
 
 const API_BASE = window.location.origin;
 
 function Profile({ user, onLogout, onUserUpdate }) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromProduct = searchParams.get('from');
   const [section, setSection] = useState('account'); // 'account' | 'password' | 'email' | 'danger'
   const [reportMode, setReportMode] = useState(user?.report_mode || 'beekeeper');
 
@@ -139,14 +141,27 @@ function Profile({ user, onLogout, onUserUpdate }) {
           <a href="/"><img src="/gaiaforge-logo.png" alt="GaiaForge" className="logo-image" /></a>
         </div>
         <nav className="sidebar-nav">
-          <a href="/" className="nav-item back-link"><span className="nav-icon">←</span> Back to Site</a>
-          <Link to="/dashboard" className="nav-item"><span className="nav-icon">📊</span> Dashboard</Link>
-          <Link to="/analytics" className="nav-item"><span className="nav-icon">🔬</span> Analytics</Link>
-          <Link to="/upload" className="nav-item"><span className="nav-icon">⬆️</span> Upload Data</Link>
-          <Link to="/devices" className="nav-item"><span className="nav-icon">📟</span> My Hives</Link>
-          <Link to="/journal" className="nav-item"><span className="nav-icon">📝</span> Journal</Link>
-          <Link to="/alerts" className="nav-item"><span className="nav-icon">🔔</span> Alerts</Link>
-          <Link to="/profile" className="nav-item active"><span className="nav-icon">👤</span> Profile</Link>
+          {fromProduct === 'orpheus' ? (
+            <>
+              <Link to="/orpheus" className="nav-item back-link"><span className="nav-icon">&larr;</span> Orpheus Portal</Link>
+              <Link to="/orpheus" className="nav-item"><span className="nav-icon">📦</span> USB Updates</Link>
+              <Link to="/orpheus/analytics" className="nav-item"><span className="nav-icon">📊</span> Analytics</Link>
+            </>
+          ) : fromProduct === 'sprigrig' ? (
+            <>
+              <Link to="/sprigrig" className="nav-item back-link"><span className="nav-icon">&larr;</span> SprigRig Portal</Link>
+            </>
+          ) : (
+            <>
+              <Link to="/dashboard" className="nav-item back-link"><span className="nav-icon">&larr;</span> Dashboard</Link>
+              <Link to="/analytics" className="nav-item"><span className="nav-icon">🔬</span> Analytics</Link>
+              <Link to="/upload" className="nav-item"><span className="nav-icon">⬆️</span> Upload Data</Link>
+              <Link to="/devices" className="nav-item"><span className="nav-icon">📟</span> My Hives</Link>
+              <Link to="/journal" className="nav-item"><span className="nav-icon">📝</span> Journal</Link>
+              <Link to="/alerts" className="nav-item"><span className="nav-icon">🔔</span> Alerts</Link>
+            </>
+          )}
+          <Link to={`/profile?from=${fromProduct || 'hiveguard'}`} className="nav-item active"><span className="nav-icon">👤</span> Profile</Link>
           {user?.is_admin && <Link to="/admin" className="nav-item"><span className="nav-icon">⚙️</span> Admin</Link>}
         </nav>
         <div className="sidebar-footer">
