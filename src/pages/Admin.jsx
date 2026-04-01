@@ -24,6 +24,10 @@ function Admin({ user, onLogout }) {
 
   // Serials
   const [allSerials, setAllSerials] = useState([]);
+  const [newSerial, setNewSerial] = useState({ serial: '', product: 'orpheus', notes: '' });
+  const [serialAdding, setSerialAdding] = useState(false);
+  const [serialMsg, setSerialMsg] = useState(null);
+  const [serialDeleting, setSerialDeleting] = useState(null);
 
   // Data management
   const [allHives, setAllHives] = useState([]);
@@ -243,6 +247,52 @@ function Admin({ user, onLogout }) {
         alert(err.detail || 'Deletion failed');
       }
     } catch { alert('Connection error'); }
+  };
+
+  const addSerial = async () => {
+    if (!newSerial.serial.trim()) return;
+    setSerialAdding(true);
+    setSerialMsg(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/serials`, {
+        method: 'POST', headers,
+        body: JSON.stringify({
+          serial: newSerial.serial.trim(),
+          product: newSerial.product,
+          notes: newSerial.notes.trim() || null,
+        }),
+      });
+      if (res.ok) {
+        setSerialMsg({ type: 'ok', text: `${newSerial.serial.trim()} added` });
+        setNewSerial({ serial: '', product: newSerial.product, notes: '' });
+        fetchData();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setSerialMsg({ type: 'err', text: data.detail || 'Failed to add serial' });
+      }
+    } catch {
+      setSerialMsg({ type: 'err', text: 'Connection error' });
+    } finally {
+      setSerialAdding(false);
+    }
+  };
+
+  const deleteSerial = async (id, serial) => {
+    if (!window.confirm(`Delete serial ${serial}? Only unclaimed serials can be deleted.`)) return;
+    setSerialDeleting(id);
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/serials/${id}`, { method: 'DELETE', headers });
+      if (res.ok) {
+        fetchData();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.detail || 'Failed to delete serial');
+      }
+    } catch {
+      alert('Connection error');
+    } finally {
+      setSerialDeleting(null);
+    }
   };
 
   const handleLogout = () => { onLogout(); navigate('/login'); };
@@ -548,10 +598,49 @@ function Admin({ user, onLogout }) {
 
             {/* ==================== SERIALS TAB ==================== */}
             {activeTab === 'serials' && (
+              <>
+              {/* Add serial form */}
+              <div className="admin-card" style={{marginBottom:'24px'}}>
+                <h3>Add Device Serial</h3>
+                <div style={{display:'flex', gap:'12px', flexWrap:'wrap', alignItems:'flex-end', marginTop:'12px'}}>
+                  <div>
+                    <label style={{display:'block', fontSize:'13px', fontWeight:600, color:'#374151', marginBottom:'6px'}}>Serial Number</label>
+                    <input type="text" value={newSerial.serial} onChange={e => setNewSerial({...newSerial, serial: e.target.value})}
+                      placeholder="e.g. ORPB-2026-010"
+                      style={{padding:'10px 14px', border:'2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', minWidth:'200px'}} />
+                  </div>
+                  <div>
+                    <label style={{display:'block', fontSize:'13px', fontWeight:600, color:'#374151', marginBottom:'6px'}}>Product</label>
+                    <select value={newSerial.product} onChange={e => setNewSerial({...newSerial, product: e.target.value})}
+                      style={{padding:'10px 14px', border:'2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', background:'#fff'}}>
+                      <option value="orpheus">Orpheus</option>
+                      <option value="hiveguard">HiveGuard</option>
+                      <option value="sprigrig">SprigRig</option>
+                    </select>
+                  </div>
+                  <div style={{flex:1, minWidth:'200px'}}>
+                    <label style={{display:'block', fontSize:'13px', fontWeight:600, color:'#374151', marginBottom:'6px'}}>Notes</label>
+                    <input type="text" value={newSerial.notes} onChange={e => setNewSerial({...newSerial, notes: e.target.value})}
+                      placeholder="e.g. Basic v1.6 | Customer name, location"
+                      style={{padding:'10px 14px', border:'2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', width:'100%'}} />
+                  </div>
+                  <button onClick={addSerial} disabled={serialAdding || !newSerial.serial.trim()}
+                    style={{padding:'10px 20px', background:'#10b981', color:'#fff', border:'none', borderRadius:'10px',
+                      fontWeight:600, cursor:'pointer', fontSize:'14px', opacity: serialAdding || !newSerial.serial.trim() ? 0.5 : 1}}>
+                    {serialAdding ? 'Adding...' : 'Add Serial'}
+                  </button>
+                </div>
+                {serialMsg && (
+                  <p style={{marginTop:'10px', fontSize:'13px', color: serialMsg.type === 'ok' ? '#10b981' : '#ef4444'}}>
+                    {serialMsg.text}
+                  </p>
+                )}
+              </div>
+
               <div className="admin-card">
                 <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px'}}>
                   <div>
-                    <h3 style={{margin:0}}>Device Serials</h3>
+                    <h3 style={{margin:0}}>All Serials</h3>
                     <p style={{fontSize:'13px', color:'#6b7280', marginTop:'4px'}}>
                       {allSerials.length} total &middot; {allSerials.filter(s => s.claimed_by).length} claimed &middot; {allSerials.filter(s => !s.claimed_by).length} available
                     </p>
@@ -567,11 +656,12 @@ function Admin({ user, onLogout }) {
                         <th>Customer</th>
                         <th>Notes</th>
                         <th>Added</th>
+                        <th></th>
                       </tr>
                     </thead>
                     <tbody>
                       {allSerials.length === 0 ? (
-                        <tr><td colSpan="6" style={{color:'#9ca3af', textAlign:'center', padding:'24px'}}>No device serials registered yet.</td></tr>
+                        <tr><td colSpan="7" style={{color:'#9ca3af', textAlign:'center', padding:'24px'}}>No device serials registered yet.</td></tr>
                       ) : (
                         allSerials.map(s => {
                           const claimedUser = s.claimed_by ? users.find(u => u.id === s.claimed_by) : null;
@@ -603,6 +693,17 @@ function Admin({ user, onLogout }) {
                               </td>
                               <td style={{fontSize:'12px', color:'#6b7280', maxWidth:'250px'}}>{s.notes || '—'}</td>
                               <td style={{fontSize:'12px', color:'#9ca3af'}}>{new Date(s.created_at).toLocaleDateString()}</td>
+                              <td>
+                                {!s.claimed_by && (
+                                  <button onClick={() => deleteSerial(s.id, s.serial)}
+                                    disabled={serialDeleting === s.id}
+                                    style={{background:'#ef4444', color:'#fff', border:'none', borderRadius:'6px',
+                                      padding:'4px 10px', fontSize:'12px', cursor:'pointer',
+                                      opacity: serialDeleting === s.id ? 0.5 : 1}}>
+                                    {serialDeleting === s.id ? '...' : 'Delete'}
+                                  </button>
+                                )}
+                              </td>
                             </tr>
                           );
                         })
@@ -611,6 +712,7 @@ function Admin({ user, onLogout }) {
                   </table>
                 </div>
               </div>
+              </>
             )}
 
             {/* ==================== DATA MANAGEMENT TAB ==================== */}
