@@ -7,6 +7,7 @@ const API_BASE = window.location.origin;
 
 function Admin({ user, onLogout }) {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -248,30 +249,33 @@ function Admin({ user, onLogout }) {
           <a href="/"><img src="/gaiaforge-logo.png" alt="GaiaForge" className="logo-image" /></a>
         </div>
         <nav className="sidebar-nav">
-          <a href="/" className="nav-item back-link">
-            <span className="nav-icon">←</span> Back to Site
-          </a>
-          <Link to="/dashboard" className="nav-item">
-            <span className="nav-icon">📊</span> Dashboard
+          <Link to="/products" className="nav-item back-link">
+            <span className="nav-icon">&larr;</span> Products
           </Link>
-          <Link to="/analytics" className="nav-item">
-            <span className="nav-icon">🔬</span> Analytics
-          </Link>
-          <Link to="/upload" className="nav-item">
-            <span className="nav-icon">⬆️</span> Upload Data
-          </Link>
-          <Link to="/devices" className="nav-item">
-            <span className="nav-icon">📟</span> My Hives
-          </Link>
-          <Link to="/alerts" className="nav-item">
-            <span className="nav-icon">🔔</span> Alerts
-          </Link>
-          <Link to="/profile" className="nav-item">
-            <span className="nav-icon">👤</span> Profile
-          </Link>
-          <Link to="/admin" className="nav-item active">
-            <span className="nav-icon">⚙️</span> Admin
-          </Link>
+          <button className={`nav-item nav-btn ${activeTab === 'overview' ? 'active' : ''}`}
+            onClick={() => setActiveTab('overview')}>
+            <span className="nav-icon">📊</span> Overview
+          </button>
+          <button className={`nav-item nav-btn ${activeTab === 'users' ? 'active' : ''}`}
+            onClick={() => setActiveTab('users')}>
+            <span className="nav-icon">👥</span> Users
+          </button>
+          <button className={`nav-item nav-btn ${activeTab === 'serials' ? 'active' : ''}`}
+            onClick={() => setActiveTab('serials')}>
+            <span className="nav-icon">📟</span> Device Serials
+          </button>
+          <button className={`nav-item nav-btn ${activeTab === 'data' ? 'active' : ''}`}
+            onClick={() => setActiveTab('data')}>
+            <span className="nav-icon">🗄️</span> Data Management
+          </button>
+          <button className={`nav-item nav-btn ${activeTab === 'audit' ? 'active' : ''}`}
+            onClick={() => setActiveTab('audit')}>
+            <span className="nav-icon">🔒</span> Audit Log
+          </button>
+          <button className={`nav-item nav-btn ${activeTab === 'config' ? 'active' : ''}`}
+            onClick={() => setActiveTab('config')}>
+            <span className="nav-icon">⚙️</span> Config
+          </button>
         </nav>
         <div className="sidebar-footer">
           <button onClick={handleLogout} className="logout-btn">
@@ -294,56 +298,425 @@ function Admin({ user, onLogout }) {
           <div className="loading-state">Loading admin data...</div>
         ) : (
           <>
-            {/* Platform Stats */}
-            {stats && (
-              <div className="stats-grid">
-                <div className="stat-card">
-                  <div className="stat-icon">👥</div>
-                  <div className="stat-content">
-                    <div className="stat-value">{stats.total_users}</div>
-                    <div className="stat-label">Total Users</div>
+            {/* ==================== OVERVIEW TAB ==================== */}
+            {activeTab === 'overview' && stats && (
+              <>
+                <div className="stats-grid">
+                  <div className="stat-card">
+                    <div className="stat-icon">👥</div>
+                    <div className="stat-content">
+                      <div className="stat-value">{stats.total_users}</div>
+                      <div className="stat-label">Total Users</div>
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">⭐</div>
+                    <div className="stat-content">
+                      <div className="stat-value">{stats.pro_users}</div>
+                      <div className="stat-label">Pro Subscribers</div>
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">🐝</div>
+                    <div className="stat-content">
+                      <div className="stat-value">{stats.total_hives}</div>
+                      <div className="stat-label">HiveGuard Hives</div>
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">🔊</div>
+                    <div className="stat-content">
+                      <div className="stat-value">{stats.total_orpheus_devices || 0}</div>
+                      <div className="stat-label">Orpheus Devices</div>
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">🌱</div>
+                    <div className="stat-content">
+                      <div className="stat-value">—</div>
+                      <div className="stat-label">SprigRig Devices</div>
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">📊</div>
+                    <div className="stat-content">
+                      <div className="stat-value">{stats.total_readings.toLocaleString()}</div>
+                      <div className="stat-label">HiveGuard Readings</div>
+                    </div>
                   </div>
                 </div>
-                <div className="stat-card">
-                  <div className="stat-icon">⭐</div>
-                  <div className="stat-content">
-                    <div className="stat-value">{stats.pro_users}</div>
-                    <div className="stat-label">Pro Subscribers</div>
+
+                {/* Quick user summary */}
+                <div className="admin-card" style={{marginTop:'24px'}}>
+                  <h3>Recent Users</h3>
+                  <div style={{overflowX:'auto'}}>
+                    <table className="admin-table" style={{fontSize:'13px'}}>
+                      <thead>
+                        <tr>
+                          <th>User</th>
+                          <th>Products</th>
+                          <th>Joined</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {users.slice(0, 10).map(u => (
+                          <tr key={u.id}>
+                            <td>
+                              <div className="user-cell">
+                                <div className="user-mini-avatar">{u.name.charAt(0).toUpperCase()}</div>
+                                {u.name}
+                                {u.id === 1 && <span className="admin-tag">admin</span>}
+                              </div>
+                            </td>
+                            <td>
+                              {(u.products || []).length > 0 ? (
+                                <div style={{display:'flex', gap:'4px', flexWrap:'wrap'}}>
+                                  {u.products.map(p => (
+                                    <span key={p} style={{
+                                      padding:'2px 8px', borderRadius:'4px', fontSize:'11px', fontWeight:600,
+                                      background: p === 'orpheus' ? '#dbeafe' : p === 'hiveguard' ? '#fef3c7' : '#dcfce7',
+                                      color: p === 'orpheus' ? '#1e40af' : p === 'hiveguard' ? '#92400e' : '#166534',
+                                    }}>{p}</span>
+                                  ))}
+                                </div>
+                              ) : <span style={{color:'#9ca3af', fontSize:'12px'}}>none</span>}
+                            </td>
+                            <td>{new Date(u.created_at).toLocaleDateString()}</td>
+                            <td>
+                              <span className={`status-dot ${u.is_active ? 'active' : 'inactive'}`}></span>
+                              {u.is_active ? 'Active' : 'Disabled'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-                <div className="stat-card">
-                  <div className="stat-icon">🐝</div>
-                  <div className="stat-content">
-                    <div className="stat-value">{stats.total_hives}</div>
-                    <div className="stat-label">HiveGuard Hives</div>
-                  </div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-icon">🔊</div>
-                  <div className="stat-content">
-                    <div className="stat-value">{stats.total_orpheus_devices || 0}</div>
-                    <div className="stat-label">Orpheus Devices</div>
-                  </div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-icon">🌱</div>
-                  <div className="stat-content">
-                    <div className="stat-value">—</div>
-                    <div className="stat-label">SprigRig Devices</div>
-                  </div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-icon">📊</div>
-                  <div className="stat-content">
-                    <div className="stat-value">{stats.total_readings.toLocaleString()}</div>
-                    <div className="stat-label">HiveGuard Readings</div>
-                  </div>
+              </>
+            )}
+
+            {/* ==================== USERS TAB ==================== */}
+            {activeTab === 'users' && (
+              <div className="admin-card">
+                <h3>User Management</h3>
+                <div style={{overflowX:'auto'}}>
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Joined</th>
+                        <th>Devices &amp; Serials</th>
+                        <th>Subscription</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.map(u => (
+                        <React.Fragment key={u.id}>
+                        <tr className={!u.is_active ? 'row-inactive' : ''}>
+                          <td>
+                            <div className="user-cell">
+                              <div className="user-mini-avatar">{u.name.charAt(0).toUpperCase()}</div>
+                              {u.name}
+                              {u.id === 1 && <span className="admin-tag">admin</span>}
+                            </div>
+                          </td>
+                          <td>{u.email}</td>
+                          <td>{new Date(u.created_at).toLocaleDateString()}</td>
+                          <td>
+                            <div style={{fontSize:'12px'}}>
+                              {(u.serials || []).length > 0 ? (
+                                u.serials.map((s, i) => (
+                                  <div key={i} style={{marginBottom:'4px'}}>
+                                    <span style={{
+                                      padding:'1px 6px', borderRadius:'3px', fontSize:'10px', fontWeight:600, marginRight:'4px',
+                                      background: s.product === 'orpheus' ? '#dbeafe' : s.product === 'hiveguard' ? '#fef3c7' : '#dcfce7',
+                                      color: s.product === 'orpheus' ? '#1e40af' : s.product === 'hiveguard' ? '#92400e' : '#166534',
+                                    }}>{s.product}</span>
+                                    <code style={{fontSize:'11px', color:'#374151'}}>{s.serial}</code>
+                                    {s.claimed_at && (
+                                      <span style={{fontSize:'10px', color:'#9ca3af', marginLeft:'6px'}}>
+                                        reg {new Date(s.claimed_at).toLocaleDateString()}
+                                      </span>
+                                    )}
+                                  </div>
+                                ))
+                              ) : <span style={{color:'#9ca3af'}}>no devices</span>}
+                              {u.hive_count > 0 && <div style={{marginTop:'4px', color:'#6b7280'}}>{u.hive_count} hive{u.hive_count !== 1 ? 's' : ''} &middot; {u.reading_count.toLocaleString()} readings</div>}
+                            </div>
+                          </td>
+                          <td>
+                            <span className={`tier-badge ${u.subscription_tier}`}>{u.subscription_tier}</span>
+                            {u.subscription_tier === 'pro' && u.subscription_expires_at && (
+                              <div style={{fontSize:'11px', color:'#6b7280', marginTop:'3px'}}>
+                                Expires {new Date(u.subscription_expires_at).toLocaleDateString()}
+                              </div>
+                            )}
+                            {u.subscription_notes && (
+                              <div style={{fontSize:'11px', color:'#9ca3af', marginTop:'2px', fontStyle:'italic'}}>
+                                {u.subscription_notes}
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            <span className={`status-dot ${u.is_active ? 'active' : 'inactive'}`}></span>
+                            {u.is_active ? 'Active' : 'Disabled'}
+                          </td>
+                          <td>
+                            <div className="action-buttons">
+                              <button
+                                className="btn-small btn-tier"
+                                onClick={() => setSubEdit({
+                                  userId: u.id,
+                                  tier: u.subscription_tier,
+                                  expires: u.subscription_expires_at ? u.subscription_expires_at.slice(0,10) : '',
+                                  notes: u.subscription_notes || '',
+                                })}
+                              >
+                                Edit Sub
+                              </button>
+                              <button className="btn-small" onClick={() => exportUserData(u.id)}
+                                style={{background:'#3b82f6',color:'#fff',border:'none',borderRadius:'6px',padding:'4px 10px',fontSize:'12px',cursor:'pointer'}}>
+                                Export
+                              </button>
+                              {u.id !== 1 && (
+                                <>
+                                <button className="btn-small btn-toggle" onClick={() => toggleActive(u.id)}>
+                                  {u.is_active ? 'Disable' : 'Enable'}
+                                </button>
+                                <button className="btn-small" onClick={() => deleteUserData(u.id, u.email)}
+                                  style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:'6px',padding:'4px 10px',fontSize:'12px',cursor:'pointer'}}>
+                                  Erase
+                                </button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                        {subEdit?.userId === u.id && (
+                          <tr>
+                            <td colSpan="7" style={{background:'#fef3c7', padding:'16px 20px'}}>
+                              <div style={{display:'flex', gap:'12px', flexWrap:'wrap', alignItems:'flex-end'}}>
+                                <div>
+                                  <label style={{display:'block', fontSize:'12px', fontWeight:600, marginBottom:'4px'}}>Tier</label>
+                                  <select value={subEdit.tier} onChange={e => setSubEdit({...subEdit, tier: e.target.value})}
+                                    style={{padding:'8px 12px', border:'2px solid #e5e7eb', borderRadius:'8px'}}>
+                                    <option value="free">Free</option>
+                                    <option value="pro">Pro</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <label style={{display:'block', fontSize:'12px', fontWeight:600, marginBottom:'4px'}}>Expires (blank = forever)</label>
+                                  <input type="date" value={subEdit.expires}
+                                    onChange={e => setSubEdit({...subEdit, expires: e.target.value})}
+                                    style={{padding:'8px 12px', border:'2px solid #e5e7eb', borderRadius:'8px'}} />
+                                </div>
+                                <div style={{flex:1, minWidth:'200px'}}>
+                                  <label style={{display:'block', fontSize:'12px', fontWeight:600, marginBottom:'4px'}}>Notes (payment ref, etc.)</label>
+                                  <input type="text" value={subEdit.notes}
+                                    onChange={e => setSubEdit({...subEdit, notes: e.target.value})}
+                                    placeholder="e.g. Paid via PayPal 2026-03-20"
+                                    style={{padding:'8px 12px', border:'2px solid #e5e7eb', borderRadius:'8px', width:'100%'}} />
+                                </div>
+                                <button onClick={saveSubEdit}
+                                  style={{padding:'8px 18px', background:'#10b981', color:'#fff', border:'none', borderRadius:'8px', fontWeight:700, cursor:'pointer'}}>
+                                  Save
+                                </button>
+                                <button onClick={() => setSubEdit(null)}
+                                  style={{padding:'8px 14px', background:'#e5e7eb', color:'#374151', border:'none', borderRadius:'8px', cursor:'pointer'}}>
+                                  Cancel
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                        </React.Fragment>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}
 
-            {/* AI Config Status */}
-            {stats && (
+            {/* ==================== SERIALS TAB ==================== */}
+            {activeTab === 'serials' && (
+              <div className="admin-card">
+                <h3>Device Serials</h3>
+                <p style={{fontSize:'14px', color:'#6b7280', marginBottom:'20px'}}>
+                  All pre-registered device serial numbers across all products.
+                </p>
+                <div style={{overflowX:'auto'}}>
+                  <table className="admin-table" style={{fontSize:'13px'}}>
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th>Serial</th>
+                        <th>Status</th>
+                        <th>Claimed By</th>
+                        <th>Registered</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.flatMap(u => (u.serials || []).map(s => ({...s, userName: u.name, userEmail: u.email}))).length > 0 || true ? (
+                        <>
+                          {/* Claimed serials from users */}
+                          {users.flatMap(u => (u.serials || []).map(s => ({...s, userName: u.name, userEmail: u.email}))).map((s, i) => (
+                            <tr key={`claimed-${i}`}>
+                              <td>
+                                <span style={{
+                                  padding:'2px 8px', borderRadius:'4px', fontSize:'11px', fontWeight:600,
+                                  background: s.product === 'orpheus' ? '#dbeafe' : s.product === 'hiveguard' ? '#fef3c7' : '#dcfce7',
+                                  color: s.product === 'orpheus' ? '#1e40af' : s.product === 'hiveguard' ? '#92400e' : '#166534',
+                                }}>{s.product}</span>
+                              </td>
+                              <td><code style={{fontSize:'12px'}}>{s.serial}</code></td>
+                              <td><span style={{color:'#10b981', fontWeight:600, fontSize:'12px'}}>Claimed</span></td>
+                              <td>{s.userName} ({s.userEmail})</td>
+                              <td>{s.claimed_at ? new Date(s.claimed_at).toLocaleDateString() : '—'}</td>
+                            </tr>
+                          ))}
+                          {users.flatMap(u => (u.serials || [])).length === 0 && (
+                            <tr><td colSpan="5" style={{color:'#9ca3af', textAlign:'center', padding:'24px'}}>No device serials registered yet. Use the API to add serials.</td></tr>
+                          )}
+                        </>
+                      ) : null}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* ==================== DATA MANAGEMENT TAB ==================== */}
+            {activeTab === 'data' && (
+              <div className="admin-card status-warn">
+                <h3>Data Management</h3>
+                <p style={{fontSize: '14px', color: '#6b7280', marginBottom: '20px'}}>
+                  Export readings to CSV then permanently delete them from the database.
+                  The CSV will download automatically before deletion.
+                </p>
+                <div style={{display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: '16px'}}>
+                  <div>
+                    <label style={{display: 'block', fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: '6px'}}>
+                      Hive
+                    </label>
+                    <select
+                      value={archiveHiveId}
+                      onChange={e => handleArchiveHiveChange(e.target.value)}
+                      style={{padding: '10px 14px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', background: '#fff', minWidth: '200px'}}
+                    >
+                      <option value="">All hives</option>
+                      {allHives.map(h => (
+                        <option key={h.id} value={h.id}>{h.name} ({h.owner})</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{display: 'block', fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: '6px'}}>
+                      Delete readings before
+                    </label>
+                    <input
+                      type="date"
+                      value={archiveBefore}
+                      onChange={e => handleArchiveDateChange(e.target.value)}
+                      style={{padding: '10px 14px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '14px'}}
+                    />
+                  </div>
+                  <div style={{paddingBottom: '2px'}}>
+                    {archiveCount !== null && (
+                      <div style={{fontSize: '13px', color: archiveCount === 0 ? '#6b7280' : '#92400e', fontWeight: 600, marginBottom: '8px'}}>
+                        {archiveCount === 0 ? 'No readings in this range' : `${archiveCount.toLocaleString()} readings will be deleted`}
+                      </div>
+                    )}
+                    <button
+                      onClick={runArchive}
+                      disabled={archiving || !archiveBefore || archiveCount === 0 || archiveCount === null}
+                      style={{
+                        padding: '10px 20px', background: '#ef4444', color: '#fff',
+                        border: 'none', borderRadius: '10px', fontWeight: 600,
+                        cursor: 'pointer', fontSize: '14px',
+                        opacity: (archiving || !archiveBefore || archiveCount === 0 || archiveCount === null) ? 0.5 : 1,
+                      }}
+                    >
+                      {archiving ? 'Archiving...' : 'Archive & Delete'}
+                    </button>
+                  </div>
+                </div>
+                {archiveMessage && (
+                  <p style={{fontSize: '13px', color: archiveMessage.type === 'ok' ? '#10b981' : '#ef4444'}}>
+                    {archiveMessage.text}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* ==================== AUDIT LOG TAB ==================== */}
+            {activeTab === 'audit' && (
+              <div className="admin-card">
+                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px'}}>
+                  <h3 style={{margin:0}}>Security Audit Log</h3>
+                  <div style={{display:'flex', gap:'8px', alignItems:'center'}}>
+                    <select value={auditFilter} onChange={e => setAuditFilter(e.target.value)}
+                      style={{padding:'8px 12px', border:'2px solid #e5e7eb', borderRadius:'8px', fontSize:'13px'}}>
+                      <option value="">All actions</option>
+                      <option value="login">Logins</option>
+                      <option value="login_failed">Failed logins</option>
+                      <option value="register">Registrations</option>
+                      <option value="change_password">Password changes</option>
+                      <option value="change_password_failed">Failed password changes</option>
+                      <option value="forgot_password">Password resets</option>
+                      <option value="reset_password">Password reset completions</option>
+                      <option value="change_email">Email changes</option>
+                      <option value="delete_account">Account deletions</option>
+                      <option value="regenerate_api_key">API key regenerations</option>
+                    </select>
+                    <button onClick={() => fetchAuditLog(auditFilter)}
+                      style={{padding:'8px 16px', background:'#f59e0b', color:'#fff', border:'none', borderRadius:'8px', fontWeight:600, cursor:'pointer', fontSize:'13px'}}>
+                      {auditLoading ? 'Loading...' : 'Load Log'}
+                    </button>
+                  </div>
+                </div>
+                {auditLogs.length > 0 ? (
+                  <div style={{maxHeight:'600px', overflowY:'auto'}}>
+                    <table className="admin-table" style={{fontSize:'13px'}}>
+                      <thead>
+                        <tr>
+                          <th>Time</th>
+                          <th>Action</th>
+                          <th>Email</th>
+                          <th>IP</th>
+                          <th>Status</th>
+                          <th>Detail</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {auditLogs.map(log => (
+                          <tr key={log.id} style={{background: log.success ? undefined : 'rgba(239,68,68,0.08)'}}>
+                            <td style={{whiteSpace:'nowrap'}}>{new Date(log.timestamp).toLocaleString()}</td>
+                            <td><span style={{
+                              padding:'2px 8px', borderRadius:'4px', fontSize:'11px', fontWeight:600,
+                              background: log.success ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
+                              color: log.success ? '#10b981' : '#ef4444',
+                            }}>{log.action}</span></td>
+                            <td>{log.email || '-'}</td>
+                            <td style={{fontFamily:'monospace', fontSize:'12px'}}>{log.ip_address || '-'}</td>
+                            <td>{log.success ? '✓' : '✗'}</td>
+                            <td style={{color:'#6b7280', maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis'}}>{log.detail || '-'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p style={{color:'#6b7280', fontSize:'14px'}}>Click "Load Log" to view security audit events.</p>
+                )}
+              </div>
+            )}
+
+            {/* ==================== CONFIG TAB ==================== */}
+            {activeTab === 'config' && stats && (
               <div className={`admin-card ${stats.ai_configured ? 'status-ok' : 'status-warn'}`}>
                 <h3>AI Insights Configuration</h3>
                 <div className="config-row">
@@ -388,283 +761,6 @@ function Admin({ user, onLogout }) {
                 </p>
               </div>
             )}
-
-            {/* Data Management */}
-            <div className="admin-card status-warn">
-              <h3>Data Management</h3>
-              <p style={{fontSize: '14px', color: '#6b7280', marginBottom: '20px'}}>
-                Export readings to CSV then permanently delete them from the database.
-                The CSV will download automatically before deletion.
-              </p>
-              <div style={{display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: '16px'}}>
-                <div>
-                  <label style={{display: 'block', fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: '6px'}}>
-                    Hive
-                  </label>
-                  <select
-                    value={archiveHiveId}
-                    onChange={e => handleArchiveHiveChange(e.target.value)}
-                    style={{padding: '10px 14px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', background: '#fff', minWidth: '200px'}}
-                  >
-                    <option value="">All hives</option>
-                    {allHives.map(h => (
-                      <option key={h.id} value={h.id}>{h.name} ({h.owner})</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label style={{display: 'block', fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: '6px'}}>
-                    Delete readings before
-                  </label>
-                  <input
-                    type="date"
-                    value={archiveBefore}
-                    onChange={e => handleArchiveDateChange(e.target.value)}
-                    style={{padding: '10px 14px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '14px'}}
-                  />
-                </div>
-                <div style={{paddingBottom: '2px'}}>
-                  {archiveCount !== null && (
-                    <div style={{fontSize: '13px', color: archiveCount === 0 ? '#6b7280' : '#92400e', fontWeight: 600, marginBottom: '8px'}}>
-                      {archiveCount === 0 ? 'No readings in this range' : `${archiveCount.toLocaleString()} readings will be deleted`}
-                    </div>
-                  )}
-                  <button
-                    onClick={runArchive}
-                    disabled={archiving || !archiveBefore || archiveCount === 0 || archiveCount === null}
-                    style={{
-                      padding: '10px 20px', background: '#ef4444', color: '#fff',
-                      border: 'none', borderRadius: '10px', fontWeight: 600,
-                      cursor: 'pointer', fontSize: '14px',
-                      opacity: (archiving || !archiveBefore || archiveCount === 0 || archiveCount === null) ? 0.5 : 1,
-                    }}
-                  >
-                    {archiving ? 'Archiving...' : 'Archive & Delete'}
-                  </button>
-                </div>
-              </div>
-              {archiveMessage && (
-                <p style={{fontSize: '13px', color: archiveMessage.type === 'ok' ? '#10b981' : '#ef4444'}}>
-                  {archiveMessage.text}
-                </p>
-              )}
-            </div>
-
-            {/* User Management */}
-            <div className="admin-card">
-              <h3>User Management</h3>
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>User</th>
-                    <th>Email</th>
-                    <th>Joined</th>
-                    <th>Products</th>
-                    <th>Devices</th>
-                    <th>Subscription</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map(u => (
-                    <React.Fragment key={u.id}>
-                    <tr className={!u.is_active ? 'row-inactive' : ''}>
-                      <td>
-                        <div className="user-cell">
-                          <div className="user-mini-avatar">{u.name.charAt(0).toUpperCase()}</div>
-                          {u.name}
-                          {u.id === 1 && <span className="admin-tag">admin</span>}
-                        </div>
-                      </td>
-                      <td>{u.email}</td>
-                      <td>{new Date(u.created_at).toLocaleDateString()}</td>
-                      <td>
-                        {(u.products || []).length > 0 ? (
-                          <div style={{display:'flex', gap:'4px', flexWrap:'wrap'}}>
-                            {u.products.map(p => (
-                              <span key={p} style={{
-                                padding:'2px 8px', borderRadius:'4px', fontSize:'11px', fontWeight:600,
-                                background: p === 'orpheus' ? '#dbeafe' : p === 'hiveguard' ? '#fef3c7' : '#dcfce7',
-                                color: p === 'orpheus' ? '#1e40af' : p === 'hiveguard' ? '#92400e' : '#166534',
-                              }}>{p}</span>
-                            ))}
-                          </div>
-                        ) : <span style={{color:'#9ca3af', fontSize:'12px'}}>none</span>}
-                      </td>
-                      <td>
-                        <div style={{fontSize:'12px'}}>
-                          {(u.serials || []).length > 0 ? (
-                            u.serials.map((s, i) => (
-                              <div key={i} style={{marginBottom:'4px'}}>
-                                <span style={{
-                                  padding:'1px 6px', borderRadius:'3px', fontSize:'10px', fontWeight:600, marginRight:'4px',
-                                  background: s.product === 'orpheus' ? '#dbeafe' : s.product === 'hiveguard' ? '#fef3c7' : '#dcfce7',
-                                  color: s.product === 'orpheus' ? '#1e40af' : s.product === 'hiveguard' ? '#92400e' : '#166534',
-                                }}>{s.product}</span>
-                                <code style={{fontSize:'11px', color:'#374151'}}>{s.serial}</code>
-                                {s.claimed_at && (
-                                  <span style={{fontSize:'10px', color:'#9ca3af', marginLeft:'6px'}}>
-                                    reg {new Date(s.claimed_at).toLocaleDateString()}
-                                  </span>
-                                )}
-                              </div>
-                            ))
-                          ) : <span style={{color:'#9ca3af'}}>no devices</span>}
-                          {u.hive_count > 0 && <div style={{marginTop:'4px', color:'#6b7280'}}>{u.hive_count} hive{u.hive_count !== 1 ? 's' : ''} &middot; {u.reading_count.toLocaleString()} readings</div>}
-                        </div>
-                      </td>
-                      <td>
-                        <span className={`tier-badge ${u.subscription_tier}`}>{u.subscription_tier}</span>
-                        {u.subscription_tier === 'pro' && u.subscription_expires_at && (
-                          <div style={{fontSize:'11px', color:'#6b7280', marginTop:'3px'}}>
-                            Expires {new Date(u.subscription_expires_at).toLocaleDateString()}
-                          </div>
-                        )}
-                        {u.subscription_notes && (
-                          <div style={{fontSize:'11px', color:'#9ca3af', marginTop:'2px', fontStyle:'italic'}}>
-                            {u.subscription_notes}
-                          </div>
-                        )}
-                      </td>
-                      <td>
-                        <span className={`status-dot ${u.is_active ? 'active' : 'inactive'}`}></span>
-                        {u.is_active ? 'Active' : 'Disabled'}
-                      </td>
-                      <td>
-                        <div className="action-buttons">
-                          <button
-                            className="btn-small btn-tier"
-                            onClick={() => setSubEdit({
-                              userId: u.id,
-                              tier: u.subscription_tier,
-                              expires: u.subscription_expires_at ? u.subscription_expires_at.slice(0,10) : '',
-                              notes: u.subscription_notes || '',
-                            })}
-                          >
-                            Edit Sub
-                          </button>
-                          <button className="btn-small" onClick={() => exportUserData(u.id)}
-                            style={{background:'#3b82f6',color:'#fff',border:'none',borderRadius:'6px',padding:'4px 10px',fontSize:'12px',cursor:'pointer'}}>
-                            Export
-                          </button>
-                          {u.id !== 1 && (
-                            <>
-                            <button className="btn-small btn-toggle" onClick={() => toggleActive(u.id)}>
-                              {u.is_active ? 'Disable' : 'Enable'}
-                            </button>
-                            <button className="btn-small" onClick={() => deleteUserData(u.id, u.email)}
-                              style={{background:'#ef4444',color:'#fff',border:'none',borderRadius:'6px',padding:'4px 10px',fontSize:'12px',cursor:'pointer'}}>
-                              Erase
-                            </button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                    {subEdit?.userId === u.id && (
-                      <tr>
-                        <td colSpan="8" style={{background:'#fef3c7', padding:'16px 20px'}}>
-                          <div style={{display:'flex', gap:'12px', flexWrap:'wrap', alignItems:'flex-end'}}>
-                            <div>
-                              <label style={{display:'block', fontSize:'12px', fontWeight:600, marginBottom:'4px'}}>Tier</label>
-                              <select value={subEdit.tier} onChange={e => setSubEdit({...subEdit, tier: e.target.value})}
-                                style={{padding:'8px 12px', border:'2px solid #e5e7eb', borderRadius:'8px'}}>
-                                <option value="free">Free</option>
-                                <option value="pro">Pro</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label style={{display:'block', fontSize:'12px', fontWeight:600, marginBottom:'4px'}}>Expires (blank = forever)</label>
-                              <input type="date" value={subEdit.expires}
-                                onChange={e => setSubEdit({...subEdit, expires: e.target.value})}
-                                style={{padding:'8px 12px', border:'2px solid #e5e7eb', borderRadius:'8px'}} />
-                            </div>
-                            <div style={{flex:1, minWidth:'200px'}}>
-                              <label style={{display:'block', fontSize:'12px', fontWeight:600, marginBottom:'4px'}}>Notes (payment ref, etc.)</label>
-                              <input type="text" value={subEdit.notes}
-                                onChange={e => setSubEdit({...subEdit, notes: e.target.value})}
-                                placeholder="e.g. Paid via PayPal 2026-03-20"
-                                style={{padding:'8px 12px', border:'2px solid #e5e7eb', borderRadius:'8px', width:'100%'}} />
-                            </div>
-                            <button onClick={saveSubEdit}
-                              style={{padding:'8px 18px', background:'#10b981', color:'#fff', border:'none', borderRadius:'8px', fontWeight:700, cursor:'pointer'}}>
-                              Save
-                            </button>
-                            <button onClick={() => setSubEdit(null)}
-                              style={{padding:'8px 14px', background:'#e5e7eb', color:'#374151', border:'none', borderRadius:'8px', cursor:'pointer'}}>
-                              Cancel
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Security Audit Log */}
-            <div className="admin-card">
-              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px'}}>
-                <h3 style={{margin:0}}>Security Audit Log</h3>
-                <div style={{display:'flex', gap:'8px', alignItems:'center'}}>
-                  <select value={auditFilter} onChange={e => setAuditFilter(e.target.value)}
-                    style={{padding:'8px 12px', border:'2px solid #e5e7eb', borderRadius:'8px', fontSize:'13px'}}>
-                    <option value="">All actions</option>
-                    <option value="login">Logins</option>
-                    <option value="login_failed">Failed logins</option>
-                    <option value="register">Registrations</option>
-                    <option value="change_password">Password changes</option>
-                    <option value="change_password_failed">Failed password changes</option>
-                    <option value="forgot_password">Password resets</option>
-                    <option value="reset_password">Password reset completions</option>
-                    <option value="change_email">Email changes</option>
-                    <option value="delete_account">Account deletions</option>
-                    <option value="regenerate_api_key">API key regenerations</option>
-                  </select>
-                  <button onClick={() => fetchAuditLog(auditFilter)}
-                    style={{padding:'8px 16px', background:'#f59e0b', color:'#fff', border:'none', borderRadius:'8px', fontWeight:600, cursor:'pointer', fontSize:'13px'}}>
-                    {auditLoading ? 'Loading...' : 'Load Log'}
-                  </button>
-                </div>
-              </div>
-              {auditLogs.length > 0 ? (
-                <div style={{maxHeight:'400px', overflowY:'auto'}}>
-                  <table className="admin-table" style={{fontSize:'13px'}}>
-                    <thead>
-                      <tr>
-                        <th>Time</th>
-                        <th>Action</th>
-                        <th>Email</th>
-                        <th>IP</th>
-                        <th>Status</th>
-                        <th>Detail</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {auditLogs.map(log => (
-                        <tr key={log.id} style={{background: log.success ? undefined : 'rgba(239,68,68,0.08)'}}>
-                          <td style={{whiteSpace:'nowrap'}}>{new Date(log.timestamp).toLocaleString()}</td>
-                          <td><span style={{
-                            padding:'2px 8px', borderRadius:'4px', fontSize:'11px', fontWeight:600,
-                            background: log.success ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
-                            color: log.success ? '#10b981' : '#ef4444',
-                          }}>{log.action}</span></td>
-                          <td>{log.email || '-'}</td>
-                          <td style={{fontFamily:'monospace', fontSize:'12px'}}>{log.ip_address || '-'}</td>
-                          <td>{log.success ? '✓' : '✗'}</td>
-                          <td style={{color:'#6b7280', maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis'}}>{log.detail || '-'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <p style={{color:'#6b7280', fontSize:'14px'}}>Click "Load Log" to view security audit events.</p>
-              )}
-            </div>
           </>
         )}
       </main>
