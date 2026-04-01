@@ -36,7 +36,7 @@ function Login({ onLogin }) {
       const data = await res.json();
       const userData = {
         email,
-        name: email.split('@')[0],
+        name: data.name || email.split('@')[0],
         token: data.access_token,
         api_key: data.api_key,
         subscription_tier: data.subscription_tier || 'free',
