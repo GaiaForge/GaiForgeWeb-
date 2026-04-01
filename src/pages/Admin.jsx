@@ -315,14 +315,28 @@ function Admin({ user, onLogout }) {
                   <div className="stat-icon">🐝</div>
                   <div className="stat-content">
                     <div className="stat-value">{stats.total_hives}</div>
-                    <div className="stat-label">Total Hives</div>
+                    <div className="stat-label">HiveGuard Hives</div>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">🔊</div>
+                  <div className="stat-content">
+                    <div className="stat-value">{stats.total_orpheus_devices || 0}</div>
+                    <div className="stat-label">Orpheus Devices</div>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">🌱</div>
+                  <div className="stat-content">
+                    <div className="stat-value">—</div>
+                    <div className="stat-label">SprigRig Devices</div>
                   </div>
                 </div>
                 <div className="stat-card">
                   <div className="stat-icon">📊</div>
                   <div className="stat-content">
                     <div className="stat-value">{stats.total_readings.toLocaleString()}</div>
-                    <div className="stat-label">Total Readings</div>
+                    <div className="stat-label">HiveGuard Readings</div>
                   </div>
                 </div>
               </div>
@@ -445,8 +459,8 @@ function Admin({ user, onLogout }) {
                     <th>User</th>
                     <th>Email</th>
                     <th>Joined</th>
-                    <th>Hives</th>
-                    <th>Readings</th>
+                    <th>Products</th>
+                    <th>Devices</th>
                     <th>Subscription</th>
                     <th>Status</th>
                     <th>Actions</th>
@@ -465,8 +479,41 @@ function Admin({ user, onLogout }) {
                       </td>
                       <td>{u.email}</td>
                       <td>{new Date(u.created_at).toLocaleDateString()}</td>
-                      <td>{u.hive_count}</td>
-                      <td>{u.reading_count.toLocaleString()}</td>
+                      <td>
+                        {(u.products || []).length > 0 ? (
+                          <div style={{display:'flex', gap:'4px', flexWrap:'wrap'}}>
+                            {u.products.map(p => (
+                              <span key={p} style={{
+                                padding:'2px 8px', borderRadius:'4px', fontSize:'11px', fontWeight:600,
+                                background: p === 'orpheus' ? '#dbeafe' : p === 'hiveguard' ? '#fef3c7' : '#dcfce7',
+                                color: p === 'orpheus' ? '#1e40af' : p === 'hiveguard' ? '#92400e' : '#166534',
+                              }}>{p}</span>
+                            ))}
+                          </div>
+                        ) : <span style={{color:'#9ca3af', fontSize:'12px'}}>none</span>}
+                      </td>
+                      <td>
+                        <div style={{fontSize:'12px'}}>
+                          {(u.serials || []).length > 0 ? (
+                            u.serials.map((s, i) => (
+                              <div key={i} style={{marginBottom:'4px'}}>
+                                <span style={{
+                                  padding:'1px 6px', borderRadius:'3px', fontSize:'10px', fontWeight:600, marginRight:'4px',
+                                  background: s.product === 'orpheus' ? '#dbeafe' : s.product === 'hiveguard' ? '#fef3c7' : '#dcfce7',
+                                  color: s.product === 'orpheus' ? '#1e40af' : s.product === 'hiveguard' ? '#92400e' : '#166534',
+                                }}>{s.product}</span>
+                                <code style={{fontSize:'11px', color:'#374151'}}>{s.serial}</code>
+                                {s.claimed_at && (
+                                  <span style={{fontSize:'10px', color:'#9ca3af', marginLeft:'6px'}}>
+                                    reg {new Date(s.claimed_at).toLocaleDateString()}
+                                  </span>
+                                )}
+                              </div>
+                            ))
+                          ) : <span style={{color:'#9ca3af'}}>no devices</span>}
+                          {u.hive_count > 0 && <div style={{marginTop:'4px', color:'#6b7280'}}>{u.hive_count} hive{u.hive_count !== 1 ? 's' : ''} &middot; {u.reading_count.toLocaleString()} readings</div>}
+                        </div>
+                      </td>
                       <td>
                         <span className={`tier-badge ${u.subscription_tier}`}>{u.subscription_tier}</span>
                         {u.subscription_tier === 'pro' && u.subscription_expires_at && (
