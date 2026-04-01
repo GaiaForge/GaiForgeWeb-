@@ -332,11 +332,13 @@ function Dashboard({ user, onLogout }) {
                   <h3>Add Hive</h3>
                   <p>Register a new beehive</p>
                 </Link>
-                <a href="/docs" className="action-card" target="_blank" rel="noreferrer">
-                  <div className="action-icon">📖</div>
-                  <h3>API Docs</h3>
-                  <p>View the full API reference</p>
-                </a>
+                {user?.is_admin && (
+                  <a href="/docs" className="action-card" target="_blank" rel="noreferrer">
+                    <div className="action-icon">📖</div>
+                    <h3>API Docs</h3>
+                    <p>View the full API reference</p>
+                  </a>
+                )}
               </div>
             </div>
           </>
