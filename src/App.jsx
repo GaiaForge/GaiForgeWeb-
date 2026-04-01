@@ -12,6 +12,7 @@ import Admin from './pages/Admin';
 import Alerts from './pages/Alerts';
 import Journal from './pages/Journal';
 import OrpheusDashboard from './pages/OrpheusDashboard';
+import OrpheusAnalytics from './pages/OrpheusAnalytics';
 import SprigRigDashboard from './pages/SprigRigDashboard';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -103,6 +104,9 @@ function App() {
           {/* Orpheus routes */}
           <Route path="/orpheus" element={
             isAuthenticated ? <OrpheusDashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
+          } />
+          <Route path="/orpheus/analytics" element={
+            isAuthenticated ? <OrpheusAnalytics user={user} onLogout={handleLogout} /> : <Navigate to="/login" />
           } />
           {/* SprigRig routes */}
           <Route path="/sprigrig" element={
