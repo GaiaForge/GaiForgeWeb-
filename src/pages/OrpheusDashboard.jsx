@@ -238,6 +238,9 @@ function OrpheusDashboard({ user, onLogout }) {
           <Link to="/orpheus/analytics" className="nav-item">
             <span className="nav-icon">📊</span> Analytics
           </Link>
+          <Link to="/orpheus/journal" className="nav-item">
+            <span className="nav-icon">📝</span> Journal
+          </Link>
           <Link to="/profile?from=orpheus" className="nav-item">
             <span className="nav-icon">👤</span> Profile
           </Link>
