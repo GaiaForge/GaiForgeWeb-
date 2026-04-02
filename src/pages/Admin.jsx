@@ -880,6 +880,7 @@ function Admin({ user, onLogout }) {
 
             {/* ==================== CONFIG TAB ==================== */}
             {activeTab === 'config' && stats && (
+              <>
               <div className={`admin-card ${stats.ai_configured ? 'status-ok' : 'status-warn'}`}>
                 <h3>AI Insights Configuration</h3>
                 <div className="config-row">
@@ -923,6 +924,46 @@ function Admin({ user, onLogout }) {
                   Your key is stored securely on the server and never sent to the browser. It powers AI colony reports for Pro subscribers.
                 </p>
               </div>
+
+              {/* BirdNET Config */}
+              <div className="admin-card" style={{marginTop:'24px'}}>
+                <h3>BirdNET Analyzer</h3>
+                <p style={{fontSize:'14px', color:'#6b7280', marginBottom:'16px'}}>
+                  Analyzes Orpheus Pro field recordings to identify bird species automatically.
+                </p>
+                <div style={{display:'flex', gap:'12px', alignItems:'center'}}>
+                  <button onClick={async () => {
+                    const res = await fetch(`${API_BASE}/api/admin/birdnet/status`, { headers });
+                    if (res.ok) {
+                      const data = await res.json();
+                      alert(data.installed
+                        ? `BirdNET installed — version ${data.version}`
+                        : 'BirdNET is not installed. Click Update to install it.');
+                    }
+                  }} style={{
+                    padding:'10px 20px', background:'#3b82f6', color:'#fff', border:'none',
+                    borderRadius:'10px', fontWeight:600, cursor:'pointer', fontSize:'14px',
+                  }}>Check Status</button>
+                  <button onClick={async () => {
+                    if (!window.confirm('Install/update BirdNET? This may take a minute.')) return;
+                    const res = await fetch(`${API_BASE}/api/admin/birdnet/update`, {
+                      method:'POST', headers,
+                    });
+                    if (res.ok) {
+                      const data = await res.json();
+                      alert(data.status === 'ok'
+                        ? `BirdNET updated to version ${data.version}`
+                        : `Update failed: ${data.error}`);
+                    } else {
+                      alert('Update request failed');
+                    }
+                  }} style={{
+                    padding:'10px 20px', background:'#10b981', color:'#fff', border:'none',
+                    borderRadius:'10px', fontWeight:600, cursor:'pointer', fontSize:'14px',
+                  }}>Update BirdNET</button>
+                </div>
+              </div>
+              </>
             )}
           </>
         )}

@@ -30,6 +30,9 @@ function OrpheusAnalytics({ user, onLogout }) {
   const [battery, setBattery] = useState([]);
   const [playback, setPlayback] = useState([]);
   const [events, setEvents] = useState([]);
+  const [recordings, setRecordings] = useState([]);
+  const [detections, setDetections] = useState([]);
+  const [speciesList, setSpeciesList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState(7);
 
@@ -133,6 +136,28 @@ function OrpheusAnalytics({ user, onLogout }) {
     }
   }, []);
 
+  const fetchRecordings = useCallback(async (deviceId, days) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/orpheus/devices/${deviceId}/recordings?days=${days}`, { headers });
+      if (res.ok) setRecordings(await res.json());
+    } catch (err) {
+      console.error('Failed to fetch recordings:', err);
+    }
+  }, []);
+
+  const fetchSpecies = useCallback(async (deviceId, days) => {
+    try {
+      const [detRes, specRes] = await Promise.all([
+        fetch(`${API_BASE}/api/orpheus/devices/${deviceId}/detections?days=${days}`, { headers }),
+        fetch(`${API_BASE}/api/orpheus/devices/${deviceId}/species?days=${days}`, { headers }),
+      ]);
+      if (detRes.ok) setDetections(await detRes.json());
+      if (specRes.ok) setSpeciesList(await specRes.json());
+    } catch (err) {
+      console.error('Failed to fetch species:', err);
+    }
+  }, []);
+
   useEffect(() => { fetchDevices(); }, [fetchDevices]);
 
   useEffect(() => {
@@ -142,6 +167,10 @@ function OrpheusAnalytics({ user, onLogout }) {
     fetchBattery(selectedDevice, dateRange);
     fetchPlayback(selectedDevice, dateRange);
     fetchEvents(selectedDevice, dateRange);
+    if (isPro) {
+      fetchRecordings(selectedDevice, dateRange);
+      fetchSpecies(selectedDevice, dateRange);
+    }
   }, [selectedDevice, dateRange]);
 
   const handleExportCSV = () => {
@@ -244,6 +273,12 @@ function OrpheusAnalytics({ user, onLogout }) {
             <button className={`nav-item nav-btn ${activeTab === 'correlation' ? 'active' : ''}`}
               onClick={() => setActiveTab('correlation')}>
               <span className="nav-icon">🔗</span> Correlation
+            </button>
+          )}
+          {isPro && (
+            <button className={`nav-item nav-btn ${activeTab === 'recordings' ? 'active' : ''}`}
+              onClick={() => setActiveTab('recordings')}>
+              <span className="nav-icon">🎙️</span> Recordings
             </button>
           )}
           {isPro && (
@@ -820,20 +855,187 @@ function OrpheusAnalytics({ user, onLogout }) {
               </div>
             )}
 
-            {/* ==================== SPECIES TAB (Pro — Coming Soon) ==================== */}
-            {activeTab === 'species' && isPro && (
-              <div className="empty-state">
-                <div className="empty-icon">🐦</div>
-                <h2>Species Detection</h2>
-                <p>BirdNET-powered species detection is coming soon. Your Pro devices will automatically record and identify bird species in the field.</p>
-                <div className="orpheus-info-banner" style={{ marginTop: 24, maxWidth: 500 }}>
-                  <div className="info-icon">🔬</div>
-                  <div>
-                    <strong>How it will work:</strong> Your Orpheus Pro records audio clips using threshold detection.
-                    The clips are synced to the cloud where BirdNET identifies species automatically.
-                    Results appear here as a species activity timeline overlaid with your playback schedule.
+            {/* ==================== RECORDINGS TAB (Pro) ==================== */}
+            {activeTab === 'recordings' && isPro && (
+              <div>
+                {recordings.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-icon">🎙️</div>
+                    <h2>No recordings yet</h2>
+                    <p>Audio recordings from your Orpheus Pro device will appear here once synced. Use Record Mode on the device to capture field audio.</p>
                   </div>
-                </div>
+                ) : (
+                  <div className="analytics-card full-width">
+                    <h3>Recordings ({recordings.length})</h3>
+                    <div style={{ overflowX: 'auto', marginTop: 12 }}>
+                      <table className="uploads-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                          <tr style={{ borderBottom: '2px solid #e5e7eb', textAlign: 'left' }}>
+                            <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Recorded</th>
+                            <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Filename</th>
+                            <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Duration</th>
+                            <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Size</th>
+                            <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Analysis</th>
+                            <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Detections</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {recordings.map((r, i) => (
+                            <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                              <td style={{ padding: '8px 12px', fontSize: 13 }}>{formatTime(r.recorded_at)}</td>
+                              <td style={{ padding: '8px 12px', fontSize: 13 }}>{r.filename}</td>
+                              <td style={{ padding: '8px 12px', fontSize: 13 }}>
+                                {r.duration_seconds ? `${Math.floor(r.duration_seconds / 60)}m ${Math.round(r.duration_seconds % 60)}s` : '—'}
+                              </td>
+                              <td style={{ padding: '8px 12px', fontSize: 13 }}>
+                                {r.file_size >= 1048576 ? `${(r.file_size / 1048576).toFixed(1)} MB` : `${(r.file_size / 1024).toFixed(0)} KB`}
+                              </td>
+                              <td style={{ padding: '8px 12px', fontSize: 13 }}>
+                                <span style={{
+                                  padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600,
+                                  background: r.analyzed ? '#dcfce7' : '#fef3c7',
+                                  color: r.analyzed ? '#166534' : '#92400e',
+                                }}>{r.analyzed ? 'Analyzed' : 'Pending'}</span>
+                              </td>
+                              <td style={{ padding: '8px 12px', fontSize: 13, fontWeight: r.detection_count > 0 ? 700 : 400 }}>
+                                {r.detection_count > 0 ? `${r.detection_count} species` : '—'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ==================== SPECIES TAB (Pro) ==================== */}
+            {activeTab === 'species' && isPro && (
+              <div>
+                {speciesList.length === 0 && detections.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-icon">🐦</div>
+                    <h2>No species detected yet</h2>
+                    <p>BirdNET analyzes your field recordings automatically. Upload recordings from your Orpheus Pro device to see detected species here.</p>
+                    <div className="orpheus-info-banner" style={{ marginTop: 24, maxWidth: 500 }}>
+                      <div className="info-icon">🔬</div>
+                      <div>
+                        <strong>How it works:</strong> Record audio on your Orpheus Pro using threshold detection mode.
+                        Sync recordings to the cloud via the mobile app.
+                        BirdNET identifies species and results appear here automatically.
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Species summary cards */}
+                    <div className="stats-grid four-col" style={{ marginBottom: 24 }}>
+                      <div className="stat-card">
+                        <div className="stat-icon">🐦</div>
+                        <div className="stat-content">
+                          <div className="stat-value">{speciesList.length}</div>
+                          <div className="stat-label">Species detected</div>
+                        </div>
+                      </div>
+                      <div className="stat-card">
+                        <div className="stat-icon">🎵</div>
+                        <div className="stat-content">
+                          <div className="stat-value">{detections.length}</div>
+                          <div className="stat-label">Total detections</div>
+                        </div>
+                      </div>
+                      <div className="stat-card">
+                        <div className="stat-icon">📊</div>
+                        <div className="stat-content">
+                          <div className="stat-value">
+                            {detections.length > 0 ? `${(detections.reduce((s, d) => s + d.confidence, 0) / detections.length * 100).toFixed(0)}%` : '—'}
+                          </div>
+                          <div className="stat-label">Avg confidence</div>
+                        </div>
+                      </div>
+                      <div className="stat-card">
+                        <div className="stat-icon">🎙️</div>
+                        <div className="stat-content">
+                          <div className="stat-value">{recordings.filter(r => r.analyzed).length}</div>
+                          <div className="stat-label">Recordings analyzed</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Species table */}
+                    <div className="analytics-card full-width">
+                      <h3>Detected Species</h3>
+                      <div style={{ overflowX: 'auto', marginTop: 12 }}>
+                        <table className="uploads-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                          <thead>
+                            <tr style={{ borderBottom: '2px solid #e5e7eb', textAlign: 'left' }}>
+                              <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Species</th>
+                              <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Scientific Name</th>
+                              <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Detections</th>
+                              <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Avg Confidence</th>
+                              <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>First Seen</th>
+                              <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Last Seen</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {speciesList.map((s, i) => (
+                              <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                                <td style={{ padding: '8px 12px', fontSize: 14, fontWeight: 600 }}>{s.species_common}</td>
+                                <td style={{ padding: '8px 12px', fontSize: 13, fontStyle: 'italic', color: '#6b7280' }}>{s.species_scientific}</td>
+                                <td style={{ padding: '8px 12px', fontSize: 13, fontWeight: 700 }}>{s.detection_count}</td>
+                                <td style={{ padding: '8px 12px', fontSize: 13 }}>
+                                  <span style={{
+                                    padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600,
+                                    background: s.avg_confidence >= 0.7 ? '#dcfce7' : s.avg_confidence >= 0.5 ? '#fef3c7' : '#fee2e2',
+                                    color: s.avg_confidence >= 0.7 ? '#166534' : s.avg_confidence >= 0.5 ? '#92400e' : '#991b1b',
+                                  }}>{(s.avg_confidence * 100).toFixed(0)}%</span>
+                                </td>
+                                <td style={{ padding: '8px 12px', fontSize: 12, color: '#9ca3af' }}>{formatDate(s.first_detected)}</td>
+                                <td style={{ padding: '8px 12px', fontSize: 12, color: '#9ca3af' }}>{formatDate(s.last_detected)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* Recent detections */}
+                    <div className="analytics-card full-width" style={{ marginTop: 24 }}>
+                      <h3>Recent Detections</h3>
+                      <div style={{ overflowX: 'auto', marginTop: 12 }}>
+                        <table className="uploads-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                          <thead>
+                            <tr style={{ borderBottom: '2px solid #e5e7eb', textAlign: 'left' }}>
+                              <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Time</th>
+                              <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Species</th>
+                              <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Confidence</th>
+                              <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Clip Position</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {detections.slice(0, 50).map((d, i) => (
+                              <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                                <td style={{ padding: '8px 12px', fontSize: 13 }}>{formatTime(d.detected_at)}</td>
+                                <td style={{ padding: '8px 12px', fontSize: 13, fontWeight: 600 }}>{d.species_common}</td>
+                                <td style={{ padding: '8px 12px', fontSize: 13 }}>
+                                  <span style={{
+                                    padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600,
+                                    background: d.confidence >= 0.7 ? '#dcfce7' : d.confidence >= 0.5 ? '#fef3c7' : '#fee2e2',
+                                    color: d.confidence >= 0.7 ? '#166534' : d.confidence >= 0.5 ? '#92400e' : '#991b1b',
+                                  }}>{(d.confidence * 100).toFixed(0)}%</span>
+                                </td>
+                                <td style={{ padding: '8px 12px', fontSize: 12, color: '#9ca3af' }}>
+                                  {d.start_seconds.toFixed(1)}s — {d.end_seconds.toFixed(1)}s
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
