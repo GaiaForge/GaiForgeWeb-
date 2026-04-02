@@ -21,6 +21,7 @@ const COLORS = {
 
 function OrpheusAnalytics({ user, onLogout }) {
   const navigate = useNavigate();
+  const isPro = user?.subscription_tier === 'pro' || user?.is_admin;
   const [activeTab, setActiveTab] = useState('overview');
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
@@ -239,6 +240,24 @@ function OrpheusAnalytics({ user, onLogout }) {
             onClick={() => setActiveTab('events')}>
             <span className="nav-icon">📋</span> System Log
           </button>
+          {isPro && (
+            <button className={`nav-item nav-btn ${activeTab === 'correlation' ? 'active' : ''}`}
+              onClick={() => setActiveTab('correlation')}>
+              <span className="nav-icon">🔗</span> Correlation
+            </button>
+          )}
+          {isPro && (
+            <button className={`nav-item nav-btn ${activeTab === 'species' ? 'active' : ''}`}
+              onClick={() => setActiveTab('species')}>
+              <span className="nav-icon">🐦</span> Species
+            </button>
+          )}
+          {!isPro && (
+            <button className="nav-item nav-btn" style={{color: '#f59e0b'}}
+              onClick={() => setActiveTab('upgrade')}>
+              <span className="nav-icon">⭐</span> Pro Features
+            </button>
+          )}
           <Link to="/orpheus/journal" className="nav-item">
             <span className="nav-icon">📝</span> Journal
           </Link>
@@ -307,7 +326,7 @@ function OrpheusAnalytics({ user, onLogout }) {
                   <option value={90}>Last 90 days</option>
                   <option value={365}>Last year</option>
                 </select>
-                {['environment', 'battery', 'playback'].includes(activeTab) && (
+                {isPro && ['environment', 'battery', 'playback'].includes(activeTab) && (
                   <button onClick={handleExportCSV} className="btn-download"
                     style={{ padding: '6px 16px', fontSize: 13 }}>
                     Export CSV
@@ -483,7 +502,7 @@ function OrpheusAnalytics({ user, onLogout }) {
                       </ResponsiveContainer>
                     </div>
 
-                    <div className="analytics-card full-width" style={{ marginTop: 24 }}>
+                    {isPro && <div className="analytics-card full-width" style={{ marginTop: 24 }}>
                       <h3>Atmospheric Pressure</h3>
                       <ResponsiveContainer width="100%" height={300}>
                         <AreaChart data={readings}>
@@ -501,7 +520,7 @@ function OrpheusAnalytics({ user, onLogout }) {
                           <Brush dataKey="time" height={25} stroke="#d1d5db" />
                         </AreaChart>
                       </ResponsiveContainer>
-                    </div>
+                    </div>}
                   </>
                 )}
               </div>
@@ -535,7 +554,7 @@ function OrpheusAnalytics({ user, onLogout }) {
                       </ResponsiveContainer>
                     </div>
 
-                    <div className="analytics-card full-width" style={{ marginTop: 24 }}>
+                    {isPro && <div className="analytics-card full-width" style={{ marginTop: 24 }}>
                       <h3>Solar Input</h3>
                       <p style={{ color: '#6b7280', fontSize: 13, marginBottom: 12 }}>Power output (W) and daily yield (kWh) from the solar panel.</p>
                       <ResponsiveContainer width="100%" height={300}>
@@ -551,7 +570,7 @@ function OrpheusAnalytics({ user, onLogout }) {
                           <Brush dataKey="time" height={25} stroke="#d1d5db" />
                         </ComposedChart>
                       </ResponsiveContainer>
-                    </div>
+                    </div>}
                   </>
                 )}
               </div>
@@ -716,6 +735,151 @@ function OrpheusAnalytics({ user, onLogout }) {
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* ==================== CORRELATION TAB (Pro) ==================== */}
+            {activeTab === 'correlation' && isPro && (
+              <div>
+                {readings.length === 0 || playback.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-icon">🔗</div>
+                    <h2>Not enough data for correlation</h2>
+                    <p>Need both environmental readings and playback events to show correlations.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="analytics-card full-width">
+                      <h3>Playback vs Environment</h3>
+                      <p style={{ color: '#6b7280', fontSize: 13, marginBottom: 12 }}>
+                        Environmental conditions during playback events. Shows temperature and playback activity over time.
+                      </p>
+                      <ResponsiveContainer width="100%" height={350}>
+                        <ComposedChart data={readings}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                          <XAxis dataKey="time" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
+                          <YAxis yAxisId="temp" label={{ value: '°C', position: 'insideTopLeft', fontSize: 11 }} />
+                          <Tooltip content={<CustomTooltip />} />
+                          <Legend />
+                          <Line yAxisId="temp" type="monotone" dataKey="temperature" name="Temperature (°C)" stroke={COLORS.temperature} dot={false} strokeWidth={2} />
+                          <Line yAxisId="temp" type="monotone" dataKey="humidity" name="Humidity (%)" stroke={COLORS.humidity} dot={false} strokeWidth={1} strokeDasharray="5 5" />
+                          <Brush dataKey="time" height={25} stroke="#d1d5db" />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <div className="analytics-card full-width" style={{ marginTop: 24 }}>
+                      <h3>Playback Events Overlay</h3>
+                      <div style={{ overflowX: 'auto', marginTop: 12 }}>
+                        <table className="uploads-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                          <thead>
+                            <tr style={{ borderBottom: '2px solid #e5e7eb', textAlign: 'left' }}>
+                              <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Time</th>
+                              <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Track</th>
+                              <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Mode</th>
+                              <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Duration</th>
+                              <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Temp at time</th>
+                              <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Humidity</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {playback.slice(-30).reverse().map((p, i) => {
+                              // Find nearest reading to this playback event
+                              const pTime = new Date(p.start_time).getTime();
+                              let nearest = null;
+                              let minDiff = Infinity;
+                              readings.forEach(r => {
+                                const diff = Math.abs(new Date(r.timestamp).getTime() - pTime);
+                                if (diff < minDiff) { minDiff = diff; nearest = r; }
+                              });
+                              return (
+                                <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                                  <td style={{ padding: '8px 12px', fontSize: 13 }}>{p.time}</td>
+                                  <td style={{ padding: '8px 12px', fontSize: 13 }}>{p.track_name}</td>
+                                  <td style={{ padding: '8px 12px', fontSize: 13 }}>
+                                    <span className="selector-badge-open" style={{ fontSize: 11, padding: '2px 8px' }}>{p.playback_mode}</span>
+                                  </td>
+                                  <td style={{ padding: '8px 12px', fontSize: 13 }}>
+                                    {p.duration_seconds != null ? `${Math.floor(p.duration_seconds / 60)}m` : '—'}
+                                  </td>
+                                  <td style={{ padding: '8px 12px', fontSize: 13 }}>
+                                    {nearest?.temperature != null ? `${nearest.temperature.toFixed(1)}°C` : '—'}
+                                  </td>
+                                  <td style={{ padding: '8px 12px', fontSize: 13 }}>
+                                    {nearest?.humidity != null ? `${nearest.humidity.toFixed(0)}%` : '—'}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* ==================== SPECIES TAB (Pro — Coming Soon) ==================== */}
+            {activeTab === 'species' && isPro && (
+              <div className="empty-state">
+                <div className="empty-icon">🐦</div>
+                <h2>Species Detection</h2>
+                <p>BirdNET-powered species detection is coming soon. Your Pro devices will automatically record and identify bird species in the field.</p>
+                <div className="orpheus-info-banner" style={{ marginTop: 24, maxWidth: 500 }}>
+                  <div className="info-icon">🔬</div>
+                  <div>
+                    <strong>How it will work:</strong> Your Orpheus Pro records audio clips using threshold detection.
+                    The clips are synced to the cloud where BirdNET identifies species automatically.
+                    Results appear here as a species activity timeline overlaid with your playback schedule.
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ==================== UPGRADE PROMPT (Basic users) ==================== */}
+            {activeTab === 'upgrade' && !isPro && (
+              <div>
+                <div className="analytics-card full-width" style={{ textAlign: 'center', padding: '40px 24px' }}>
+                  <div style={{ fontSize: 48, marginBottom: 16 }}>⭐</div>
+                  <h2 style={{ marginBottom: 8 }}>Upgrade to Orpheus Pro</h2>
+                  <p style={{ color: '#6b7280', maxWidth: 500, margin: '0 auto 24px' }}>
+                    Get advanced analytics tools designed for wildlife researchers.
+                  </p>
+                  <div className="stats-grid" style={{ maxWidth: 600, margin: '0 auto', textAlign: 'left' }}>
+                    <div className="stat-card">
+                      <div className="stat-icon">🔗</div>
+                      <div className="stat-content">
+                        <div className="stat-value" style={{ fontSize: 16 }}>Correlation View</div>
+                        <div className="stat-label">Overlay playback events with environmental data</div>
+                      </div>
+                    </div>
+                    <div className="stat-card">
+                      <div className="stat-icon">🐦</div>
+                      <div className="stat-content">
+                        <div className="stat-value" style={{ fontSize: 16 }}>Species Detection</div>
+                        <div className="stat-label">BirdNET-powered automatic species identification</div>
+                      </div>
+                    </div>
+                    <div className="stat-card">
+                      <div className="stat-icon">📊</div>
+                      <div className="stat-content">
+                        <div className="stat-value" style={{ fontSize: 16 }}>Advanced Charts</div>
+                        <div className="stat-label">Detailed pressure, solar yield, and long-range trends</div>
+                      </div>
+                    </div>
+                    <div className="stat-card">
+                      <div className="stat-icon">📄</div>
+                      <div className="stat-content">
+                        <div className="stat-value" style={{ fontSize: 16 }}>PDF Reports</div>
+                        <div className="stat-label">Export deployment reports for publications</div>
+                      </div>
+                    </div>
+                  </div>
+                  <p style={{ color: '#9ca3af', fontSize: 13, marginTop: 24 }}>
+                    Contact GaiaForge to upgrade your subscription.
+                  </p>
+                </div>
               </div>
             )}
           </>
