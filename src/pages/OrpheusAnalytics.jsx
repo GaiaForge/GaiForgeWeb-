@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar,
-  ComposedChart, ResponsiveContainer, CartesianGrid,
+  ComposedChart, PieChart, Pie, Cell, ScatterChart, Scatter,
+  ResponsiveContainer, CartesianGrid,
   XAxis, YAxis, Tooltip, Legend, Brush,
 } from 'recharts';
 
@@ -962,6 +963,114 @@ function OrpheusAnalytics({ user, onLogout }) {
                         </div>
                       </div>
                     </div>
+
+                    {/* Species breakdown charts */}
+                    <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 24 }}>
+                      {/* Bar chart — detections per species */}
+                      <div className="analytics-card" style={{ flex: '2 1 400px' }}>
+                        <h3>Species Detection Count</h3>
+                        <ResponsiveContainer width="100%" height={Math.max(250, speciesList.length * 40)}>
+                          <BarChart data={speciesList} layout="vertical" margin={{ left: 120 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                            <XAxis type="number" tick={{ fontSize: 11 }} />
+                            <YAxis type="category" dataKey="species_common" tick={{ fontSize: 12 }} width={110} />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Bar dataKey="detection_count" name="Detections" fill="#10b981" radius={[0, 4, 4, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      {/* Pie chart — species distribution */}
+                      <div className="analytics-card" style={{ flex: '1 1 280px' }}>
+                        <h3>Species Distribution</h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <PieChart>
+                            <Pie data={speciesList} dataKey="detection_count" nameKey="species_common"
+                              cx="50%" cy="50%" outerRadius={100} innerRadius={50} paddingAngle={2}
+                              label={({ species_common, percent }) => `${species_common} ${(percent * 100).toFixed(0)}%`}
+                              labelLine={{ stroke: '#9ca3af' }} style={{ fontSize: 11 }}>
+                              {speciesList.map((_, i) => (
+                                <Cell key={i} fill={[
+                                  '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6',
+                                  '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#6366f1',
+                                  '#14b8a6', '#a855f7', '#eab308', '#0ea5e9', '#d946ef',
+                                ][i % 15]} />
+                              ))}
+                            </Pie>
+                            <Tooltip />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* Confidence scatter — each detection plotted by time vs confidence */}
+                    {detections.length > 0 && (
+                      <div className="analytics-card full-width" style={{ marginBottom: 24 }}>
+                        <h3>Detection Confidence Timeline</h3>
+                        <p style={{ color: '#6b7280', fontSize: 13, marginBottom: 12 }}>
+                          Each dot is a species detection. Higher = more confident. Color-coded by species.
+                        </p>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <ScatterChart margin={{ bottom: 20 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                            <XAxis dataKey="time" name="Time" tick={{ fontSize: 11 }} />
+                            <YAxis dataKey="conf" name="Confidence" domain={[0, 1]} tick={{ fontSize: 11 }}
+                              label={{ value: 'Confidence', position: 'insideTopLeft', fontSize: 11 }}
+                              tickFormatter={v => `${(v * 100).toFixed(0)}%`} />
+                            <Tooltip formatter={(v, name) => name === 'Confidence' ? `${(v * 100).toFixed(0)}%` : v}
+                              labelFormatter={l => l} />
+                            <Legend />
+                            {/* Group detections by species for coloring */}
+                            {[...new Set(detections.map(d => d.species_common))].slice(0, 10).map((species, i) => {
+                              const color = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6',
+                                '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#6366f1'][i % 10];
+                              const data = detections.filter(d => d.species_common === species).map(d => ({
+                                time: formatTime(d.detected_at),
+                                conf: d.confidence,
+                                species: d.species_common,
+                              }));
+                              return <Scatter key={species} name={species} data={data} fill={color} />;
+                            })}
+                          </ScatterChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )}
+
+                    {/* Confidence distribution bar chart */}
+                    {detections.length > 0 && (() => {
+                      const buckets = [
+                        { range: '25-40%', min: 0.25, max: 0.4, count: 0 },
+                        { range: '40-55%', min: 0.4, max: 0.55, count: 0 },
+                        { range: '55-70%', min: 0.55, max: 0.7, count: 0 },
+                        { range: '70-85%', min: 0.7, max: 0.85, count: 0 },
+                        { range: '85-100%', min: 0.85, max: 1.01, count: 0 },
+                      ];
+                      detections.forEach(d => {
+                        const b = buckets.find(b => d.confidence >= b.min && d.confidence < b.max);
+                        if (b) b.count++;
+                      });
+                      return (
+                        <div className="analytics-card full-width" style={{ marginBottom: 24 }}>
+                          <h3>Confidence Distribution</h3>
+                          <p style={{ color: '#6b7280', fontSize: 13, marginBottom: 12 }}>
+                            How confident BirdNET is across all detections. Higher is better.
+                          </p>
+                          <ResponsiveContainer width="100%" height={200}>
+                            <BarChart data={buckets}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                              <XAxis dataKey="range" tick={{ fontSize: 12 }} />
+                              <YAxis tick={{ fontSize: 11 }} />
+                              <Tooltip />
+                              <Bar dataKey="count" name="Detections" radius={[4, 4, 0, 0]}>
+                                {buckets.map((_, i) => (
+                                  <Cell key={i} fill={['#fee2e2', '#fef3c7', '#fef9c3', '#dcfce7', '#bbf7d0'][i]} stroke={['#ef4444', '#f59e0b', '#eab308', '#10b981', '#16a34a'][i]} strokeWidth={2} />
+                                ))}
+                              </Bar>
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      );
+                    })()}
 
                     {/* Species table */}
                     <div className="analytics-card full-width">
