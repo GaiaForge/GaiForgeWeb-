@@ -52,9 +52,9 @@
 
 ---
 
-## Next Up
+## Recently Completed
 
-### Orpheus Data Pipeline
+### Orpheus Data Pipeline (Done)
 - [ ] Define Orpheus data schema (environmental readings, playback events)
 - [ ] API models for Orpheus readings (temperature, humidity, battery, solar, GPS)
 - [ ] API models for playback logs (track played, start/stop time, volume, schedule name)
