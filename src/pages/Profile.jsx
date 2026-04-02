@@ -4,6 +4,117 @@ import './Dashboard.css';
 
 const API_BASE = window.location.origin;
 
+function DevicesSection({ user }) {
+  const [devices, setDevices] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [newSerial, setNewSerial] = React.useState('');
+  const [adding, setAdding] = React.useState(false);
+  const [devMsg, setDevMsg] = React.useState(null);
+
+  const headers = {
+    'Authorization': `Bearer ${user?.token}`,
+    'Content-Type': 'application/json',
+  };
+
+  React.useEffect(() => { fetchDevices(); }, []);
+
+  const fetchDevices = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/my-devices`, { headers });
+      if (res.ok) setDevices(await res.json());
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  };
+
+  const addDevice = async () => {
+    if (!newSerial.trim()) return;
+    setAdding(true);
+    setDevMsg(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/add-device`, {
+        method: 'POST', headers,
+        body: JSON.stringify({ serial: newSerial.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setDevMsg({ type: 'ok', text: `${newSerial.trim()} added (${data.product})` });
+        setNewSerial('');
+        fetchDevices();
+      } else {
+        setDevMsg({ type: 'err', text: data.detail || 'Failed to add device' });
+      }
+    } catch {
+      setDevMsg({ type: 'err', text: 'Connection error' });
+    } finally { setAdding(false); }
+  };
+
+  const productColor = (p) => ({
+    background: p === 'orpheus' ? '#dbeafe' : p === 'hiveguard' ? '#fef3c7' : '#dcfce7',
+    color: p === 'orpheus' ? '#1e40af' : p === 'hiveguard' ? '#92400e' : '#166534',
+  });
+
+  return (
+    <div className="device-selector">
+      <h3>My Devices</h3>
+      <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '16px' }}>
+        Devices registered to your account. Add more devices using their serial number.
+      </p>
+
+      {loading ? <p>Loading...</p> : (
+        <>
+          {devices.length === 0 ? (
+            <p style={{ color: '#9ca3af' }}>No devices registered yet.</p>
+          ) : (
+            <div style={{ marginBottom: '20px' }}>
+              {devices.map((d, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', gap: '12px', padding: '12px',
+                  background: '#f9fafb', borderRadius: '10px', marginBottom: '8px',
+                  border: '1px solid #e5e7eb',
+                }}>
+                  <span style={{
+                    padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700,
+                    ...productColor(d.product),
+                  }}>{d.product}</span>
+                  <code style={{ fontSize: '14px', fontWeight: 600 }}>{d.serial}</code>
+                  {d.claimed_at && (
+                    <span style={{ fontSize: '12px', color: '#9ca3af', marginLeft: 'auto' }}>
+                      registered {new Date(d.claimed_at).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <input type="text" value={newSerial} onChange={e => setNewSerial(e.target.value)}
+              placeholder="Enter device serial number"
+              style={{
+                flex: 1, padding: '10px 14px', border: '2px solid #e5e7eb',
+                borderRadius: '10px', fontSize: '14px',
+              }}
+              onKeyDown={e => e.key === 'Enter' && addDevice()}
+            />
+            <button onClick={addDevice} disabled={adding || !newSerial.trim()}
+              style={{
+                padding: '10px 20px', background: '#10b981', color: '#fff',
+                border: 'none', borderRadius: '10px', fontWeight: 600,
+                cursor: 'pointer', opacity: adding || !newSerial.trim() ? 0.5 : 1,
+              }}>{adding ? 'Adding...' : 'Add Device'}</button>
+          </div>
+          {devMsg && (
+            <p style={{ marginTop: '10px', fontSize: '13px', color: devMsg.type === 'ok' ? '#10b981' : '#ef4444' }}>
+              {devMsg.text}
+            </p>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+
 function Profile({ user, onLogout, onUserUpdate }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -193,6 +304,7 @@ function Profile({ user, onLogout, onUserUpdate }) {
           <div style={{ minWidth: '180px' }}>
             {[
               { key: 'account', icon: '👤', label: 'Account' },
+              { key: 'devices', icon: '📟', label: 'My Devices' },
               { key: 'password', icon: '🔒', label: 'Password' },
               { key: 'email', icon: '✉️', label: 'Change Email' },
               { key: 'apikey', icon: '🔑', label: 'API Key' },
@@ -331,6 +443,10 @@ function Profile({ user, onLogout, onUserUpdate }) {
                 </div>
               )}
               </>
+            )}
+
+            {section === 'devices' && (
+              <DevicesSection user={user} />
             )}
 
             {section === 'password' && (

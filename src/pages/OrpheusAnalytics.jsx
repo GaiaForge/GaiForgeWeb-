@@ -368,6 +368,29 @@ function OrpheusAnalytics({ user, onLogout }) {
                     Export CSV
                   </button>
                 )}
+                {isPro && activeTab === 'overview' && selectedDevice && (
+                  <button onClick={() => {
+                    const url = `${API_BASE}/api/orpheus/devices/${selectedDevice}/report?days=${dateRange}`;
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = '';
+                    // Need auth header — use fetch
+                    fetch(url, { headers }).then(r => {
+                      if (r.ok) return r.blob();
+                      throw new Error('Report generation failed');
+                    }).then(blob => {
+                      const u = URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = u;
+                      link.download = `orpheus_report_${dateRange}d.pdf`;
+                      link.click();
+                      URL.revokeObjectURL(u);
+                    }).catch(err => alert(err.message));
+                  }} className="btn-download"
+                    style={{ padding: '6px 16px', fontSize: 13, background: '#8b5cf6' }}>
+                    PDF Report
+                  </button>
+                )}
               </div>
             </div>
 
