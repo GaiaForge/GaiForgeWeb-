@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initSmoothScroll();
   initGalleryInteractions();
   initParallaxEffect();
+  initTimeline();
 });
 
 /**
@@ -421,6 +422,42 @@ window.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
+
+/**
+ * Collapsible Timeline
+ * Wraps each timeline entry's text in a togglable body, opened by clicking the date heading.
+ * The most recent entry starts expanded.
+ */
+function initTimeline() {
+  const items = document.querySelectorAll('.timeline-content');
+  if (!items.length) return;
+
+  items.forEach(function(content) {
+    const h3 = content.querySelector('h3');
+    if (!h3) return;
+
+    // Wrap all paragraphs in a collapsible body div
+    const body = document.createElement('div');
+    body.className = 'timeline-body';
+    content.querySelectorAll('p').forEach(function(p) {
+      body.appendChild(p);
+    });
+    content.appendChild(body);
+
+    // Add chevron icon to heading
+    const chevron = document.createElement('span');
+    chevron.className = 'timeline-chevron';
+    chevron.innerHTML = '<i class="fas fa-chevron-down"></i>';
+    h3.appendChild(chevron);
+
+    h3.addEventListener('click', function() {
+      content.classList.toggle('expanded');
+    });
+  });
+
+  // Open the most recent entry by default
+  items[items.length - 1].classList.add('expanded');
+}
 
 /**
  * Browser Feature Detection

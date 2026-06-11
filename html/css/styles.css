@@ -3185,7 +3185,42 @@
 
 .timeline-content h3 {
   color: var(--primary-green);
-  margin-bottom: 10px;
+  margin-bottom: 0;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.timeline-item:nth-child(odd) .timeline-content h3 {
+  flex-direction: row-reverse;
+}
+
+.timeline-chevron {
+  color: var(--accent-gold);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  transition: transform 0.35s ease;
+}
+
+.timeline-content.expanded .timeline-chevron {
+  transform: rotate(180deg);
+}
+
+.timeline-body {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  transition: max-height 0.4s ease, opacity 0.3s ease, margin-top 0.3s ease;
+}
+
+.timeline-content.expanded .timeline-body {
+  max-height: 800px;
+  opacity: 1;
+  margin-top: 12px;
 }
 
 /* Team section styling */
