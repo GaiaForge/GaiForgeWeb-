@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bioacoustic Field Equipment: Passive Monitoring vs Active Playback | GaiaForge</title>
+  <meta name="description" content="A researcher's guide to choosing bioacoustic field equipment — passive acoustic monitoring vs active audio playback, and why autonomous solar-powered devices like Orpheus are changing long-term wildlife research.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .guide-section {
+      padding: 60px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .guide-section:last-of-type {
+      border-bottom: none;
+    }
+    .guide-section h2 {
+      font-family: 'Cinzel', serif;
+      color: var(--primary-green);
+      font-size: 1.9rem;
+      margin-bottom: 20px;
+    }
+    .guide-section h3 {
+      font-family: 'Cinzel', serif;
+      color: var(--primary-green);
+      font-size: 1.3rem;
+      margin: 30px 0 12px;
+    }
+    .guide-section p {
+      color: var(--dark-gray);
+      line-height: 1.8;
+      margin-bottom: 16px;
+      font-size: 1rem;
+    }
+    .guide-section ul {
+      color: var(--dark-gray);
+      line-height: 1.8;
+      padding-left: 20px;
+      margin-bottom: 20px;
+    }
+    .guide-section ul li {
+      margin-bottom: 8px;
+    }
+    .two-approach-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin: 40px 0;
+    }
+    @media (max-width: 768px) {
+      .two-approach-grid { grid-template-columns: 1fr; }
+    }
+    .approach-card {
+      background: var(--off-white);
+      border-radius: 16px;
+      padding: 35px;
+      border-top: 5px solid var(--primary-green);
+    }
+    .approach-card.playback {
+      border-top-color: var(--accent-gold);
+    }
+    .approach-card h3 {
+      margin-top: 0;
+      font-size: 1.2rem;
+    }
+    .approach-card .approach-icon {
+      font-size: 2.5rem;
+      color: var(--primary-green);
+      margin-bottom: 15px;
+    }
+    .approach-card.playback .approach-icon {
+      color: var(--accent-gold);
+    }
+    .approach-card ul {
+      margin: 0;
+    }
+    .callout-box {
+      background: linear-gradient(135deg, #f0f7f0 0%, #e8f5e8 100%);
+      border-left: 5px solid var(--primary-green);
+      border-radius: 0 12px 12px 0;
+      padding: 25px 30px;
+      margin: 35px 0;
+    }
+    .callout-box p {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+    .callout-box strong {
+      color: var(--primary-green);
+    }
+    .use-case-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+      margin-top: 30px;
+    }
+    .use-case-card {
+      background: white;
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+      border-top: 4px solid var(--accent-gold);
+    }
+    .use-case-card h4 {
+      font-family: 'Cinzel', serif;
+      color: var(--primary-green);
+      font-size: 1.05rem;
+      margin-bottom: 10px;
+    }
+    .use-case-card p {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+    .use-case-icon {
+      font-size: 1.8rem;
+      color: var(--accent-gold);
+      margin-bottom: 14px;
+    }
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-top: 30px;
+    }
+    @media (max-width: 768px) {
+      .comparison-grid { grid-template-columns: 1fr; }
+    }
+    .limitation-card {
+      background: #fff8f0;
+      border-radius: 12px;
+      padding: 28px;
+      border-top: 4px solid #e0a020;
+    }
+    .limitation-card h4 {
+      font-family: 'Cinzel', serif;
+      color: #b07818;
+      margin-bottom: 10px;
+      font-size: 1rem;
+    }
+    .limitation-card ul {
+      margin: 0;
+    }
+    .spec-highlight {
+      display: inline-block;
+      background: var(--primary-green);
+      color: white;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <a href="index.html">
+            <img src="images/gaiaforge-logo.png" alt="GaiaForge Logo">
+          </a>
+        </div>
+        <nav class="main-nav">
+          <button class="menu-toggle" aria-label="Toggle navigation">
+            <span></span><span></span><span></span><span></span>
+          </button>
+          <ul class="nav-menu">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="our-story.html">Our Story</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle">Products</a>
+              <ul class="dropdown-menu">
+                <li><a href="orpheus.html">Orpheus</a></li>
+                <li><a href="sprigrig.html">SprigRig</a></li>
+                <li><a href="hiveguard.html">HiveGuard</a></li>
+              </ul>
+            </li>
+            <li><a href="/portal" target="_blank">Portal</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="product-hero">
+    <div class="container text-center">
+      <h1 class="fade-in">Bioacoustic Field Equipment</h1>
+      <p class="product-tagline fade-in">Passive Monitoring vs Active Playback</p>
+      <p class="fade-in">A researcher's guide to choosing the right tools — and why some deployments need both.</p>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section style="padding: 20px 0 80px;">
+    <div class="container">
+
+      <!-- Two Approaches -->
+      <div class="guide-section fade-in">
+        <h2>Two Approaches to Bioacoustic Field Research</h2>
+        <p>Wildlife audio research broadly divides into two distinct disciplines — and the equipment you choose reflects which one you're doing. Most researchers are familiar with both, but field devices have historically been built for one or the other. Understanding the distinction is the starting point for choosing the right kit for your deployment.</p>
+
+        <div class="two-approach-grid">
+          <div class="approach-card">
+            <div class="approach-icon"><i class="fas fa-microphone"></i></div>
+            <h3>Passive Acoustic Monitoring (PAM)</h3>
+            <p>The device listens. It records the acoustic environment continuously or on a schedule, capturing everything from bird song and bat echolocation to insect stridulation and anthropogenic noise. The researcher analyses the recordings later.</p>
+            <ul>
+              <li>Biodiversity surveys and soundscape ecology</li>
+              <li>Bat activity monitoring</li>
+              <li>Long-term environmental baselines</li>
+              <li>Detecting presence/absence of species</li>
+              <li>Ecoacoustic health indices</li>
+            </ul>
+          </div>
+
+          <div class="approach-card playback">
+            <div class="approach-icon"><i class="fas fa-volume-up"></i></div>
+            <h3>Active Bioacoustic Playback</h3>
+            <p>The device broadcasts. Species-specific calls, songs, or territory cues are played into the environment to attract, stimulate, or manipulate animal behaviour. The researcher observes or records the response.</p>
+            <ul>
+              <li>Acoustic bird lures for ringing and capture</li>
+              <li>Habitat restoration — attracting target species to a site</li>
+              <li>Behavioural research and playback experiments</li>
+              <li>Migration corridor management</li>
+              <li>Conservation translocation support</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout-box">
+          <p><strong>Most field biologists end up needing both.</strong> A bird ringing station runs playback lures to attract birds and simultaneously records the acoustic environment to document species responding to the calls. A habitat restoration project plays dawn chorus recordings to attract colonisers and monitors whether the soundscape is recovering. Yet until recently, doing both meant managing two separate devices, two power systems, and two data streams in the field.</p>
+        </div>
+      </div>
+
+      <!-- The Battery Problem -->
+      <div class="guide-section fade-in">
+        <h2>The Problem with Single-Purpose Passive Recorders</h2>
+        <p>Passive acoustic recorders have transformed wildlife research. Small, affordable devices like the AudioMoth have made high-quality bioacoustic monitoring accessible to individual researchers and community science projects alike. For pure recording deployments, they are hard to beat.</p>
+        <p>But passive recorders have a fundamental constraint that becomes critical for long-term or remote deployments: <strong>they are designed to record, not to operate indefinitely in the field.</strong></p>
+
+        <div class="comparison-grid">
+          <div class="limitation-card">
+            <h4><i class="fas fa-battery-quarter" style="margin-right:8px;"></i>Battery Dependency</h4>
+            <ul>
+              <li>Battery-powered devices require regular site visits</li>
+              <li>Remote deployments often cut short by power failure</li>
+              <li>Cold winters and short days accelerate discharge</li>
+              <li>Each visit risks disturbing the study site</li>
+              <li>Scaling to multiple sites multiplies maintenance burden</li>
+            </ul>
+          </div>
+          <div class="limitation-card">
+            <h4><i class="fas fa-clock" style="margin-right:8px;"></i>Fixed Scheduling</h4>
+            <ul>
+              <li>Timer-based schedules drift from biological reality</li>
+              <li>Sunrise and sunset shift daily — fixed times miss peak activity windows</li>
+              <li>Seasonal behaviour changes require manual reprogramming</li>
+              <li>No awareness of location — the same schedule at different latitudes is meaningless</li>
+              <li>Breeding seasons and migration timing vary year to year</li>
+            </ul>
+          </div>
+        </div>
+
+        <p style="margin-top: 30px;">For short deployments — a few weeks, accessible terrain, temperate climate — these constraints are manageable. For serious long-term research across full annual cycles in challenging environments, they are the difference between a study that completes and one that doesn't.</p>
+      </div>
+
+      <!-- The Autonomous Niche -->
+      <div class="guide-section fade-in">
+        <h2>Why Autonomous Year-Round Operation Changes Everything</h2>
+        <p>The single biggest limiting factor in long-term bioacoustic field research is not equipment cost or data analysis — it is power. A device that runs out of batteries on day 40 of a planned 180-day deployment generates incomplete data at best and ruins the study at worst.</p>
+        <p>Solar-powered autonomous operation eliminates this constraint. A properly designed solar playback system with intelligent power management can remain deployed through winter, through overcast weeks, through seasons where human access is difficult or impossible — and keep running.</p>
+
+        <h3>What Genuine Autonomy Requires</h3>
+        <p>Not all solar-powered devices are created equal. True year-round autonomous operation in a field setting requires more than a solar panel bolted to a battery. It requires:</p>
+        <ul>
+          <li><strong>Deep sleep scheduling</strong> — the device must aggressively minimise power draw during inactive periods. A device drawing 150mA at idle will deplete any practical battery during a run of overcast days.</li>
+          <li><strong>Intelligent wake cycles</strong> — the system must know when to activate, not just whether it has power. Astronomical awareness (sunrise, sunset, civil twilight) is the correct reference frame for wildlife activity, not a fixed clock.</li>
+          <li><strong>Thermal resilience</strong> — field electronics must function across the temperature ranges a deployment actually encounters, from summer heat to sub-zero winters.</li>
+          <li><strong>Self-monitoring</strong> — a device that can report its own solar harvest, battery state, and operational status removes the need for site visits to confirm it is still running.</li>
+          <li><strong>Weatherproof enclosure</strong> — field deployments face rain, condensation, insects, and wildlife. An enclosure that fails in month three is an enclosure that was not designed for field use.</li>
+        </ul>
+
+        <div class="callout-box">
+          <p>After eighteen months of iterative field testing across Luxembourg nature reserves, through full summer and winter cycles, the Orpheus design was refined around exactly these requirements. <strong>Current draw was reduced from 150mA to approximately 50mA</strong> — a 67% reduction achieved through systematic power management development. The devices now running in the field have operated continuously on solar power through seasons where days are short and sunlight is scarce.</p>
+        </div>
+      </div>
+
+      <!-- Where Orpheus Fits -->
+      <div class="guide-section fade-in">
+        <h2>Where Orpheus Fits: The Playback-First, Solar-Autonomous Niche</h2>
+        <p>Orpheus was built specifically for researchers and conservation practitioners who need <strong>active bioacoustic playback with genuine autonomous field operation</strong>. It is not a passive recorder with a speaker bolted on — it is a playback-first system with recording capability added in the Pro version for researchers who need both.</p>
+        <p>The core design principle is that the device should operate without the researcher. Set it up, configure it via the companion app, walk away, and return to data. Whether that return is in three weeks or six months should make no difference to whether the device is still running.</p>
+
+        <h3>Astronomical Scheduling — the Right Reference Frame</h3>
+        <p>Bird activity is governed by light, not clocks. Ornithological research, bird ringing operations, and habitat restoration all depend on catching species during their active windows — and those windows shift every single day. A fixed timer set to "06:00" that was accurate at the spring equinox will be an hour out by early summer and completely wrong by autumn.</p>
+        <p>Orpheus calculates sunrise and sunset from GPS-derived latitude and longitude for any deployment location on Earth, every day. A schedule set to "30 minutes before sunrise, 90 minutes after" stays biologically accurate for the entire deployment without any reprogramming.</p>
+
+        <h3>Seasonal Programming for Year-Round Studies</h3>
+        <p>Migration studies, breeding bird surveys, and multi-year conservation monitoring require different playback protocols at different times of year. Orpheus supports fully programmable seasonal schedules — define spring migration, breeding season, and winter periods with independent audio libraries and timing rules for each. One device, one deployment, one full annual cycle of data.</p>
+
+        <h3>Orpheus Pro: Playback and Passive Recording Combined</h3>
+        <p>For research designs that require both active playback and acoustic response recording — bird ringing stations, playback experiment studies, ecoacoustic monitoring — Orpheus Pro records as well as broadcasts. Audio recording at 16, 24, or 32-bit float with configurable sample rates captures the acoustic environment before, during, and after playback events. Combined with AI-powered species identification and automated research reports, the Pro version eliminates the need to run a separate passive recorder alongside the playback unit.</p>
+
+        <div class="use-case-grid">
+          <div class="use-case-card">
+            <div class="use-case-icon"><i class="fas fa-ring"></i></div>
+            <h4>Bird Ringing Stations</h4>
+            <p>Autonomous acoustic bird lures scheduled around civil twilight with no battery changes required. Multiple units across a ringing network managed from a single portal dashboard.</p>
+          </div>
+          <div class="use-case-card">
+            <div class="use-case-icon"><i class="fas fa-tree"></i></div>
+            <h4>Habitat Restoration</h4>
+            <p>Year-round playback of target species calls to attract colonisers to recovering ecosystems. Seasonal scheduling aligns broadcast periods with natural arrival and breeding windows.</p>
+          </div>
+          <div class="use-case-card">
+            <div class="use-case-icon"><i class="fas fa-route"></i></div>
+            <h4>Migration Corridor Studies</h4>
+            <p>Deploy during peak migration windows with species-specific call libraries. Orpheus Pro records responses and automatically identifies species detected at the site.</p>
+          </div>
+          <div class="use-case-card">
+            <div class="use-case-icon"><i class="fas fa-volume-up"></i></div>
+            <h4>Ecoacoustic Monitoring</h4>
+            <p>Combine active playback stimuli with passive acoustic recording to assess ecosystem response and recovery. AI species identification surfaces activity trends without manual review of hours of audio.</p>
+          </div>
+          <div class="use-case-card">
+            <div class="use-case-icon"><i class="fas fa-mountain"></i></div>
+            <h4>Remote & Challenging Terrain</h4>
+            <p>Deployments where site access is seasonal, difficult, or expensive. Orpheus runs through winter on solar alone. Environmental sensors (Pro) log temperature, humidity, and pressure throughout.</p>
+          </div>
+          <div class="use-case-card">
+            <div class="use-case-icon"><i class="fas fa-layer-group"></i></div>
+            <h4>Multi-Site Networks</h4>
+            <p>Research designs requiring acoustic coverage across multiple locations. Orpheus Pro's multi-device management consolidates monitoring across an entire site network into one portal view.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Practical Considerations -->
+      <div class="guide-section fade-in">
+        <h2>Choosing the Right Tool for Your Study Design</h2>
+        <p>Orpheus is not the right choice for every bioacoustic application. A few honest considerations:</p>
+        <ul>
+          <li><strong>If your study is purely passive recording</strong> — no playback, short deployment, accessible site — a dedicated passive recorder is simpler and cheaper. Orpheus is optimised for playback.</li>
+          <li><strong>If your deployment is short-term</strong> (a few weeks, batteries practical) — the solar autonomy advantage matters less. Orpheus earns its place on deployments measured in months.</li>
+          <li><strong>If you need playback and recording together</strong>, or if you need reliable unattended operation across a full season or year, Orpheus was designed for exactly that use case.</li>
+          <li><strong>If you are managing multiple sites</strong> — the multi-device portal management and automated PDF reporting in the Pro version significantly reduces the administrative burden of running a network of field devices.</li>
+        </ul>
+        <p>Every Orpheus is hand-built to order. Because requirements vary — deployment environment, audio library size, recording needs, number of units — pricing and lead times are discussed individually. If you are evaluating Orpheus for a specific study design, get in touch and describe your use case. That conversation is more useful than a spec sheet.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container text-center">
+      <h2>Discuss Your Field Deployment</h2>
+      <p>Whether you're planning a single-site bird ringing station or a multi-year multi-site monitoring network, we're happy to talk through whether Orpheus fits your study design.</p>
+      <div class="btn-group mt-4">
+        <a href="contact.html" class="btn btn-lg">Get in Touch</a>
+        <a href="orpheus.html" class="btn btn-lg btn-secondary">View Orpheus</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-column">
+          <h4 class="footer-title">About <span class="brand-name">GaiaForge</span></h4>
+          <p class="footer-description">Tools for those who protect life on Earth</p>
+          <p>Developing innovative technologies that support researchers and foster a better understanding of the natural world.</p>
+        </div>
+        <div class="footer-column">
+          <h4 class="footer-title">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="our-story.html">Our Story</a></li>
+            <li><a href="orpheus.html">Orpheus</a></li>
+            <li><a href="sprigrig.html">SprigRig</a></li>
+            <li><a href="/portal" target="_blank">Portal Login</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4 class="footer-title">Contact Us</h4>
+          <ul class="footer-links">
+            <li><i class="fas fa-map-marker-alt"></i> Rheinland-Pfalz, Germany</li>
+            <li><i class="fas fa-phone"></i> (801) 709-1460</li>
+            <li><i class="fas fa-envelope"></i> <a href="mailto:contact@gaiaforge.tech">contact@gaiaforge.tech</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; <span id="current-year">2024</span> <span class="brand-name">GaiaForge</span><sup>®</sup>. All Rights Reserved.</p>
+        <ul class="footer-links d-flex justify-content-center mt-2">
+          <li><a href="privacy-policy.html">Privacy Policy</a></li>
+          <li style="margin-left: 20px;"><a href="terms-of-service.html">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
