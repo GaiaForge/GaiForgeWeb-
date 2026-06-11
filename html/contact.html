@@ -115,6 +115,9 @@
               <textarea id="message" name="message" class="form-control" placeholder="Write your message here..." rows="5" required></textarea>
             </div>
             
+            <!-- Honeypot: hidden from humans, bots fill it in -->
+            <input type="text" name="website" style="display:none!important" tabindex="-1" autocomplete="off" aria-hidden="true">
+
             <div class="form-submit">
               <button type="submit" id="submitBtn" class="btn btn-lg">Submit</button>
             </div>
@@ -186,7 +189,8 @@
           body: JSON.stringify({
             name: document.getElementById('name').value,
             email: document.getElementById('email').value,
-            message: document.getElementById('message').value
+            message: document.getElementById('message').value,
+            website: document.querySelector('input[name="website"]').value
           })
         });
         if (res.ok) {
