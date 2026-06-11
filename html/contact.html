@@ -171,6 +171,8 @@
     </div>
   </footer>
 
+  <!-- reCAPTCHA v3 -->
+  <script src="https://www.google.com/recaptcha/api.js?render=6LfIYBktAAAAAOtRhPzoKP9J7AdB7-MhKDKUzUyy"></script>
   <!-- JavaScript -->
   <script src="js/main.js"></script>
   <script>
@@ -183,6 +185,7 @@
       document.getElementById('errorMessage').style.display = 'none';
 
       try {
+        const token = await grecaptcha.execute('6LfIYBktAAAAAOtRhPzoKP9J7AdB7-MhKDKUzUyy', { action: 'contact' });
         const res = await fetch('/send-contact', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -190,7 +193,8 @@
             name: document.getElementById('name').value,
             email: document.getElementById('email').value,
             message: document.getElementById('message').value,
-            website: document.querySelector('input[name="website"]').value
+            website: document.querySelector('input[name="website"]').value,
+            recaptchaToken: token
           })
         });
         if (res.ok) {
