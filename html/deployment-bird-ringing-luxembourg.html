@@ -12,7 +12,7 @@
   <meta property="og:description" content="How feedback from bird ringers shaped an autonomous playback device that runs for weeks without manual intervention.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://gaiaforge.tech/deployment-bird-ringing-luxembourg.html">
-  <meta property="og:image" content="https://gaiaforge.tech/images/gallery-1.jpg">
+  <meta property="og:image" content="https://gaiaforge.tech/images/Orpheus_Schlammwiss_pond.jpeg">
   <meta name="twitter:card" content="summary_large_image">
 
   <!-- Structured data -->
@@ -22,7 +22,7 @@
     "@type": "Article",
     "headline": "Where Orpheus Began — Bird Ringing in Luxembourg",
     "description": "How feedback from bird ringers in Luxembourg shaped Orpheus: an autonomous, solar-powered playback device aware of diurnal cycles.",
-    "image": "https://gaiaforge.tech/images/gallery-1.jpg",
+    "image": "https://gaiaforge.tech/images/Orpheus_Schlammwiss_pond.jpeg",
     "author": { "@type": "Organization", "name": "GaiaForge" },
     "publisher": { "@type": "Organization", "name": "GaiaForge", "logo": { "@type": "ImageObject", "url": "https://gaiaforge.tech/images/gaiaforge-logo.png" } }
   }
@@ -156,8 +156,8 @@
         <p>Ringing stations use acoustic lures — playback of song and calls to bring birds into the nets so they can be ringed, measured, and released for population research. The playback itself is simple. Keeping it running in the field is not. Consumer audio players weren't built for weeks outdoors: batteries drain at the worst moment, timers don't know when the sun rises, and every failure means another trip out to the site — often before dawn.</p>
 
         <figure class="story-image">
-          <img src="images/gallery-1.jpg" alt="Orpheus deployed as an acoustic lure at a bird ringing station in Luxembourg">
-          <figcaption>Orpheus in service as an acoustic lure — ringing station, Luxembourg</figcaption>
+          <img src="images/Orpheus_Schlammwiss_pond.jpeg" alt="Orpheus deployed at the Schlammwiss ringing station in Luxembourg — solar panel on the roof, playback unit mounted on the hide">
+          <figcaption>On station at Schlammwiss, Luxembourg — solar panel above, playback unit on the hide, nobody needed for weeks</figcaption>
         </figure>
 
         <p>The brief that came out of those conversations was clear. The ringers needed a playback device that was <strong>genuinely autonomous</strong> — aware of diurnal cycles, so it plays when the birds are active, not when a timer happens to fire. It had to power itself from the sun, survive the weather, and above all be <strong>reliable enough to leave alone for weeks on end</strong>, without anyone driving out to change batteries or press play.</p>
@@ -166,12 +166,12 @@
 
         <p>What followed was months of soldering, coding, and wiring — hundreds of long nights, 3 AM inspiration, and hours spent deep in component data sheets. Different amplifier and sensor combinations were tested against each other, and one hardware configuration after another went out into real field conditions to prove itself — or fail. Getting a device to survive unattended in the field isn't one clever idea; it's hundreds of small decisions that only field seasons can validate. A proprietary power management system was designed from the ground up, because keeping a speaker loud, a processor awake, and a battery healthy on nothing but sunlight is the entire problem.</p>
 
-        <p>After two full seasons of iteration, Orpheus had evolved into what the ringers originally asked for: a reliable, low-maintenance, robust piece of field equipment — solar-powered, with astronomical scheduling that tracks sunrise and sunset throughout the season, and playback modes designed around how field research actually works.</p>
-
         <figure class="story-image">
-          <img src="images/Orpheus.png" alt="The Orpheus autonomous bioacoustic playback device">
-          <figcaption>Orpheus as it ships today — two field seasons of iteration in one enclosure</figcaption>
+          <img src="images/Orpheus_Production.jpeg" alt="A build batch of Orpheus units on the workbench — laser-engraved faceplates, charge controllers, and battery packs mid-assembly">
+          <figcaption>A build batch on the bench — every unit assembled, wired, and tested by hand</figcaption>
         </figure>
+
+        <p>After two full seasons of iteration, Orpheus had evolved into what the ringers originally asked for: a reliable, low-maintenance, robust piece of field equipment — solar-powered, with astronomical scheduling that tracks sunrise and sunset throughout the season, and playback modes designed around how field research actually works.</p>
 
         <p>Then began the work on the companion app — a real learning experience in its own right. A field device you configure once and leave alone still needs configuring, and doing that over Bluetooth in the field, while keeping the device's Wi-Fi sync and real-time clock all agreeing with each other, turned out to be one of the most challenging parts of the whole project. The result is that a ringer can walk up to a deployed unit with a phone, adjust the schedule, and walk away — no laptop, no cables, no taking the device down.</p>
 
