@@ -32,6 +32,12 @@ function Admin({ user, onLogout }) {
   const [serialProductFilter, setSerialProductFilter] = useState('');
   const [serialStatusFilter, setSerialStatusFilter] = useState('');
 
+  // Password reset
+  const [passwordResetUser, setPasswordResetUser] = useState(null);
+  const [generatedPassword, setGeneratedPassword] = useState('');
+  const [resettingPassword, setResettingPassword] = useState(false);
+  const [resetMessage, setResetMessage] = useState(null);
+
   // Data management
   const [allHives, setAllHives] = useState([]);
   const [archiveHiveId, setArchiveHiveId] = useState('');
@@ -250,6 +256,57 @@ function Admin({ user, onLogout }) {
         alert(err.detail || 'Deletion failed');
       }
     } catch { alert('Connection error'); }
+  };
+
+  const generateRandomPassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%&*';
+    let password = '';
+    for (let i = 0; i < 16; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  };
+
+  const resetUserPassword = async (userId, userEmail) => {
+    const newPassword = generateRandomPassword();
+    setResettingPassword(true);
+    setResetMessage(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/users/${userId}/reset-password`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ new_password: newPassword }),
+      });
+      if (res.ok) {
+        setGeneratedPassword(newPassword);
+        setPasswordResetUser({ id: userId, email: userEmail });
+        setResetMessage({
+          type: 'ok',
+          text: `Password reset successfully for ${userEmail}. Make sure to copy the password before closing!`
+        });
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setResetMessage({ type: 'err', text: err.detail || 'Failed to reset password' });
+      }
+    } catch (err) {
+      setResetMessage({ type: 'err', text: 'Connection error' });
+    } finally {
+      setResettingPassword(false);
+    }
+  };
+
+  const copyPasswordToClipboard = () => {
+    navigator.clipboard.writeText(generatedPassword);
+    alert('Password copied to clipboard!');
+  };
+
+  const closePasswordReset = () => {
+    if (generatedPassword && !window.confirm('Have you copied the password? It cannot be recovered after closing.')) {
+      return;
+    }
+    setPasswordResetUser(null);
+    setGeneratedPassword('');
+    setResetMessage(null);
   };
 
   const addSerial = async () => {
@@ -539,6 +596,13 @@ function Admin({ user, onLogout }) {
                               <button className="btn-small" onClick={() => exportUserData(u.id)}
                                 style={{background:'#3b82f6',color:'#fff',border:'none',borderRadius:'6px',padding:'4px 10px',fontSize:'12px',cursor:'pointer'}}>
                                 Export
+                              </button>
+                              <button
+                                className="btn-small"
+                                onClick={() => resetUserPassword(u.id, u.email)}
+                                disabled={resettingPassword}
+                                style={{background:'#f59e0b',color:'#fff',border:'none',borderRadius:'6px',padding:'4px 10px',fontSize:'12px',cursor:'pointer',opacity:resettingPassword?0.5:1}}>
+                                Reset Password
                               </button>
                               {u.id !== 1 && (
                                 <>
@@ -968,6 +1032,85 @@ function Admin({ user, onLogout }) {
           </>
         )}
       </main>
+
+      {/* Password Reset Modal */}
+      {passwordResetUser && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', zIndex: 9999
+        }} onClick={closePasswordReset}>
+          <div style={{
+            background: '#1f2937', borderRadius: '16px', padding: '32px',
+            maxWidth: '500px', width: '90%', boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
+          }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ color: '#f59e0b', marginBottom: '16px', fontSize: '24px' }}>
+              🔑 Password Reset
+            </h2>
+            <p style={{ color: '#e5e5e5', marginBottom: '8px' }}>
+              New password for <strong>{passwordResetUser.email}</strong>:
+            </p>
+            <div style={{
+              background: '#374151', padding: '16px', borderRadius: '10px',
+              marginBottom: '16px', position: 'relative'
+            }}>
+              <code style={{
+                fontSize: '18px', color: '#10b981', fontWeight: 600,
+                wordBreak: 'break-all', display: 'block'
+              }}>
+                {generatedPassword}
+              </code>
+              <button
+                onClick={copyPasswordToClipboard}
+                style={{
+                  position: 'absolute', top: '8px', right: '8px',
+                  padding: '6px 12px', background: '#10b981', color: '#fff',
+                  border: 'none', borderRadius: '6px', fontSize: '12px',
+                  cursor: 'pointer', fontWeight: 600
+                }}
+              >
+                📋 Copy
+              </button>
+            </div>
+            <p style={{ color: '#fbbf24', fontSize: '13px', marginBottom: '20px' }}>
+              ⚠️ <strong>Important:</strong> Copy this password now! It cannot be recovered after closing this window.
+              Send it to the user via a secure channel (not regular email).
+            </p>
+            {resetMessage && (
+              <p style={{
+                fontSize: '13px', padding: '12px', borderRadius: '8px',
+                marginBottom: '16px',
+                background: resetMessage.type === 'ok' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
+                color: resetMessage.type === 'ok' ? '#10b981' : '#ef4444'
+              }}>
+                {resetMessage.text}
+              </p>
+            )}
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={copyPasswordToClipboard}
+                style={{
+                  flex: 1, padding: '12px 20px', background: '#10b981',
+                  color: '#fff', border: 'none', borderRadius: '10px',
+                  fontWeight: 600, cursor: 'pointer', fontSize: '14px'
+                }}
+              >
+                Copy Password
+              </button>
+              <button
+                onClick={closePasswordReset}
+                style={{
+                  flex: 1, padding: '12px 20px', background: '#6b7280',
+                  color: '#fff', border: 'none', borderRadius: '10px',
+                  fontWeight: 600, cursor: 'pointer', fontSize: '14px'
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
