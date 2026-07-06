@@ -69,6 +69,36 @@
       flex-wrap: wrap;
       margin-top: 40px;
     }
+    .story-image figcaption {
+      font-size: 0.85rem;
+      color: #6b7280;
+      text-align: center;
+      padding: 10px 16px;
+      background: #f9fafb;
+    }
+    .story-builder {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      margin: 36px 0;
+      background: #f9fafb;
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .story-builder img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .story-builder p {
+      margin: 0;
+      font-size: 0.98rem;
+    }
+    @media (max-width: 540px) {
+      .story-builder { flex-direction: column; text-align: center; }
+    }
   </style>
 </head>
 <body>
@@ -125,9 +155,10 @@
 
         <p>Ringing stations use acoustic lures — playback of song and calls to bring birds into the nets so they can be ringed, measured, and released for population research. The playback itself is simple. Keeping it running in the field is not. Consumer audio players weren't built for weeks outdoors: batteries drain at the worst moment, timers don't know when the sun rises, and every failure means another trip out to the site — often before dawn.</p>
 
-        <div class="story-image">
+        <figure class="story-image">
           <img src="images/gallery-1.jpg" alt="Orpheus deployed as an acoustic lure at a bird ringing station in Luxembourg">
-        </div>
+          <figcaption>Orpheus in service as an acoustic lure — ringing station, Luxembourg</figcaption>
+        </figure>
 
         <p>The brief that came out of those conversations was clear. The ringers needed a playback device that was <strong>genuinely autonomous</strong> — aware of diurnal cycles, so it plays when the birds are active, not when a timer happens to fire. It had to power itself from the sun, survive the weather, and above all be <strong>reliable enough to leave alone for weeks on end</strong>, without anyone driving out to change batteries or press play.</p>
 
@@ -137,11 +168,19 @@
 
         <p>After two full seasons of iteration, Orpheus had evolved into what the ringers originally asked for: a reliable, low-maintenance, robust piece of field equipment — solar-powered, with astronomical scheduling that tracks sunrise and sunset throughout the season, and playback modes designed around how field research actually works.</p>
 
+        <figure class="story-image">
+          <img src="images/Orpheus.png" alt="The Orpheus autonomous bioacoustic playback device">
+          <figcaption>Orpheus as it ships today — two field seasons of iteration in one enclosure</figcaption>
+        </figure>
+
         <p>Then began the work on the companion app — a real learning experience in its own right. A field device you configure once and leave alone still needs configuring, and doing that over Bluetooth in the field, while keeping the device's Wi-Fi sync and real-time clock all agreeing with each other, turned out to be one of the most challenging parts of the whole project. The result is that a ringer can walk up to a deployed unit with a phone, adjust the schedule, and walk away — no laptop, no cables, no taking the device down.</p>
 
         <p>What started as a project for one ringing station turned into a two-year journey. Designing electronics that must run autonomously year-round — through frost, heat, storms, and short winter days — proved significantly more challenging than anticipated. It has also been the most intellectually rewarding engineering of the whole endeavour — all of it done while quietly hoping the project might at least break even, because one thing was never in doubt: this is a great tool, and it deserved to exist. Today the units serve as acoustic lures at the ringing station in Luxembourg, and the feedback loop with the people who use them hasn't stopped since.</p>
 
-        <p>Each unit is still hand-built, one at a time, by the same person who soldered the first prototype. And each is deliberately designed around the right to repair: no glued-shut enclosures, no locked-down parts — equipment a field station can keep running themselves, for years. That's the hope, in the end: that the people who need this tool find it valuable for many seasons to come.</p>
+        <div class="story-builder">
+          <img src="images/travis-butler.jpg" alt="Travis Butler, founder of GaiaForge">
+          <p>Each unit is still hand-built, one at a time, by the same person who soldered the first prototype. And each is deliberately designed around the right to repair: no glued-shut enclosures, no locked-down parts — equipment a field station can keep running themselves, for years. That's the hope, in the end: that the people who need this tool find it valuable for many seasons to come.</p>
+        </div>
 
         <p>Every Orpheus improvement still starts the same way this whole product did: with a ringer or researcher describing what would make their field season easier.</p>
 
