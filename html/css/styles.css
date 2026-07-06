@@ -2508,6 +2508,29 @@
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
   }
 
+  a.deployment-card {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .deployment-readmore {
+    display: inline-block;
+    margin-top: 15px;
+    color: var(--accent-gold);
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .deployment-readmore i {
+    margin-left: 6px;
+    transition: transform 0.3s ease;
+  }
+
+  a.deployment-card:hover .deployment-readmore i {
+    transform: translateX(5px);
+  }
+
   .deployment-image {
     position: relative;
     height: 240px;
