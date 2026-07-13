@@ -515,7 +515,19 @@
   .dropdown-menu a:hover {
     background-color: var(--light-gray);
   }
-  
+
+  /* Desktop dropdown has a white background, so the current-page link needs
+     dark text here instead of the gold used for top-level nav items on the
+     dark navbar. Scoped to desktop only — the mobile dropdown sits on the
+     dark full-screen menu where gold-on-dark (the default) is correct. */
+  @media (min-width: 993px) {
+    .dropdown-menu a.active {
+      color: var(--dark-gray);
+      font-weight: 600;
+      background-color: var(--light-gray);
+    }
+  }
+
   .dropdown-toggle::after {
     content: '\f107';
     font-family: 'Font Awesome 5 Free';
