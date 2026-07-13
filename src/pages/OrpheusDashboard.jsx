@@ -20,6 +20,26 @@ function OrpheusDashboard({ user, onLogout }) {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const fileInputRef = useRef(null);
 
+  // Mobile app (APK) state
+  const [appReleases, setAppReleases] = useState([]);
+  const [loadingApp, setLoadingApp] = useState(true);
+  const [appUploadFile, setAppUploadFile] = useState(null);
+  const [appUploadVersion, setAppUploadVersion] = useState('');
+  const [appUploadNotes, setAppUploadNotes] = useState('');
+  const [appUploading, setAppUploading] = useState(false);
+  const [appUploadError, setAppUploadError] = useState('');
+  const [appUploadSuccess, setAppUploadSuccess] = useState('');
+  const [appDragging, setAppDragging] = useState(false);
+  const [appDeleteConfirm, setAppDeleteConfirm] = useState(null);
+  const appFileInputRef = useRef(null);
+
+  // Documentation state
+  const [docsManifest, setDocsManifest] = useState({});
+  const [loadingDocs, setLoadingDocs] = useState(true);
+  const [docsUploadingSlot, setDocsUploadingSlot] = useState(null);
+  const [docsError, setDocsError] = useState('');
+  const docFileInputRefs = useRef({});
+
   const headers = {
     'Authorization': `Bearer ${user?.token}`,
   };
@@ -45,9 +65,43 @@ function OrpheusDashboard({ user, onLogout }) {
     }
   }, []);
 
+  const fetchApp = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/downloads/orpheus/app/manifest.json?t=${Date.now()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setAppReleases(data.releases || []);
+      } else {
+        setAppReleases([]);
+      }
+    } catch {
+      setAppReleases([]);
+    } finally {
+      setLoadingApp(false);
+    }
+  }, []);
+
+  const fetchDocs = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/downloads/orpheus/docs/manifest.json?t=${Date.now()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setDocsManifest(data || {});
+      } else {
+        setDocsManifest({});
+      }
+    } catch {
+      setDocsManifest({});
+    } finally {
+      setLoadingDocs(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchFirmware();
-  }, [fetchFirmware]);
+    fetchApp();
+    fetchDocs();
+  }, [fetchFirmware, fetchApp, fetchDocs]);
 
   // Prevent browser from opening dropped files anywhere on the page
   useEffect(() => {
@@ -103,8 +157,8 @@ function OrpheusDashboard({ user, onLogout }) {
       setUploadError('Please enter a version number');
       return;
     }
-    if (!/^\d+\.\d+\.\d+$/.test(uploadVersion.trim())) {
-      setUploadError('Version must be in format X.Y.Z (e.g. 2.1.0)');
+    if (!/^\d+\.\d+(\.\d+)?$/.test(uploadVersion.trim())) {
+      setUploadError('Version must be in format X.Y or X.Y.Z (e.g. 1.48)');
       return;
     }
 
@@ -166,36 +220,189 @@ function OrpheusDashboard({ user, onLogout }) {
     return bytes + ' B';
   };
 
-  const docs = [
+  // --- Mobile app (APK) admin handlers — mirrors firmware upload above ---
+  const handleAppDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setAppDragging(true);
+  };
+
+  const handleAppDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setAppDragging(false);
+  };
+
+  const handleAppDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setAppDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith('.apk')) {
+      setAppUploadFile(file);
+      setAppUploadError('');
+    } else {
+      setAppUploadError('Please drop an .apk file');
+    }
+  };
+
+  const handleAppFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAppUploadFile(file);
+      setAppUploadError('');
+    }
+  };
+
+  const handleAppUpload = async () => {
+    if (!appUploadFile) {
+      setAppUploadError('Please select a file');
+      return;
+    }
+    if (!appUploadVersion.trim()) {
+      setAppUploadError('Please enter a version number');
+      return;
+    }
+    if (!/^\d+\.\d+(\.\d+)?$/.test(appUploadVersion.trim())) {
+      setAppUploadError('Version must be in format X.Y or X.Y.Z (e.g. 1.48)');
+      return;
+    }
+
+    setAppUploading(true);
+    setAppUploadError('');
+    setAppUploadSuccess('');
+
+    const formData = new FormData();
+    formData.append('file', appUploadFile);
+    formData.append('version', appUploadVersion.trim());
+    formData.append('notes', appUploadNotes.trim());
+
+    try {
+      const res = await fetch(`${API_BASE}/api/orpheus/app/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${user?.token}` },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || 'Upload failed');
+      }
+
+      setAppUploadSuccess(`v${appUploadVersion.trim()} uploaded successfully`);
+      setAppUploadFile(null);
+      setAppUploadVersion('');
+      setAppUploadNotes('');
+      if (appFileInputRef.current) appFileInputRef.current.value = '';
+      fetchApp();
+    } catch (err) {
+      setAppUploadError(err.message || 'Upload failed');
+    } finally {
+      setAppUploading(false);
+    }
+  };
+
+  const handleAppDelete = async (filename) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/orpheus/app/${encodeURIComponent(filename)}`, {
+        method: 'DELETE',
+        headers,
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || 'Delete failed');
+      }
+      setAppDeleteConfirm(null);
+      fetchApp();
+    } catch (err) {
+      setAppUploadError(err.message || 'Delete failed');
+      setAppDeleteConfirm(null);
+    }
+  };
+
+  // --- Documentation admin handler — one slot replaced per upload ---
+  const handleDocSelect = async (slot, e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setDocsError('');
+    setDocsUploadingSlot(slot);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('slot', slot);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/orpheus/docs/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${user?.token}` },
+        body: formData,
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || 'Upload failed');
+      }
+      fetchDocs();
+    } catch (err) {
+      setDocsError(err.message || 'Upload failed');
+    } finally {
+      setDocsUploadingSlot(null);
+      if (docFileInputRefs.current[slot]) docFileInputRefs.current[slot].value = '';
+    }
+  };
+
+  const docMeta = [
     {
+      slot: 'manual',
       title: 'Orpheus User Manual',
       description: 'Complete guide covering setup, operation, and maintenance.',
       icon: '📖',
-      href: '/orpheus-manual.html',
-      type: 'html',
+      accept: '.pdf,.html',
+      defaultHref: '/orpheus-manual.html',
+      defaultType: 'html',
     },
     {
+      slot: 'quickstart',
       title: 'Quick Start Guide',
       description: 'Get your Orpheus device up and running quickly.',
       icon: '🚀',
-      href: '/downloads/Orpheus-Basic-Quick-Start-Guide.pdf',
-      type: 'pdf',
+      accept: '.pdf',
+      defaultHref: '/downloads/Orpheus-Basic-Quick-Start-Guide.pdf',
+      defaultType: 'pdf',
     },
     {
+      slot: 'solar_guide',
       title: 'Solar Panel Alignment Guide',
       description: 'Optimize solar panel positioning for your deployment site.',
       icon: '☀️',
-      href: '/downloads/Orpheus-Solar-Panel-Guide.pdf',
-      type: 'pdf',
+      accept: '.pdf',
+      defaultHref: '/downloads/Orpheus-Solar-Panel-Guide.pdf',
+      defaultType: 'pdf',
     },
   ];
 
+  const docs = docMeta.map((meta) => {
+    const entry = docsManifest[meta.slot];
+    return {
+      ...meta,
+      href: entry ? `/downloads/orpheus/${entry.filename}` : meta.defaultHref,
+      type: entry ? entry.filename.split('.').pop() : meta.defaultType,
+      date: entry?.date || null,
+    };
+  });
+
+  const latestApp = appReleases[0];
   const mobileApp = {
-    android: {
-      version: '1.8.0',
-      href: '/downloads/Orpheus-v1.8.0.apk',
-      size: '56 MB',
-    },
+    android: latestApp
+      ? {
+          version: latestApp.version,
+          href: `/downloads/orpheus/${latestApp.filename}`,
+          size: latestApp.size,
+        }
+      : {
+          version: '1.8.0',
+          href: '/downloads/Orpheus-v1.8.0.apk',
+          size: '56 MB',
+        },
     ios: null,
   };
 
@@ -233,6 +440,22 @@ function OrpheusDashboard({ user, onLogout }) {
               onClick={() => setActiveTab('admin-upload')}
             >
               <span className="nav-icon">⬆️</span> Upload Firmware
+            </button>
+          )}
+          {user?.is_admin && (
+            <button
+              className={`nav-item nav-btn ${activeTab === 'admin-app' ? 'active' : ''}`}
+              onClick={() => setActiveTab('admin-app')}
+            >
+              <span className="nav-icon">📲</span> Upload App
+            </button>
+          )}
+          {user?.is_admin && (
+            <button
+              className={`nav-item nav-btn ${activeTab === 'admin-docs' ? 'active' : ''}`}
+              onClick={() => setActiveTab('admin-docs')}
+            >
+              <span className="nav-icon">🗂️</span> Manage Docs
             </button>
           )}
           <Link to="/orpheus/analytics" className="nav-item">
@@ -305,7 +528,7 @@ function OrpheusDashboard({ user, onLogout }) {
                             v{update.version} &middot; {update.date} &middot; {update.size}
                           </div>
                           {update.notes && (
-                            <div className="upload-meta" style={{ marginTop: '4px' }}>
+                            <div className="release-notes">
                               {update.notes}
                             </div>
                           )}
@@ -394,7 +617,7 @@ function OrpheusDashboard({ user, onLogout }) {
                   id="fw-version"
                   value={uploadVersion}
                   onChange={(e) => setUploadVersion(e.target.value)}
-                  placeholder="e.g. 2.1.0"
+                  placeholder="e.g. 1.48"
                   disabled={uploading}
                 />
               </div>
@@ -468,6 +691,202 @@ function OrpheusDashboard({ user, onLogout }) {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Admin Upload App Tab */}
+        {activeTab === 'admin-app' && user?.is_admin && (
+          <div className="actions-section">
+            <h2>Upload New Android App</h2>
+            <p style={{ color: '#6b7280', marginBottom: '24px' }}>
+              Upload the Orpheus Remote .apk. It will replace the current version on the
+              Mobile App tab for all registered users.
+            </p>
+
+            {appUploadError && <div className="error-message">{appUploadError}</div>}
+            {appUploadSuccess && (
+              <div className="orpheus-info-banner" style={{ background: '#ecfdf5', borderColor: '#a7f3d0', color: '#065f46', marginBottom: '20px' }}>
+                <div className="info-icon">✅</div>
+                <div><strong>{appUploadSuccess}</strong></div>
+              </div>
+            )}
+
+            <div
+              className={`fw-dropzone ${appDragging ? 'dragging' : ''} ${appUploadFile ? 'has-file' : ''}`}
+              onDragOver={handleAppDragOver}
+              onDragLeave={handleAppDragLeave}
+              onDrop={handleAppDrop}
+              onClick={() => appFileInputRef.current?.click()}
+            >
+              <input
+                ref={appFileInputRef}
+                type="file"
+                accept=".apk"
+                onChange={handleAppFileSelect}
+                style={{ display: 'none' }}
+              />
+              {appUploadFile ? (
+                <div className="fw-dropzone-selected">
+                  <div className="fw-file-icon">📲</div>
+                  <div>
+                    <div className="upload-name">{appUploadFile.name}</div>
+                    <div className="upload-meta">{formatFileSize(appUploadFile.size)}</div>
+                  </div>
+                  <button
+                    className="fw-remove-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setAppUploadFile(null);
+                      if (appFileInputRef.current) appFileInputRef.current.value = '';
+                    }}
+                  >
+                    &times;
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="fw-dropzone-icon">⬆️</div>
+                  <h3>Drag &amp; drop an .apk file here</h3>
+                  <p>or click to browse</p>
+                </>
+              )}
+            </div>
+
+            <div className="fw-form">
+              <div className="form-group">
+                <label htmlFor="app-version">Version Number</label>
+                <input
+                  type="text"
+                  id="app-version"
+                  value={appUploadVersion}
+                  onChange={(e) => setAppUploadVersion(e.target.value)}
+                  placeholder="e.g. 1.8.8"
+                  disabled={appUploading}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="app-notes">Release Notes (optional)</label>
+                <textarea
+                  id="app-notes"
+                  value={appUploadNotes}
+                  onChange={(e) => setAppUploadNotes(e.target.value)}
+                  placeholder="Brief description of changes..."
+                  rows={3}
+                  disabled={appUploading}
+                  className="fw-textarea"
+                />
+              </div>
+              <button
+                className="btn-upload"
+                onClick={handleAppUpload}
+                disabled={appUploading || !appUploadFile}
+              >
+                {appUploading ? 'Uploading...' : 'Upload App'}
+              </button>
+            </div>
+
+            {appReleases.length > 0 && (
+              <div style={{ marginTop: '40px' }}>
+                <h2>Manage Releases</h2>
+                <div className="orpheus-downloads-list" style={{ marginTop: '16px' }}>
+                  {appReleases.map((update, i) => (
+                    <div key={i} className="orpheus-download-row">
+                      <div className="orpheus-download-info">
+                        <div className="orpheus-download-icon">
+                          <span className="variant-badge firmware">v{update.version}</span>
+                        </div>
+                        <div>
+                          <div className="upload-name">Orpheus Remote.apk</div>
+                          <div className="upload-meta">
+                            {update.date} &middot; {update.size}
+                          </div>
+                          {update.notes && <div className="release-notes">{update.notes}</div>}
+                        </div>
+                      </div>
+                      {appDeleteConfirm === update.filename ? (
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            className="btn-download"
+                            style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)' }}
+                            onClick={() => handleAppDelete(update.filename)}
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            className="btn-download"
+                            style={{ background: '#6b7280' }}
+                            onClick={() => setAppDeleteConfirm(null)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          className="btn-download"
+                          style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)' }}
+                          onClick={() => setAppDeleteConfirm(update.filename)}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Admin Manage Docs Tab */}
+        {activeTab === 'admin-docs' && user?.is_admin && (
+          <div className="actions-section">
+            <h2>Manage Documentation</h2>
+            <p style={{ color: '#6b7280', marginBottom: '24px' }}>
+              Replace the file behind each document below. Titles and descriptions stay
+              fixed; only the uploaded file changes on the public Documentation tab.
+            </p>
+
+            {docsError && <div className="error-message">{docsError}</div>}
+
+            <div className="docs-manage-list">
+              {docMeta.map((meta) => {
+                const entry = docsManifest[meta.slot];
+                const isUploading = docsUploadingSlot === meta.slot;
+                return (
+                  <div key={meta.slot} className="docs-manage-row">
+                    <div className="orpheus-download-info">
+                      <div className="orpheus-download-icon">
+                        <span className="action-icon" style={{ fontSize: '28px' }}>{meta.icon}</span>
+                      </div>
+                      <div>
+                        <div className="upload-name">{meta.title}</div>
+                        <div className="upload-meta">
+                          {entry
+                            ? `${entry.original_name} · updated ${entry.date} · ${entry.size}`
+                            : 'Using default file — not yet replaced'}
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <input
+                        ref={(el) => { docFileInputRefs.current[meta.slot] = el; }}
+                        type="file"
+                        accept={meta.accept}
+                        onChange={(e) => handleDocSelect(meta.slot, e)}
+                        style={{ display: 'none' }}
+                      />
+                      <button
+                        className="btn-download"
+                        onClick={() => docFileInputRefs.current[meta.slot]?.click()}
+                        disabled={isUploading}
+                      >
+                        {isUploading ? 'Uploading...' : 'Replace File'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
