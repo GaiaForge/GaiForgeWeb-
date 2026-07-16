@@ -399,9 +399,9 @@ function OrpheusDashboard({ user, onLogout }) {
           size: latestApp.size,
         }
       : {
-          version: '1.8.0',
-          href: '/downloads/Orpheus-v1.8.0.apk',
-          size: '56 MB',
+          version: '1.8.8',
+          href: '/downloads/Orpheus-v1.8.8.apk',
+          size: '57 MB',
         },
     ios: null,
   };
