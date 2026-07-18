@@ -1,23 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ProductSelector from './pages/ProductSelector';
-import Dashboard from './pages/Dashboard';
-import Analytics from './pages/Analytics';
-import Upload from './pages/Upload';
-import Devices from './pages/Devices';
-import Profile from './pages/Profile';
-import Admin from './pages/Admin';
-import Alerts from './pages/Alerts';
-import Journal from './pages/Journal';
-import OrpheusDashboard from './pages/OrpheusDashboard';
-import OrpheusAnalytics from './pages/OrpheusAnalytics';
-import OrpheusJournal from './pages/OrpheusJournal';
-import SprigRigDashboard from './pages/SprigRigDashboard';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import ForceChangePassword from './pages/ForceChangePassword';
+// Lazy-load route pages so heavy dependencies (Plotly, Recharts) only download
+// when the user actually visits the pages that use them, keeping the initial
+// (login) bundle small.
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ProductSelector = lazy(() => import('./pages/ProductSelector'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+const Upload = lazy(() => import('./pages/Upload'));
+const Devices = lazy(() => import('./pages/Devices'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Admin = lazy(() => import('./pages/Admin'));
+const Alerts = lazy(() => import('./pages/Alerts'));
+const Journal = lazy(() => import('./pages/Journal'));
+const OrpheusDashboard = lazy(() => import('./pages/OrpheusDashboard'));
+const OrpheusAnalytics = lazy(() => import('./pages/OrpheusAnalytics'));
+const OrpheusJournal = lazy(() => import('./pages/OrpheusJournal'));
+const SprigRigDashboard = lazy(() => import('./pages/SprigRigDashboard'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const ForceChangePassword = lazy(() => import('./pages/ForceChangePassword'));
 import './App.css';
 
 function App() {
@@ -87,6 +90,7 @@ function App() {
   return (
     <Router basename="/portal">
       <div className="App">
+        <Suspense fallback={<div className="app-loading" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>Loading…</div>}>
         <Routes>
           <Route path="/login" element={
             isAuthenticated ? <Navigate to="/products" /> : <Login onLogin={handleLogin} />
@@ -118,6 +122,7 @@ function App() {
           <Route path="/admin" element={protect(<Admin user={user} onLogout={handleLogout} />)} />
           <Route path="/" element={<Navigate to="/login" />} />
         </Routes>
+        </Suspense>
       </div>
     </Router>
   );
