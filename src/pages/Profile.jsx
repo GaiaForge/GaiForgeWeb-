@@ -129,6 +129,7 @@ function Profile({ user, onLogout, onUserUpdate }) {
   const [copying, setCopying] = useState(false);
   const [newApiKey, setNewApiKey] = useState(null);
   const [deletePassword, setDeletePassword] = useState('');
+  const [exporting, setExporting] = useState(false);
 
 
   const headers = {
@@ -213,6 +214,30 @@ function Profile({ user, onLogout, onUserUpdate }) {
     } else {
       const d = await res.json().catch(() => ({}));
       flash(d.detail || 'Failed to delete account', true);
+    }
+  };
+
+  const handleExportData = async () => {
+    setExporting(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/account/export`, { headers });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        flash(d.detail || 'Failed to export data', true);
+        return;
+      }
+      const data = await res.json();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gaiaforge-account-data-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      flash('Connection error', true);
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -811,6 +836,16 @@ function Profile({ user, onLogout, onUserUpdate }) {
                   Permanently delete your account, including all hives, devices, and sensor readings.
                   This action cannot be undone.
                 </p>
+                <div style={{ marginBottom: '24px', paddingBottom: '20px', borderBottom: '1px solid #fca5a5' }}>
+                  <h4 style={{ margin: '0 0 8px' }}>Download your data first</h4>
+                  <p style={{ color: '#374151', fontSize: '14px', marginBottom: '12px' }}>
+                    Get a copy of your hives, devices, and readings before you delete your account.
+                  </p>
+                  <button type="button" onClick={handleExportData} disabled={exporting} style={{
+                    padding: '12px 24px', background: '#fff', color: '#374151',
+                    border: '2px solid #d1d5db', borderRadius: '10px', fontWeight: 700, cursor: 'pointer',
+                  }}>{exporting ? 'Preparing download…' : 'Download My Data'}</button>
+                </div>
                 <form onSubmit={handleDeleteAccount}>
                   <div className="form-group" style={{ marginBottom: '16px' }}>
                     <label>Confirm your password</label>
