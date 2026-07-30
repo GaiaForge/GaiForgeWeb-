@@ -35,9 +35,13 @@ function ProductSelector({ user, onLogout }) {
     ? allProducts
     : allProducts.filter(p => userProducts.includes(p.id));
 
-  // If user has exactly one product, skip selector and go directly
+  // Admins land straight in the admin panel; from there "/products" is one click
+  // away if they need a specific product's portal. Regular users with exactly
+  // one product skip the selector and go directly to it.
   useEffect(() => {
-    if (!isAdmin && visibleProducts.length === 1) {
+    if (isAdmin) {
+      navigate('/admin', { replace: true });
+    } else if (visibleProducts.length === 1) {
       navigate(visibleProducts[0].route, { replace: true });
     }
   }, [isAdmin, visibleProducts, navigate]);
