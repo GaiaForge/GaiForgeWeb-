@@ -38,6 +38,15 @@ function Admin({ user, onLogout }) {
   const [resettingPassword, setResettingPassword] = useState(false);
   const [resetMessage, setResetMessage] = useState(null);
 
+  // Add user
+  const [showAddUser, setShowAddUser] = useState(false);
+  const [newUser, setNewUser] = useState({
+    name: '', email: '', password: '', subscription_tier: 'free',
+    device_serial: '', device_type: 'orpheus',
+  });
+  const [addingUser, setAddingUser] = useState(false);
+  const [addUserMsg, setAddUserMsg] = useState(null);
+
   // Data management
   const [allHives, setAllHives] = useState([]);
   const [archiveHiveId, setArchiveHiveId] = useState('');
@@ -309,6 +318,38 @@ function Admin({ user, onLogout }) {
     setResetMessage(null);
   };
 
+  const createUser = async () => {
+    if (!newUser.name.trim() || !newUser.email.trim() || !newUser.password) return;
+    setAddingUser(true);
+    setAddUserMsg(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/users`, {
+        method: 'POST', headers,
+        body: JSON.stringify({
+          name: newUser.name.trim(),
+          email: newUser.email.trim(),
+          password: newUser.password,
+          subscription_tier: newUser.subscription_tier,
+          device_serial: newUser.device_serial.trim() || null,
+          device_type: newUser.device_serial.trim() ? newUser.device_type : null,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setAddUserMsg({ type: 'ok', text: `${newUser.email.trim()} created` });
+        setNewUser({ name: '', email: '', password: '', subscription_tier: 'free', device_serial: '', device_type: 'orpheus' });
+        fetchData();
+        setTimeout(() => { setShowAddUser(false); setAddUserMsg(null); }, 1200);
+      } else {
+        setAddUserMsg({ type: 'err', text: data.detail || 'Failed to create user' });
+      }
+    } catch {
+      setAddUserMsg({ type: 'err', text: 'Connection error' });
+    } finally {
+      setAddingUser(false);
+    }
+  };
+
   const addSerial = async () => {
     if (!newSerial.serial.trim()) return;
     setSerialAdding(true);
@@ -514,7 +555,16 @@ function Admin({ user, onLogout }) {
             {/* ==================== USERS TAB ==================== */}
             {activeTab === 'users' && (
               <div className="admin-card">
-                <h3>User Management</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3>User Management</h3>
+                  <button onClick={() => setShowAddUser(true)}
+                    style={{
+                      padding: '10px 18px', background: '#10b981', color: '#fff', border: 'none',
+                      borderRadius: '10px', fontWeight: 600, cursor: 'pointer', fontSize: '14px',
+                    }}>
+                    + Add User
+                  </button>
+                </div>
                 <div style={{overflowX:'auto'}}>
                   <table className="admin-table">
                     <thead>
@@ -1106,6 +1156,111 @@ function Admin({ user, onLogout }) {
                 }}
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add User Modal */}
+      {showAddUser && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', zIndex: 9999
+        }} onClick={() => setShowAddUser(false)}>
+          <div style={{
+            background: '#1f2937', borderRadius: '16px', padding: '32px',
+            maxWidth: '480px', width: '90%', boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
+          }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ color: '#10b981', marginBottom: '20px', fontSize: '24px' }}>
+              + Add User
+            </h2>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '16px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#e5e5e5', marginBottom: '6px' }}>Name</label>
+                <input type="text" value={newUser.name} onChange={e => setNewUser({ ...newUser, name: e.target.value })}
+                  style={{ padding: '10px 14px', border: 'none', borderRadius: '10px', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#e5e5e5', marginBottom: '6px' }}>Email</label>
+                <input type="email" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })}
+                  style={{ padding: '10px 14px', border: 'none', borderRadius: '10px', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#e5e5e5', marginBottom: '6px' }}>Password</label>
+                <input type="text" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })}
+                  placeholder="min. 8 characters"
+                  style={{ padding: '10px 14px', border: 'none', borderRadius: '10px', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#e5e5e5', marginBottom: '6px' }}>Subscription</label>
+                <select value={newUser.subscription_tier} onChange={e => setNewUser({ ...newUser, subscription_tier: e.target.value })}
+                  style={{ padding: '10px 14px', border: 'none', borderRadius: '10px', fontSize: '14px', width: '100%', boxSizing: 'border-box' }}>
+                  <option value="free">Free</option>
+                  <option value="pro">Pro</option>
+                </select>
+              </div>
+
+              <div style={{ borderTop: '1px solid #374151', paddingTop: '14px', marginTop: '4px' }}>
+                <p style={{ color: '#9ca3af', fontSize: '12px', marginBottom: '10px' }}>
+                  Optional — claim an existing serial, or type a new one to register it on the spot.
+                </p>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#e5e5e5', marginBottom: '6px' }}>Device Serial</label>
+                    <input type="text" value={newUser.device_serial} onChange={e => setNewUser({ ...newUser, device_serial: e.target.value })}
+                      placeholder="e.g. ORPB-2026-010"
+                      style={{ padding: '10px 14px', border: 'none', borderRadius: '10px', fontSize: '14px', width: '100%', boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#e5e5e5', marginBottom: '6px' }}>Product</label>
+                    <select value={newUser.device_type} onChange={e => setNewUser({ ...newUser, device_type: e.target.value })}
+                      disabled={!newUser.device_serial.trim()}
+                      style={{ padding: '10px 14px', border: 'none', borderRadius: '10px', fontSize: '14px' }}>
+                      <option value="orpheus">Orpheus</option>
+                      <option value="hiveguard">HiveGuard</option>
+                      <option value="sprigrig">SprigRig</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {addUserMsg && (
+              <p style={{
+                fontSize: '13px', padding: '12px', borderRadius: '8px',
+                marginBottom: '16px',
+                background: addUserMsg.type === 'ok' ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
+                color: addUserMsg.type === 'ok' ? '#10b981' : '#ef4444'
+              }}>
+                {addUserMsg.text}
+              </p>
+            )}
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={createUser}
+                disabled={addingUser || !newUser.name.trim() || !newUser.email.trim() || !newUser.password}
+                style={{
+                  flex: 1, padding: '12px 20px', background: '#10b981',
+                  color: '#fff', border: 'none', borderRadius: '10px',
+                  fontWeight: 600, cursor: 'pointer', fontSize: '14px',
+                  opacity: (addingUser || !newUser.name.trim() || !newUser.email.trim() || !newUser.password) ? 0.5 : 1,
+                }}
+              >
+                {addingUser ? 'Creating...' : 'Create User'}
+              </button>
+              <button
+                onClick={() => { setShowAddUser(false); setAddUserMsg(null); }}
+                style={{
+                  flex: 1, padding: '12px 20px', background: '#6b7280',
+                  color: '#fff', border: 'none', borderRadius: '10px',
+                  fontWeight: 600, cursor: 'pointer', fontSize: '14px'
+                }}
+              >
+                Cancel
               </button>
             </div>
           </div>
