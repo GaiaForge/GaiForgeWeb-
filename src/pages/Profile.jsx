@@ -385,7 +385,9 @@ function Profile({ user, onLogout, onUserUpdate }) {
                 </div>
               </div>
 
-              {/* AI Report Mode */}
+              {(user?.is_admin || user?.products?.includes('hiveguard')) && (
+              <>
+              {/* AI Report Mode — HiveGuard-only: colony reports & apiary framing don't apply to other products */}
               <div className="device-selector" style={{ marginTop: '16px' }}>
                 <h3>AI Report Style</h3>
                 <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '16px' }}>
@@ -468,6 +470,8 @@ function Profile({ user, onLogout, onUserUpdate }) {
                 </div>
               )}
               </>
+              )}
+              </>
             )}
 
             {section === 'devices' && (
@@ -482,6 +486,7 @@ function Profile({ user, onLogout, onUserUpdate }) {
                     <div key={field} className="form-group" style={{ marginBottom: '16px' }}>
                       <label>{['Current Password', 'New Password', 'Confirm New Password'][i]}</label>
                       <input type="password" value={pwForm[field]}
+                        autoComplete={field === 'current_password' ? 'current-password' : 'new-password'}
                         onChange={e => setPwForm({ ...pwForm, [field]: e.target.value })}
                         style={{ padding: '12px', border: '2px solid #e5e7eb', borderRadius: '10px', width: '100%' }} />
                     </div>
@@ -500,13 +505,13 @@ function Profile({ user, onLogout, onUserUpdate }) {
                 <form onSubmit={handleEmailChange}>
                   <div className="form-group" style={{ marginBottom: '16px' }}>
                     <label>New Email Address</label>
-                    <input type="email" value={emailForm.new_email}
+                    <input type="email" value={emailForm.new_email} autoComplete="off"
                       onChange={e => setEmailForm({ ...emailForm, new_email: e.target.value })}
                       style={{ padding: '12px', border: '2px solid #e5e7eb', borderRadius: '10px', width: '100%' }} />
                   </div>
                   <div className="form-group" style={{ marginBottom: '20px' }}>
                     <label>Confirm with Password</label>
-                    <input type="password" value={emailForm.password}
+                    <input type="password" value={emailForm.password} autoComplete="new-password"
                       onChange={e => setEmailForm({ ...emailForm, password: e.target.value })}
                       style={{ padding: '12px', border: '2px solid #e5e7eb', borderRadius: '10px', width: '100%' }} />
                   </div>
@@ -522,7 +527,7 @@ function Profile({ user, onLogout, onUserUpdate }) {
               <div className="device-selector">
                 <h3>API Key</h3>
                 <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '16px' }}>
-                  Use this key to authenticate your HiveGuard device sync client.
+                  Use this key to authenticate your device sync client.
                 </p>
                 <div style={{
                   background: '#1f2937', color: '#f9fafb', padding: '14px 16px',
@@ -849,7 +854,7 @@ function Profile({ user, onLogout, onUserUpdate }) {
                 <form onSubmit={handleDeleteAccount}>
                   <div className="form-group" style={{ marginBottom: '16px' }}>
                     <label>Confirm your password</label>
-                    <input type="password" value={deletePassword}
+                    <input type="password" value={deletePassword} autoComplete="off"
                       onChange={e => setDeletePassword(e.target.value)}
                       style={{ padding: '12px', border: '2px solid #fca5a5', borderRadius: '10px', width: '100%' }} />
                   </div>
