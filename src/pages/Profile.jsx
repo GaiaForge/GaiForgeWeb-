@@ -418,9 +418,10 @@ function Profile({ user, onLogout, onUserUpdate }) {
               {/* Upgrade / Plan Info */}
               {(!isPro || isExpired) && (
                 <div className="device-selector" style={{ marginTop: '16px', border: '2px solid #f59e0b' }}>
-                  <h3 style={{ color: '#92400e' }}>Upgrade to Pro</h3>
+                  <h3 style={{ color: '#92400e' }}>Pro Report Service — Optional Add-on</h3>
                   <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '20px' }}>
-                    Unlock AI-powered colony reports, advanced analytics, and priority support.
+                    AI-powered colony reports, advanced analytics, and priority support —
+                    delivered through this web portal, billed by invoice.
                   </p>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '14px', marginBottom: '20px' }}>
                     {[
@@ -456,12 +457,12 @@ function Profile({ user, onLogout, onUserUpdate }) {
                     </div>
                   </div>
                   <div style={{ marginTop: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                    <a href="mailto:hello@gaiaforge.tech?subject=HiveGuard%20Pro%20Subscription&body=I%27d%20like%20to%20upgrade%20my%20account%20(%7Byour-email%7D)%20to%20Pro."
+                    <a href="mailto:contact@gaiaforge.tech?subject=Pro%20Report%20Service&body=I%27d%20like%20to%20order%20the%20Pro%20report%20service%20for%20my%20account%20(%7Byour-email%7D)."
                       style={{
                         display: 'inline-block', padding: '12px 24px', background: '#f59e0b', color: '#fff',
                         textDecoration: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '15px',
                       }}>
-                      Upgrade Now
+                      Order by Email
                     </a>
                     <span style={{ fontSize: '13px', color: '#9ca3af', alignSelf: 'center' }}>
                       We'll activate your Pro access within 24 hours.

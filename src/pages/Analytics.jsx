@@ -1261,10 +1261,11 @@ function Analytics({ user, onLogout }) {
                       <h3>AI Colony Report</h3>
                       {user?.subscription_tier !== 'pro' && !user?.is_admin ? (
                         <div className="pro-upgrade">
-                          <h4>Pro Feature</h4>
+                          <h4>Optional Report Service</h4>
                           <p>AI-powered colony analysis generates detailed reports with health assessments,
                              actionable recommendations, and trend analysis tailored to your hive data.</p>
-                          <p className="pro-cta">Upgrade to Pro to unlock AI insights.</p>
+                          <p className="pro-cta">This optional service is not enabled on your account.
+                             Contact us at contact@gaiaforge.tech to learn more.</p>
                         </div>
                       ) : (
                         <>
