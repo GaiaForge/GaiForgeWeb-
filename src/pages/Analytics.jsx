@@ -408,7 +408,7 @@ function Analytics({ user, onLogout }) {
               <button
                 onClick={() => {
                   if (isPro) { setViewMode('researcher'); }
-                  else { setError('Researcher mode is part of the optional AI report service. See your Profile for details.'); }
+                  else { setError('Researcher mode is part of the AI report service, currently included free of charge. See your Profile to request activation.'); }
                 }}
                 style={{
                   padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer',
@@ -1261,11 +1261,11 @@ function Analytics({ user, onLogout }) {
                       <h3>AI Colony Report</h3>
                       {user?.subscription_tier !== 'pro' && !user?.is_admin ? (
                         <div className="pro-upgrade">
-                          <h4>Optional Report Service</h4>
+                          <h4>AI Report Service</h4>
                           <p>AI-powered colony analysis generates detailed reports with health assessments,
                              actionable recommendations, and trend analysis tailored to your hive data.</p>
-                          <p className="pro-cta">This optional service is not enabled on your account.
-                             Contact us at contact@gaiaforge.tech to learn more.</p>
+                          <p className="pro-cta">AI reports are currently included free of charge.
+                             Contact us at contact@gaiaforge.tech to enable them on your account.</p>
                         </div>
                       ) : (
                         <>

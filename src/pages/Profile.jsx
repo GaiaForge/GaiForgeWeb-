@@ -261,8 +261,8 @@ function Profile({ user, onLogout, onUserUpdate }) {
   const maskedKey = displayApiKey ? displayApiKey.slice(0, 8) + '••••••••••••••••••••••••' : '';
 
   const TIER_BADGE = {
-    pro: { bg: '#fef3c7', color: '#92400e', label: 'Pro' },
-    free: { bg: '#f3f4f6', color: '#374151', label: 'Free' },
+    pro: { bg: '#fef3c7', color: '#92400e', label: 'Enabled' },
+    free: { bg: '#f3f4f6', color: '#374151', label: 'Not Enabled' },
   };
   const tier = TIER_BADGE[user?.subscription_tier] || TIER_BADGE.free;
   const isPro = user?.subscription_tier === 'pro';
@@ -366,7 +366,7 @@ function Profile({ user, onLogout, onUserUpdate }) {
                     style={{ padding: '12px', border: '2px solid #e5e7eb', borderRadius: '10px', width: '100%', background: '#f9fafb' }} />
                 </div>
                 <div className="form-group">
-                  <label>Subscription</label>
+                  <label>AI Report Service</label>
                   <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                     <span style={{
                       padding: '6px 16px', borderRadius: '20px', fontWeight: 700,
@@ -374,8 +374,7 @@ function Profile({ user, onLogout, onUserUpdate }) {
                     }}>{tier.label}</span>
                     {isPro && expiresAt && (
                       <span style={{ fontSize: '13px', color: isExpired ? '#dc2626' : daysLeft <= 14 ? '#f59e0b' : '#10b981', fontWeight: 600 }}>
-                        {isExpired ? 'Expired' : `${daysLeft} days remaining`}
-                        {' · '}{expiresAt.toLocaleDateString()}
+                        {isExpired ? 'Inactive' : `Active until ${expiresAt.toLocaleDateString()}`}
                       </span>
                     )}
                     {isPro && !expiresAt && (
@@ -415,13 +414,14 @@ function Profile({ user, onLogout, onUserUpdate }) {
                 </div>
               </div>
 
-              {/* Upgrade / Plan Info */}
+              {/* AI Report Service info */}
               {(!isPro || isExpired) && (
                 <div className="device-selector" style={{ marginTop: '16px', border: '2px solid #f59e0b' }}>
-                  <h3 style={{ color: '#92400e' }}>AI Report Service — Optional Add-on</h3>
+                  <h3 style={{ color: '#92400e' }}>AI Report Service</h3>
                   <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '20px' }}>
                     AI-powered colony reports, advanced analytics, and priority support —
-                    delivered through this web portal, billed by invoice.
+                    delivered through this web portal, currently included free with your
+                    GaiaForge account.
                   </p>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '14px', marginBottom: '20px' }}>
                     {[
@@ -441,28 +441,13 @@ function Profile({ user, onLogout, onUserUpdate }) {
                       </div>
                     ))}
                   </div>
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <div>
-                      <span style={{ fontSize: '28px', fontWeight: 800, color: '#1f2937' }}>$9</span>
-                      <span style={{ color: '#6b7280', fontSize: '14px' }}>/month</span>
-                    </div>
-                    <div style={{ color: '#6b7280', fontSize: '14px' }}>or</div>
-                    <div>
-                      <span style={{ fontSize: '28px', fontWeight: 800, color: '#1f2937' }}>$79</span>
-                      <span style={{ color: '#6b7280', fontSize: '14px' }}>/year</span>
-                      <span style={{
-                        marginLeft: '8px', fontSize: '12px', background: '#d1fae5', color: '#065f46',
-                        padding: '2px 8px', borderRadius: '10px', fontWeight: 700,
-                      }}>Save 27%</span>
-                    </div>
-                  </div>
                   <div style={{ marginTop: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                    <a href="mailto:contact@gaiaforge.tech?subject=AI%20Report%20Service&body=I%27d%20like%20to%20order%20the%20AI%20report%20service%20for%20my%20account%20(%7Byour-email%7D)."
+                    <a href="mailto:contact@gaiaforge.tech?subject=AI%20Report%20Service%20Activation&body=I%27d%20like%20to%20activate%20the%20AI%20report%20service%20for%20my%20account%20(%7Byour-email%7D)."
                       style={{
                         display: 'inline-block', padding: '12px 24px', background: '#f59e0b', color: '#fff',
                         textDecoration: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '15px',
                       }}>
-                      Order by Email
+                      Request Activation
                     </a>
                     <span style={{ fontSize: '13px', color: '#9ca3af', alignSelf: 'center' }}>
                       We'll activate the service on your account within 24 hours.
