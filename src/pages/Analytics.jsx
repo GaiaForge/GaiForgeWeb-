@@ -408,7 +408,7 @@ function Analytics({ user, onLogout }) {
               <button
                 onClick={() => {
                   if (isPro) { setViewMode('researcher'); }
-                  else { setError('Researcher mode requires a Pro subscription. Upgrade in your Profile to unlock full analytics.'); }
+                  else { setError('Researcher mode is part of the optional AI report service. See your Profile for details.'); }
                 }}
                 style={{
                   padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer',
