@@ -20,9 +20,33 @@ const COLORS = {
   volume: '#6366f1',
 };
 
+// ---------------------------------------------------------------------------
+// PAID TIERS ARE DISABLED. Every service is currently free of charge, so no
+// tier gating and no upgrade call-to-action may render anywhere in the portal.
+//
+// The tier code below is deliberately left INTACT rather than deleted, so the
+// paid tier can be restored later by flipping this one flag.
+//
+// Before setting this to true, read APP_STORE_REVIEW.md in the Orpheus app
+// repo. Publishing a price for a digital service whose account an iOS app can
+// log into — with no in-app purchase path — is what caused the App Store
+// guideline 3.1.1 rejections in August 2026. Ship the IAP path first.
+//
+// Declared as a module-level constant on purpose: the bundler folds
+// `false && (...)` away at build time, so the upgrade copy does not survive in
+// the shipped bundle even as unreachable code.
+// ---------------------------------------------------------------------------
+const PAID_TIERS_ENABLED = false;
+
 function OrpheusAnalytics({ user, onLogout }) {
   const navigate = useNavigate();
-  const isPro = user?.subscription_tier === 'pro' || user?.is_admin;
+  // With paid tiers disabled every signed-in user gets the full feature set.
+  // Tabs whose data comes only from Orpheus Pro hardware simply render their
+  // existing empty state on a Basic unit, which is accurate: that unit does
+  // not produce the data.
+  const isPro = PAID_TIERS_ENABLED
+    ? (user?.subscription_tier === 'pro' || user?.is_admin)
+    : true;
   const [activeTab, setActiveTab] = useState('overview');
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
@@ -288,7 +312,7 @@ function OrpheusAnalytics({ user, onLogout }) {
               <span className="nav-icon">🐦</span> Species
             </button>
           )}
-          {!isPro && (
+          {PAID_TIERS_ENABLED && !isPro && (
             <button className="nav-item nav-btn" style={{color: '#f59e0b'}}
               onClick={() => setActiveTab('upgrade')}>
               <span className="nav-icon">⭐</span> Pro Features
@@ -1172,7 +1196,7 @@ function OrpheusAnalytics({ user, onLogout }) {
             )}
 
             {/* ==================== UPGRADE PROMPT (Basic users) ==================== */}
-            {activeTab === 'upgrade' && !isPro && (
+            {PAID_TIERS_ENABLED && activeTab === 'upgrade' && !isPro && (
               <div>
                 <div className="analytics-card full-width" style={{ textAlign: 'center', padding: '40px 24px' }}>
                   <div style={{ fontSize: 48, marginBottom: 16 }}>⭐</div>
