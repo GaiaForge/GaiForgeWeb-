@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './Auth.css';
 
 const API_BASE = window.location.origin;
@@ -11,6 +11,8 @@ function Login({ onLogin }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const infoMessage = location.state?.message;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,7 +48,7 @@ function Login({ onLogin }) {
         must_change_password: data.must_change_password || false,
       };
       onLogin(userData);
-      navigate(userData.must_change_password ? '/force-password-change' : '/products');
+      navigate(userData.must_change_password ? '/force-password-change' : (userData.is_admin ? '/admin' : '/products'));
     } catch (err) {
       setError(err.message || 'Login failed');
     } finally {

@@ -33,7 +33,7 @@ function ForceChangePassword({ user, onPasswordChanged, onLogout }) {
         throw new Error(data.detail || 'Failed to update password');
       }
       onPasswordChanged();
-      navigate('/products');
+      navigate(user?.is_admin ? '/admin' : '/products');
     } catch (err) {
       setError(err.message || 'Failed to update password');
     } finally {

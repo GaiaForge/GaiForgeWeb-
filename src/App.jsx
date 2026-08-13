@@ -93,10 +93,10 @@ function App() {
         <Suspense fallback={<div className="app-loading" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>Loading…</div>}>
         <Routes>
           <Route path="/login" element={
-            isAuthenticated ? <Navigate to="/products" /> : <Login onLogin={handleLogin} />
+            isAuthenticated ? <Navigate to={user?.is_admin ? '/admin' : '/products'} /> : <Login onLogin={handleLogin} />
           } />
           <Route path="/register" element={
-            isAuthenticated ? <Navigate to="/products" /> : <Register onRegister={handleLogin} />
+            isAuthenticated ? <Navigate to={user?.is_admin ? '/admin' : '/products'} /> : <Register onRegister={handleLogin} />
           } />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
