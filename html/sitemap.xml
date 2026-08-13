@@ -94,4 +94,11 @@
     <priority>0.7</priority>
   </url>
 
+  <url>
+    <loc>https://gaiaforge.tech/downloads/Orpheus-Pro-Recording-Field-Guide.pdf</loc>
+    <lastmod>2026-08-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
 </urlset>

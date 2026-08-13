@@ -378,6 +378,15 @@ function OrpheusDashboard({ user, onLogout }) {
       defaultHref: '/downloads/Orpheus-Solar-Panel-Guide.pdf',
       defaultType: 'pdf',
     },
+    {
+      slot: 'recording_guide',
+      title: 'Pro Recording & Field Guide',
+      description: 'Recording modes, mic sensitivity, and placement — getting the best from Orpheus Pro.',
+      icon: '🎙️',
+      accept: '.pdf',
+      defaultHref: '/downloads/Orpheus-Pro-Recording-Field-Guide.pdf',
+      defaultType: 'pdf',
+    },
   ];
 
   const docs = docMeta.map((meta) => {
