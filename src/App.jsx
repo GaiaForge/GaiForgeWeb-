@@ -21,6 +21,7 @@ const SprigRigDashboard = lazy(() => import('./pages/SprigRigDashboard'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const ForceChangePassword = lazy(() => import('./pages/ForceChangePassword'));
+const ProductDocsPage = lazy(() => import('./pages/ProductDocsPage'));
 import './App.css';
 
 function App() {
@@ -111,12 +112,14 @@ function App() {
           <Route path="/devices" element={protect(<Devices user={user} onLogout={handleLogout} />)} />
           <Route path="/journal" element={protect(<Journal user={user} onLogout={handleLogout} />)} />
           <Route path="/alerts" element={protect(<Alerts user={user} onLogout={handleLogout} />)} />
+          <Route path="/hiveguard/docs" element={protect(<ProductDocsPage user={user} onLogout={handleLogout} product="hiveguard" backTo="/dashboard" />)} />
           {/* Orpheus routes */}
           <Route path="/orpheus" element={protect(<OrpheusDashboard user={user} onLogout={handleLogout} />)} />
           <Route path="/orpheus/analytics" element={protect(<OrpheusAnalytics user={user} onLogout={handleLogout} />)} />
           <Route path="/orpheus/journal" element={protect(<OrpheusJournal user={user} onLogout={handleLogout} />)} />
           {/* SprigRig routes */}
           <Route path="/sprigrig" element={protect(<SprigRigDashboard user={user} onLogout={handleLogout} />)} />
+          <Route path="/sprigrig/docs" element={protect(<ProductDocsPage user={user} onLogout={handleLogout} product="sprigrig" backTo="/sprigrig" />)} />
           {/* Shared routes */}
           <Route path="/profile" element={protect(<Profile user={user} onLogout={handleLogout} />)} />
           <Route path="/admin" element={protect(<Admin user={user} onLogout={handleLogout} />)} />

@@ -21,6 +21,8 @@ Then add to your nginx config (inside the server block):
 
 import json
 import os
+import re
+import secrets
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -268,6 +270,197 @@ async def upload_doc(
     return {"status": "ok", "slot": slot, "filename": manifest[slot]["filename"]}
 
 
+# ===========================================================================
+# Product-aware document library (dynamic, per product)
+#
+# Supersedes the fixed-slot doc system above. Each product has its own
+# manifest at /downloads/<product>/docs/manifest.json holding a `documents`
+# list that admins can add to and delete from — no code change or rebuild.
+#
+# The frontend reads the manifest as a static file (served by nginx). This
+# service only handles writes (add / delete), plus seeding the built-in
+# documents on first run so the manifest always exists.
+# ===========================================================================
+
+# /var/www/html/downloads  (DOWNLOADS_DIR is the orpheus subfolder)
+DOWNLOADS_BASE = DOWNLOADS_DIR.parent
+PRODUCTS = ("orpheus", "hiveguard", "sprigrig")
+
+# Built-in documents seeded into each product's manifest on first run. Their
+# URLs point at files shipped with the website (in git), so they are marked
+# builtin=True and the delete route never unlinks the underlying file — it
+# only removes the manifest entry (hiding the card).
+DEFAULT_DOCS = {
+    "orpheus": [
+        {"id": "builtin-manual", "title": "Orpheus User Manual", "icon": "📖",
+         "description": "Complete guide covering setup, operation, and maintenance.",
+         "url": "/orpheus-manual.html", "type": "html", "builtin": True},
+        {"id": "builtin-quickstart", "title": "Quick Start Guide", "icon": "🚀",
+         "description": "Get your Orpheus device up and running quickly.",
+         "url": "/downloads/Orpheus-Basic-Quick-Start-Guide.pdf", "type": "pdf", "builtin": True},
+        {"id": "builtin-solar", "title": "Solar Panel Alignment Guide", "icon": "☀️",
+         "description": "Optimize solar panel positioning for your deployment site.",
+         "url": "/downloads/Orpheus-Solar-Panel-Guide.pdf", "type": "pdf", "builtin": True},
+        {"id": "builtin-recording", "title": "Pro Recording & Field Guide", "icon": "🎙️",
+         "description": "Recording modes, mic sensitivity, and placement — getting the best from Orpheus Pro.",
+         "url": "/downloads/Orpheus-Pro-Recording-Field-Guide.pdf", "type": "pdf", "builtin": True},
+    ],
+    "hiveguard": [],
+    "sprigrig": [],
+}
+
+
+def _valid_product(product: str) -> str:
+    if product not in PRODUCTS:
+        raise HTTPException(status_code=404, detail="Unknown product")
+    return product
+
+
+def product_docs_dir(product: str) -> Path:
+    return DOWNLOADS_BASE / product / "docs"
+
+
+def product_docs_manifest_path(product: str) -> Path:
+    return product_docs_dir(product) / "manifest.json"
+
+
+def load_product_docs(product: str) -> dict:
+    path = product_docs_manifest_path(product)
+    if path.exists():
+        try:
+            data = json.loads(path.read_text())
+            if isinstance(data, dict) and isinstance(data.get("documents"), list):
+                return data
+        except (json.JSONDecodeError, OSError):
+            pass
+    return {"documents": []}
+
+
+def save_product_docs(product: str, data: dict) -> None:
+    path = product_docs_manifest_path(product)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(data, indent=2))
+    tmp.replace(path)
+
+
+def seed_product_docs() -> None:
+    """Write the default manifest for any product that doesn't have one yet.
+
+    Only seeds when the manifest is missing, so it never clobbers admin edits.
+    """
+    for product in PRODUCTS:
+        path = product_docs_manifest_path(product)
+        if path.exists():
+            continue
+        docs = [dict(d) for d in DEFAULT_DOCS.get(product, [])]
+        for d in docs:
+            d.setdefault("date", None)
+            d.setdefault("size", None)
+        try:
+            save_product_docs(product, {"documents": docs})
+        except OSError:
+            # Downloads dir may not be writable in some environments; ignore.
+            pass
+
+
+@app.on_event("startup")
+def _startup_seed():
+    seed_product_docs()
+
+
+@app.get("/api/{product}/docs")
+async def list_docs(product: str):
+    """Public: the current document list for a product (also seeds on demand)."""
+    _valid_product(product)
+    if not product_docs_manifest_path(product).exists():
+        seed_product_docs()
+    return load_product_docs(product)
+
+
+@app.post("/api/{product}/docs")
+async def add_doc(
+    request: Request,
+    product: str,
+    file: UploadFile = File(...),
+    title: str = Form(...),
+    description: str = Form(""),
+):
+    _valid_product(product)
+    await verify_admin(request)
+
+    title = title.strip()
+    if not title:
+        raise HTTPException(status_code=400, detail="A title is required")
+
+    ext = Path(file.filename or "").suffix.lower()
+    if ext not in (".pdf", ".html"):
+        raise HTTPException(status_code=400, detail="Only .pdf or .html files are accepted")
+
+    docs_dir = product_docs_dir(product)
+    docs_dir.mkdir(parents=True, exist_ok=True)
+
+    doc_id = secrets.token_hex(6)
+    stored_name = f"{doc_id}{ext}"
+    content = await file.read()
+    (docs_dir / stored_name).write_bytes(content)
+
+    manifest = load_product_docs(product)
+    manifest["documents"].append({
+        "id": doc_id,
+        "title": title,
+        "description": description.strip(),
+        "icon": "🌐" if ext == ".html" else "📄",
+        "url": f"/downloads/{product}/docs/{stored_name}",
+        "type": ext.lstrip("."),
+        "original_name": file.filename,
+        "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "size": f"{len(content) / 1048576:.1f} MB",
+        "builtin": False,
+    })
+    save_product_docs(product, manifest)
+
+    return {"status": "ok", "product": product, "id": doc_id}
+
+
+@app.delete("/api/{product}/docs/{doc_id}")
+async def delete_doc(request: Request, product: str, doc_id: str):
+    _valid_product(product)
+    await verify_admin(request)
+
+    manifest = load_product_docs(product)
+    remaining, removed = [], None
+    for d in manifest["documents"]:
+        if d.get("id") == doc_id:
+            removed = d
+        else:
+            remaining.append(d)
+
+    if removed is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    # Only unlink files this service manages (uploaded under the product's docs
+    # dir). Built-in guides point at git-shipped files and are left on disk —
+    # deleting only hides the card by dropping the manifest entry.
+    if not removed.get("builtin"):
+        url = removed.get("url", "")
+        prefix = f"/downloads/{product}/docs/"
+        if url.startswith(prefix):
+            name = url[len(prefix):]
+            # Guard against path traversal; only a bare filename is expected.
+            if name and "/" not in name and ".." not in name:
+                try:
+                    (product_docs_dir(product) / name).unlink(missing_ok=True)
+                except OSError:
+                    pass
+
+    manifest["documents"] = remaining
+    save_product_docs(product, manifest)
+
+    return {"status": "ok", "deleted": doc_id}
+
+
 if __name__ == "__main__":
     import uvicorn
+    seed_product_docs()
     uvicorn.run(app, host="127.0.0.1", port=8001)

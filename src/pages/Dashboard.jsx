@@ -91,6 +91,9 @@ function Dashboard({ user, onLogout }) {
           <Link to="/alerts" className="nav-item">
             <span className="nav-icon">🔔</span> Alerts
           </Link>
+          <Link to="/hiveguard/docs" className="nav-item">
+            <span className="nav-icon">📖</span> Documentation
+          </Link>
           <Link to="/profile" className="nav-item">
             <span className="nav-icon">👤</span> Profile
           </Link>

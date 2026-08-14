@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { fetchProductDocs, PRODUCTS, PRODUCT_LABELS } from '../docs/productDocs';
 import './Dashboard.css';
 import './Admin.css';
 
@@ -55,6 +56,17 @@ function Admin({ user, onLogout }) {
   const [archiving, setArchiving] = useState(false);
   const [archiveMessage, setArchiveMessage] = useState(null);
 
+  // Document library management (per product)
+  const [docsProduct, setDocsProduct] = useState('orpheus');
+  const [docsList, setDocsList] = useState([]);
+  const [docsLoading, setDocsLoading] = useState(false);
+  const [docTitle, setDocTitle] = useState('');
+  const [docDesc, setDocDesc] = useState('');
+  const [docFile, setDocFile] = useState(null);
+  const [docUploading, setDocUploading] = useState(false);
+  const [docsMsg, setDocsMsg] = useState(null);
+  const [docFileKey, setDocFileKey] = useState(0);
+
   const headers = {
     'Authorization': `Bearer ${user?.token}`,
     'Content-Type': 'application/json',
@@ -63,6 +75,69 @@ function Admin({ user, onLogout }) {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const loadDocs = async (product) => {
+    setDocsLoading(true);
+    try {
+      setDocsList(await fetchProductDocs(product));
+    } finally {
+      setDocsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'documents') loadDocs(docsProduct);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, docsProduct]);
+
+  const uploadDoc = async () => {
+    if (!docTitle.trim() || !docFile) {
+      setDocsMsg({ type: 'error', text: 'A title and a file are required.' });
+      return;
+    }
+    setDocUploading(true);
+    setDocsMsg(null);
+    const fd = new FormData();
+    fd.append('file', docFile);
+    fd.append('title', docTitle.trim());
+    fd.append('description', docDesc.trim());
+    try {
+      const res = await fetch(`${API_BASE}/api/${docsProduct}/docs`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${user?.token}` },
+        body: fd,
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || 'Upload failed');
+      }
+      setDocsMsg({ type: 'success', text: 'Document added.' });
+      setDocTitle(''); setDocDesc(''); setDocFile(null);
+      setDocFileKey((k) => k + 1);
+      loadDocs(docsProduct);
+    } catch (err) {
+      setDocsMsg({ type: 'error', text: err.message || 'Upload failed' });
+    } finally {
+      setDocUploading(false);
+    }
+  };
+
+  const deleteDoc = async (id) => {
+    setDocsMsg(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/${docsProduct}/docs/${id}`, {
+        method: 'DELETE',
+        headers,
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || 'Delete failed');
+      }
+      loadDocs(docsProduct);
+    } catch (err) {
+      setDocsMsg({ type: 'error', text: err.message || 'Delete failed' });
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -427,6 +502,10 @@ function Admin({ user, onLogout }) {
           <button className={`nav-item nav-btn ${activeTab === 'audit' ? 'active' : ''}`}
             onClick={() => setActiveTab('audit')}>
             <span className="nav-icon">🔒</span> Audit Log
+          </button>
+          <button className={`nav-item nav-btn ${activeTab === 'documents' ? 'active' : ''}`}
+            onClick={() => setActiveTab('documents')}>
+            <span className="nav-icon">📚</span> Documents
           </button>
           <button className={`nav-item nav-btn ${activeTab === 'config' ? 'active' : ''}`}
             onClick={() => setActiveTab('config')}>
@@ -1078,6 +1157,83 @@ function Admin({ user, onLogout }) {
                 </div>
               </div>
               </>
+            )}
+
+            {/* ==================== DOCUMENTS TAB ==================== */}
+            {activeTab === 'documents' && (
+              <div>
+                <h2>Product Documentation</h2>
+                <p style={{ color: '#6b7280', marginBottom: '16px' }}>
+                  Upload or remove documents shown on each product's Documentation page.
+                  Changes are live immediately — no code deploy needed.
+                </p>
+
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap' }}>
+                  <label style={{ fontWeight: 600 }}>Product:</label>
+                  <select value={docsProduct} onChange={(e) => setDocsProduct(e.target.value)}
+                    style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #d1d5db' }}>
+                    {PRODUCTS.map((p) => (<option key={p} value={p}>{PRODUCT_LABELS[p]}</option>))}
+                  </select>
+                </div>
+
+                {docsMsg && (
+                  <div style={{
+                    padding: '10px 14px', borderRadius: '8px', marginBottom: '14px',
+                    background: docsMsg.type === 'error' ? '#fef2f2' : '#ecfdf5',
+                    color: docsMsg.type === 'error' ? '#b91c1c' : '#065f46',
+                    border: `1px solid ${docsMsg.type === 'error' ? '#fecaca' : '#a7f3d0'}`,
+                  }}>{docsMsg.text}</div>
+                )}
+
+                <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '18px', marginBottom: '24px' }}>
+                  <h3 style={{ marginTop: 0 }}>Add a document</h3>
+                  <div style={{ display: 'grid', gap: '10px', maxWidth: '560px' }}>
+                    <input type="text" placeholder="Title" value={docTitle} onChange={(e) => setDocTitle(e.target.value)}
+                      style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid #d1d5db' }} />
+                    <textarea placeholder="Short description" value={docDesc} onChange={(e) => setDocDesc(e.target.value)} rows={2}
+                      style={{ padding: '10px 12px', borderRadius: '8px', border: '1px solid #d1d5db', resize: 'vertical' }} />
+                    <input key={docFileKey} type="file" accept=".pdf,.html"
+                      onChange={(e) => setDocFile(e.target.files[0] || null)} />
+                    <button onClick={uploadDoc} disabled={docUploading}
+                      style={{ padding: '10px 18px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', width: 'fit-content', opacity: docUploading ? 0.6 : 1 }}>
+                      {docUploading ? 'Uploading…' : 'Add document'}
+                    </button>
+                  </div>
+                </div>
+
+                <h3>Current documents</h3>
+                {docsLoading ? (
+                  <div className="loading-state">Loading…</div>
+                ) : docsList.length === 0 ? (
+                  <p style={{ color: '#6b7280' }}>No documents yet.</p>
+                ) : (
+                  <div style={{ display: 'grid', gap: '10px' }}>
+                    {docsList.map((doc) => (
+                      <div key={doc.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '12px 14px', border: '1px solid #e5e7eb', borderRadius: '10px', background: '#fff' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                          <span style={{ fontSize: '24px' }}>{doc.icon || (doc.type === 'html' ? '🌐' : '📄')}</span>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontWeight: 600 }}>
+                              {doc.title}
+                              {doc.builtin && (
+                                <span style={{ marginLeft: '8px', fontSize: '11px', color: '#6b7280', border: '1px solid #d1d5db', borderRadius: '20px', padding: '1px 8px' }}>built-in</span>
+                              )}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {doc.description}{doc.date ? ` · ${doc.date}` : ''}{doc.size ? ` · ${doc.size}` : ''}
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                          <a href={doc.url} target="_blank" rel="noreferrer" style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #d1d5db', color: '#374151', textDecoration: 'none', fontSize: '13px' }}>View</a>
+                          <button onClick={() => { if (window.confirm(`Delete "${doc.title}"?`)) deleteDoc(doc.id); }}
+                            style={{ padding: '6px 12px', borderRadius: '8px', border: 'none', background: '#ef4444', color: '#fff', cursor: 'pointer', fontSize: '13px' }}>Delete</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </>
         )}
