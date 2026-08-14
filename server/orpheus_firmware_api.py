@@ -294,10 +294,10 @@ DEFAULT_DOCS = {
     "orpheus": [
         {"id": "builtin-manual", "title": "Orpheus User Manual", "icon": "📖",
          "description": "Complete guide covering setup, operation, and maintenance.",
-         "url": "/orpheus-manual.html", "type": "html", "builtin": True},
+         "url": "/downloads/Orpheus-User-Manual.pdf", "type": "pdf", "builtin": True},
         {"id": "builtin-quickstart", "title": "Quick Start Guide", "icon": "🚀",
          "description": "Get your Orpheus device up and running quickly.",
-         "url": "/downloads/Orpheus-Basic-Quick-Start-Guide.pdf", "type": "pdf", "builtin": True},
+         "url": "/downloads/Orpheus-Quick-Start-Guide.pdf", "type": "pdf", "builtin": True},
         {"id": "builtin-solar", "title": "Solar Panel Alignment Guide", "icon": "☀️",
          "description": "Optimize solar panel positioning for your deployment site.",
          "url": "/downloads/Orpheus-Solar-Panel-Guide.pdf", "type": "pdf", "builtin": True},

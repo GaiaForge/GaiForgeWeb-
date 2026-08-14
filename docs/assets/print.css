@@ -1,0 +1,253 @@
+/* ==========================================================================
+   GaiaForge — print stylesheet for downloadable PDF documentation.
+   Matches the look of the Orpheus Pro Recording & Field Guide.
+   Used only for the PDF build; the website page uses the site's own CSS.
+   ========================================================================== */
+
+:root {
+  --green: #3d7a41;
+  --green-dark: #2f5f33;
+  --gold: #c9992b;
+  --ink: #333;
+  --muted: #6b6b6b;
+  --rule: #d8d8d8;
+  --note-bg: #f2f7f2;
+  --warn-bg: #fdf8ec;
+}
+
+@page {
+  size: A4;
+  /* Room at the bottom for the Chrome-rendered footer template. */
+  margin: 18mm 16mm 20mm 16mm;
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.55;
+  color: var(--ink);
+  margin: 0;
+}
+
+/* --- Cover page ---------------------------------------------------------- */
+
+.cover {
+  height: 247mm;                 /* fills the first page */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  page-break-after: always;
+}
+
+.cover img {
+  width: 96px;
+  height: auto;
+  margin-bottom: 26px;
+}
+
+.cover .brand {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 30pt;
+  color: var(--green);
+  margin: 0 0 6px;
+}
+
+.cover .product {
+  font-size: 11pt;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: 40px;
+}
+
+.cover .doc-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22pt;
+  color: var(--ink);
+  margin: 0 0 14px;
+}
+
+.cover .doc-sub {
+  font-size: 10.5pt;
+  color: var(--muted);
+  max-width: 118mm;
+  line-height: 1.6;
+  margin: 0 auto 30px;
+}
+
+.cover .badge {
+  display: inline-block;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 9px 20px;
+  font-size: 9.5pt;
+  color: var(--muted);
+}
+
+/* --- Headings ------------------------------------------------------------ */
+
+/* Each numbered section (## in Markdown) opens a new page, as in the
+   Recording & Field Guide. */
+h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 17pt;
+  color: var(--green);
+  border-bottom: 2px solid var(--green);
+  padding-bottom: 7px;
+  margin: 0 0 4px;
+  page-break-before: always;
+  page-break-after: avoid;
+}
+
+/* The first section must not push a blank page after the cover. */
+h2.first { page-break-before: avoid; }
+
+h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 12.5pt;
+  color: var(--green-dark);
+  margin: 22px 0 8px;
+  page-break-after: avoid;
+}
+
+h4 {
+  font-size: 11pt;
+  color: var(--ink);
+  margin: 16px 0 6px;
+  page-break-after: avoid;
+}
+
+/* Lead paragraph directly under a section heading. */
+h2 + p {
+  color: var(--muted);
+  margin-top: 10px;
+}
+
+/* Contents page */
+.toc { page-break-after: always; }
+.toc h3 {
+  font-size: 14pt;
+  color: var(--green);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 6px;
+  margin-top: 0;
+}
+/* Room for two-digit markers, which clip at a narrower indent. */
+.toc ol { padding-left: 28px; }
+.toc li { margin-bottom: 6px; }
+.toc a { color: var(--ink); }
+
+p { margin: 0 0 10px; }
+
+ul, ol { margin: 0 0 10px; padding-left: 20px; }
+li { margin-bottom: 5px; }
+
+strong { color: var(--green-dark); }
+
+code {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 9.5pt;
+  background: #f4f4f4;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+a { color: var(--green); text-decoration: none; }
+
+/* --- Tables -------------------------------------------------------------- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0 16px;
+  font-size: 9.5pt;
+  page-break-inside: avoid;
+}
+
+thead th {
+  background: var(--green);
+  color: #fff;
+  text-align: left;
+  font-weight: 600;
+  padding: 8px 10px;
+}
+
+tbody td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #e8e8e8;
+  vertical-align: top;
+}
+
+tbody tr:nth-child(even) { background: #fafafa; }
+
+/* --- Callouts ------------------------------------------------------------
+   Authored in Markdown as:
+       ::: note
+       **HEADING**
+       Body text.
+       :::
+   Use `note` for guidance and `warn` for things that lose data or time.
+   -------------------------------------------------------------------------- */
+
+.note, .warn {
+  border-left: 3px solid var(--green);
+  background: var(--note-bg);
+  padding: 11px 15px;
+  margin: 14px 0;
+  page-break-inside: avoid;
+}
+
+.warn {
+  border-left-color: var(--gold);
+  background: var(--warn-bg);
+}
+
+/* Only the leading bold word is the callout label — bold used elsewhere in
+   the first paragraph must stay inline. */
+.note > p:first-child > strong:first-child,
+.warn > p:first-child > strong:first-child {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-size: 8.5pt;
+  margin-bottom: 3px;
+}
+
+.note > p:last-child, .warn > p:last-child { margin-bottom: 0; }
+
+.warn > p:first-child > strong:first-child { color: var(--gold); }
+
+/* --- Checklist (pre-deployment style) ------------------------------------ */
+
+.checklist ul { list-style: none; padding-left: 0; }
+
+.checklist li {
+  padding-left: 26px;
+  position: relative;
+  margin-bottom: 9px;
+}
+
+.checklist li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 11px;
+  height: 11px;
+  border: 1px solid #999;
+}
+
+/* --- Closing contact block ----------------------------------------------- */
+
+.contact {
+  border-top: 1px solid var(--rule);
+  margin-top: 26px;
+  padding-top: 12px;
+  font-size: 9pt;
+  color: var(--muted);
+}
+
+.contact strong { color: var(--green); }

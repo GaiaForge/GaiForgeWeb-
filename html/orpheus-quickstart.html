@@ -13,105 +13,77 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    .guide-content {
-      max-width: 800px;
+    .manual-content {
+      max-width: 900px;
       margin: 0 auto;
       padding: 40px 20px 80px;
       font-family: 'Open Sans', sans-serif;
       color: #333;
       line-height: 1.8;
     }
-    .guide-content h1 {
+    .manual-content h1 {
       font-family: 'Cinzel', serif;
       color: var(--primary-green);
       font-size: 2.2rem;
       text-align: center;
       margin-bottom: 10px;
     }
-    .guide-subtitle {
+    .manual-subtitle {
       text-align: center;
       color: #666;
       margin-bottom: 40px;
       font-size: 1.1rem;
     }
-    .step {
-      display: flex;
-      gap: 20px;
-      margin-bottom: 35px;
-      align-items: flex-start;
-    }
-    .step-number {
-      width: 50px;
-      height: 50px;
-      min-width: 50px;
-      background: linear-gradient(135deg, #1a3a1a 0%, #2d5a2d 100%);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #e6a817;
-      font-family: 'Cinzel', serif;
-      font-size: 1.4rem;
-      font-weight: 700;
-      box-shadow: 0 4px 15px rgba(26, 58, 26, 0.4);
-    }
-    .step-content h3 {
-      font-family: 'Montserrat', sans-serif;
-      color: var(--primary-green);
-      margin: 0 0 8px 0;
-      font-size: 1.15rem;
-    }
-    .step-content p {
-      margin: 0;
-      color: #555;
-    }
-    .section-title {
+    .manual-content h2 {
       font-family: 'Cinzel', serif;
       color: var(--primary-green);
       font-size: 1.5rem;
       margin-top: 50px;
-      margin-bottom: 25px;
+      margin-bottom: 15px;
       padding-bottom: 8px;
       border-bottom: 2px solid rgba(76, 140, 74, 0.2);
     }
-    .tip-box {
+    .manual-content h3 {
+      font-family: 'Montserrat', sans-serif;
+      color: #444;
+      font-size: 1.15rem;
+      margin-top: 30px;
+      margin-bottom: 10px;
+    }
+    .manual-content ul, .manual-content ol {
+      padding-left: 25px;
+      margin-bottom: 20px;
+    }
+    .manual-content li {
+      margin-bottom: 8px;
+    }
+    .manual-content p {
+      margin-bottom: 15px;
+    }
+    .note-box {
       background: #f0f7f0;
       border-left: 4px solid var(--primary-green);
       padding: 15px 20px;
-      margin: 25px 0;
+      margin: 20px 0;
       border-radius: 0 8px 8px 0;
     }
     .warning-box {
       background: #fff8e1;
       border-left: 4px solid #e6a817;
       padding: 15px 20px;
-      margin: 25px 0;
+      margin: 20px 0;
       border-radius: 0 8px 8px 0;
     }
-    .quick-ref {
+    .toc {
       background: #f8f9fa;
+      padding: 25px 30px;
       border-radius: 12px;
-      padding: 25px;
-      margin: 30px 0;
+      margin-bottom: 40px;
     }
-    .quick-ref h3 {
-      font-family: 'Cinzel', serif;
-      color: var(--primary-green);
-      margin-top: 0;
-    }
-    .quick-ref table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    .quick-ref td {
-      padding: 8px 12px;
-      border-bottom: 1px solid #eee;
-    }
-    .quick-ref td:first-child {
-      font-weight: 600;
-      white-space: nowrap;
-      width: 40%;
-    }
+    .toc h3 { margin-top: 0; }
+    .toc ol { margin-bottom: 0; }
+    .toc a { color: var(--primary-green); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
     .back-link {
       text-align: center;
       margin-top: 50px;
@@ -123,8 +95,45 @@
     }
     @media print {
       .site-header, .site-footer, .back-link { display: none; }
-      .guide-content { padding: 0; }
+      .manual-content { padding: 0; }
     }
+  </style>
+  <style>
+    /* Added by docs/build.mjs — download button and Markdown callouts */
+    .doc-actions { text-align: center; margin: -20px 0 34px; }
+    .doc-actions a {
+      display: inline-block; background: var(--primary-green); color: #fff;
+      padding: 11px 22px; border-radius: 4px; text-decoration: none;
+      font-family: 'Montserrat', sans-serif; font-size: .95rem;
+    }
+    .doc-actions a:hover { opacity: .9; }
+    .manual-content .note, .manual-content .warn {
+      border-left: 3px solid var(--primary-green); background: #f2f7f2;
+      padding: 14px 18px; margin: 20px 0;
+    }
+    .manual-content .warn { border-left-color: #c9992b; background: #fdf8ec; }
+    /* Only the leading bold word is the callout label. */
+    .manual-content .note > p:first-child > strong:first-child,
+    .manual-content .warn > p:first-child > strong:first-child {
+      display: block; text-transform: uppercase; letter-spacing: .6px;
+      font-size: .78rem; margin-bottom: 4px;
+    }
+    .manual-content .warn > p:first-child > strong:first-child { color: #a87d16; }
+    .manual-content table {
+      width: 100%; border-collapse: collapse; margin: 18px 0; font-size: .92rem;
+    }
+    .manual-content thead th {
+      background: var(--primary-green); color: #fff; text-align: left; padding: 10px 12px;
+    }
+    .manual-content tbody td { padding: 9px 12px; border-bottom: 1px solid #e8e8e8; vertical-align: top; }
+    .manual-content tbody tr:nth-child(even) { background: #fafafa; }
+    .manual-content .checklist ul { list-style: none; padding-left: 0; }
+    .manual-content .checklist li { padding-left: 28px; position: relative; }
+    .manual-content .checklist li::before {
+      content: ""; position: absolute; left: 0; top: 7px;
+      width: 12px; height: 12px; border: 1px solid #999;
+    }
+    .manual-content .contact { border-top: 1px solid #ddd; margin-top: 30px; padding-top: 14px; font-size: .9rem; color: #666; }
   </style>
 </head>
 <body>
@@ -158,190 +167,192 @@
     </div>
   </header>
 
-  <div class="guide-content">
-    <h1>Quick Start Guide</h1>
-    <p class="guide-subtitle">Get your Orpheus up and running in minutes</p>
 
-    <!-- SETUP -->
-    <h2 class="section-title">Initial Setup</h2>
-
-    <div class="step">
-      <div class="step-number">1</div>
-      <div class="step-content">
-        <h3>Connect Power</h3>
-        <p>Plug in the LiFePO4 battery using the XT60 connector. If you have a solar panel, connect it via the MC4 connectors, matching positive (+) to positive and negative (-) to negative.</p>
-      </div>
+  <div class="manual-content">
+    <h1>Orpheus Quick Start Guide</h1>
+    <p class="manual-subtitle">Quick Start Guide — Version 1.8 — 2026</p>
+    <div class="doc-actions">
+      <a href="/downloads/Orpheus-Quick-Start-Guide.pdf" download><i class="fas fa-file-pdf"></i>&nbsp; Download PDF</a>
     </div>
 
-    <div class="step">
-      <div class="step-number">2</div>
-      <div class="step-content">
-        <h3>Power On</h3>
-        <p>Flip the power switch. The touchscreen will display the Orpheus interface after approximately 60 seconds. If nothing happens, press the manual wake button on the enclosure.</p>
-      </div>
+    <div class="toc">
+      <h3>Contents</h3>
+      <ol>
+        <li><a href="#initial-setup">Initial Setup</a></li>
+        <li><a href="#playback-modes">Playback Modes</a></li>
+        <li><a href="#recording-pro-only">Recording (Pro only)</a></li>
+        <li><a href="#companion-app">Companion App</a></li>
+        <li><a href="#deploy">Deploy</a></li>
+        <li><a href="#quick-reference">Quick Reference</a></li>
+      </ol>
     </div>
 
-    <div class="step">
-      <div class="step-number">3</div>
-      <div class="step-content">
-        <h3>Connect Speakers</h3>
-        <p>Attach speakers to the waterproof connectors on the enclosure. Test audio by switching to <strong>Manual Mode</strong> and playing the test tone.</p>
-      </div>
-    </div>
+<!--
+  Orpheus Quick Start Guide — editable source.
 
-    <div class="step">
-      <div class="step-number">4</div>
-      <div class="step-content">
-        <h3>Set Your Location</h3>
-        <p>Go to <strong>Settings &rarr; Astral Setup</strong>. Enter your GPS coordinates (latitude and longitude) and select your timezone. This is required for sunrise/sunset-based playback modes.</p>
-      </div>
-    </div>
+  Edit this file, then run:  node docs/build.mjs quickstart
+  That regenerates html/orpheus-quickstart.html (website page) and
+  html/downloads/Orpheus-Quick-Start-Guide.pdf (download). Commit all three.
 
-    <div class="step">
-      <div class="step-number">5</div>
-      <div class="step-content">
-        <h3>Verify Time</h3>
-        <p>Check the clock displayed on screen. If the time is incorrect, go to <strong>Settings &rarr; Time &amp; Date</strong> to set it manually. The built-in battery-backed clock will maintain time from this point forward.</p>
-      </div>
-    </div>
+  This guide is unified: it covers Basic and Pro. Pro recording setup gets a
+  short section that points at the Recording & Field Guide — keep it that way,
+  the detail lives in that guide.
+-->
+<h2 id="initial-setup">1. Initial Setup</h2>
+<p>Six steps from a boxed unit to a working device. Sections marked <em>(Pro only)</em> apply to Orpheus Pro.</p>
+<h3 id="connect-power">1. Connect Power</h3>
+<p>Plug in the LiFePO4 battery using the <strong>XT60</strong> connector. If you have a solar panel, connect it via the <strong>MC4</strong> connectors, matching positive (+) to positive and negative (−) to negative.</p>
+<h3 id="power-on">2. Power On</h3>
+<p>Flip the power switch. The touchscreen will display the Orpheus interface after approximately <strong>60 seconds</strong>. If nothing happens, press the manual wake button on the enclosure.</p>
+<h3 id="connect-speakers">3. Connect Speakers</h3>
+<p>Attach speakers to the waterproof connectors on the enclosure. Test audio by switching to <strong>Manual</strong> mode and playing the test tone.</p>
+<h3 id="set-your-location">4. Set Your Location</h3>
+<p>Go to <strong>Settings → Astral Setup</strong>. Enter your GPS coordinates (latitude and longitude) and select your timezone. This is required for the sunrise/sunset calculations used by Astral and Seasonal modes.</p>
+<h3 id="verify-time">5. Verify Time</h3>
+<p>Check the clock displayed on screen. If it is incorrect, go to <strong>Settings → Time &amp; Date</strong> to set it manually. The built-in battery-backed clock maintains accurate time from this point forward, even when the device is powered off.</p>
+<h3 id="load-audio-files">6. Load Audio Files</h3>
+<p>Insert a USB flash drive containing your audio files (<strong>WAV or MP3</strong>). Open the <strong>Audio File Manager</strong> from the toolbar and use USB Import to copy files to the device.</p>
+<h2 id="playback-modes">2. Playback Modes</h2>
+<p>Orpheus has four playback modes. Choose one from the mode selector at the top of the screen.</p>
+<h3 id="manual">Manual</h3>
+<p>Direct control for quick tests and on-demand use. Tap <strong>Load Audio</strong>, choose a file, and use Play, Pause and Stop. Adjust volume from the toolbar.</p>
+<h3 id="interval">Interval</h3>
+<p>Playback during specific time windows.</p>
+<ol type="1">
+<li>Tap <strong>Add Interval</strong> to create a schedule entry.</li>
+<li>Set the Start Time and End Time (e.g. 06:00 to 08:00).</li>
+<li>Choose the days: Daily, Weekdays, Weekends, or specific days.</li>
+<li>Tap <strong>Select Audio</strong> to assign one or more files. Multiple files play in sequence and loop for the duration of the interval.</li>
+<li>Save. Tap any interval to edit it later.</li>
+</ol>
+<p><em>Example — a bird ringing station:</em> morning lure 05:30–07:00 daily; midday call 12:00–12:30 weekdays; evening session 17:00–18:30 daily.</p>
+<h3 id="astral">Astral</h3>
+<p>Playback relative to sunrise and sunset, shifting automatically as day length changes through the season.</p>
+<ol type="1">
+<li>Tap <strong>Add Astral Interval</strong>.</li>
+<li>Choose Sunrise or Sunset as the reference event.</li>
+<li>Set the offset — for example “30 minutes before sunrise” or “1 hour after sunset”.</li>
+<li>Set the duration of the playback window.</li>
+<li>Assign your audio files and save.</li>
+</ol>
+<p><em>Example — a dawn chorus study:</em> start 30 min before sunrise, play for 90 minutes; and at sunset, play for 60 minutes.</p>
+<h3 id="seasonal">Seasonal</h3>
+<p>Different schedules for different times of year. Each season has its own playlist of events, and Orpheus switches between them automatically by calendar date.</p>
+<p><strong>Natural seasons</strong> — leave Custom Seasons off and tap <strong>Setup Natural Seasons</strong>. Edit any of Spring, Summer, Fall or Winter to open its playlist editor, then add events with <strong>Add Astral</strong> (sunrise/sunset-relative) or <strong>Add Fixed Time</strong> (specific time of day).</p>
+<p><strong>Custom seasons</strong> — for research that does not align with standard seasons, toggle <strong>Custom Seasons</strong> on. Name a season (e.g. “Spring Migration”), set its start and end dates with the calendar picker, save, then build its playlist the same way. Seasons may overlap.</p>
+<p><em>Example — a migration study:</em> Pre-Migration (Feb 15 – Mar 10), low-intensity calls at dawn only; Peak Migration (Mar 10 – Apr 20), full dawn and dusk playlist; Post-Migration (Apr 20 – May 15), monitoring calls only.</p>
+<h2 id="recording-pro-only">3. Recording (Pro only)</h2>
+<p>Orpheus Pro records audio to a USB drive alongside its playback role.</p>
+<p>To make a first test recording:</p>
+<ol type="1">
+<li>Insert a USB drive with free space.</li>
+<li>Open <strong>Recording</strong> mode.</li>
+<li>On the <strong>Audio</strong> tab choose bit depth (16-bit or 24-bit), sample rate (44.1, 48 or 96 kHz) and mono or stereo.</li>
+<li>On the <strong>Levels</strong> tab press <strong>Auto-Set Gain</strong> while the loudest sound you expect is happening, so peaks land safely below clipping.</li>
+<li>Press <strong>Record Now</strong>, capture a short sample, and play it back to check.</li>
+</ol>
+<p>Beyond manual recording, Orpheus Pro can record on a <strong>schedule</strong>, relative to <strong>sunrise/sunset</strong> (astral), or only when sound crosses a <strong>threshold</strong> you set.</p>
+<div class="note">
+<p><strong>BEFORE YOUR FIRST DEPLOYMENT</strong> Recording level is the one setting that cannot be corrected afterwards. The <strong>Orpheus Pro Recording &amp; Field Guide</strong> covers levels and gain, microphone placement, wind protection, threshold tuning and storage planning, and ends with a pre-deployment checklist. Find it in your customer portal at gaiaforge.tech/portal.</p>
+</div>
+<h2 id="companion-app">4. Companion App</h2>
+<p>The companion app gives you remote control over Bluetooth, and is the easiest way to set location and time.</p>
+<ol type="1">
+<li><strong>Android</strong> — download the APK from <strong>gaiaforge.tech/orpheus</strong>. When prompted, allow installation from unknown sources. <em>(iOS: coming soon.)</em></li>
+<li>Open the app. It scans for nearby Orpheus devices automatically.</li>
+<li>Tap your device in the list (e.g. “Orpheus-91BD”). The app connects over BLE, wakes the device if it is sleeping, and switches on its WiFi hotspot.</li>
+<li>Join the <code>Orpheus-XXXX</code> WiFi network on your phone — it is open, with no password.</li>
+<li>The full dashboard loads over WiFi: battery and solar status, schedules, device time and location, and diagnostics.</li>
+</ol>
+<div class="note">
+<p><strong>HOTSPOT TIMEOUT</strong> The WiFi hotspot switches off after 5 minutes of inactivity to save power. Reactivate it from the app when you need it.</p>
+</div>
+<h2 id="deploy">5. Deploy</h2>
+<h3 id="enable-deep-sleep">Enable Deep Sleep</h3>
+<p>To maximise battery life, enable <strong>Deep Sleep</strong> under <strong>Settings → Power Management</strong>. Orpheus will power down between scheduled events and wake just before the next one. A unit with adequate solar input can run indefinitely in this mode.</p>
+<p>You can always wake the device manually with the wake button on the enclosure, or remotely from the companion app over Bluetooth.</p>
+<h3 id="pre-deployment-checklist">Pre-deployment checklist</h3>
+<div class="checklist">
+<ul>
+<li><strong>Power</strong> — battery connected via XT60; solar panel connected and facing the sun (south in the Northern Hemisphere, north in the Southern).</li>
+<li><strong>Time &amp; location</strong> — clock correct, GPS coordinates and timezone set.</li>
+<li><strong>Audio</strong> — files imported; test tone plays through the speakers.</li>
+<li><strong>Schedule</strong> — your interval, astral or seasonal schedule saved and enabled.</li>
+<li><strong>Sleep</strong> — Deep Sleep enabled if you want autonomous operation.</li>
+<li><strong>Recording</strong> <em>(Pro)</em> — USB drive fitted with room for the planned hours; levels set with Auto-Set Gain.</li>
+<li><strong>Seals</strong> — enclosure closed, all connectors seated and weatherproof.</li>
+</ul>
+</div>
+<h3 id="first-few-days">First few days</h3>
+<p>Check battery levels and playback logs for the first few days to confirm the system is behaving as expected before leaving it unattended.</p>
+<h2 id="quick-reference">6. Quick Reference</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Battery connector</td>
+<td>XT60</td>
+</tr>
+<tr>
+<td>Solar connector</td>
+<td>MC4</td>
+</tr>
+<tr>
+<td>Audio formats</td>
+<td>WAV, MP3</td>
+</tr>
+<tr>
+<td>WiFi hotspot SSID</td>
+<td><code>Orpheus-XXXX</code> (unique per device)</td>
+</tr>
+<tr>
+<td>WiFi password</td>
+<td>None (open network)</td>
+</tr>
+<tr>
+<td>WiFi auto-off</td>
+<td>5 minutes of inactivity</td>
+</tr>
+<tr>
+<td>Bluetooth range</td>
+<td>~10 metres</td>
+</tr>
+<tr>
+<td>Boot time</td>
+<td>~60 seconds</td>
+</tr>
+<tr>
+<td>RTC battery life</td>
+<td>3–6 years</td>
+</tr>
+<tr>
+<td>Recording bit depth <em>(Pro)</em></td>
+<td>16-bit or 24-bit</td>
+</tr>
+<tr>
+<td>Recording sample rate <em>(Pro)</em></td>
+<td>44.1, 48 or 96 kHz</td>
+</tr>
+<tr>
+<td>Support</td>
+<td>contact@gaiaforge.tech</td>
+</tr>
+</tbody>
+</table>
+<p>For the complete manual — troubleshooting, power management detail and full companion app instructions — visit <strong>gaiaforge.tech/orpheus</strong> or your customer portal at <strong>gaiaforge.tech/portal</strong>.</p>
+<div class="warn">
+<p><strong>LEGAL COMPLIANCE</strong> Some jurisdictions regulate or prohibit the use of recorded calls to attract wildlife. Ensure you have all necessary permits and comply with local laws before deploying Orpheus in the field. GaiaForge Technology assumes no liability for misuse.</p>
+</div>
+<div class="contact">
+<p><strong>GaiaForge</strong> · Rheinland-Pfalz, Germany · contact@gaiaforge.tech · +49 171 2002495 · gaiaforge.tech</p>
+<p>Orpheus is a trademark of GaiaForge. © 2026 GaiaForge Technology. All rights reserved.</p>
+</div>
 
-    <div class="step">
-      <div class="step-number">6</div>
-      <div class="step-content">
-        <h3>Load Audio Files</h3>
-        <p>Insert a USB flash drive containing your audio files (WAV or MP3). Open the <strong>Audio File Manager</strong> from the toolbar and import your files to the device.</p>
-      </div>
-    </div>
-
-    <!-- PLAYBACK -->
-    <h2 class="section-title">Start Playing Audio</h2>
-
-    <div class="step">
-      <div class="step-number">7</div>
-      <div class="step-content">
-        <h3>Choose a Playback Mode</h3>
-        <p>Select your mode from the main menu:</p>
-        <ul style="margin-top: 8px;">
-          <li><strong>Manual</strong> &mdash; Play, pause, stop on demand</li>
-          <li><strong>Interval</strong> &mdash; Set specific time windows for playback</li>
-          <li><strong>Astral</strong> &mdash; Schedule relative to sunrise/sunset</li>
-          <li><strong>Seasonal</strong> &mdash; Different schedules per season</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-number">8</div>
-      <div class="step-content">
-        <h3>Configure Your Schedule</h3>
-        <p>For Interval, Astral, or Seasonal modes, set your desired playback times and assign audio files. Orpheus will handle the rest automatically.</p>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-number">9</div>
-      <div class="step-content">
-        <h3>Enable Deep Sleep (Optional)</h3>
-        <p>To maximize battery life, enable <strong>Deep Sleep</strong> under <strong>Settings &rarr; Power Management</strong>. The device will automatically power down between scheduled events and wake up when needed.</p>
-      </div>
-    </div>
-
-    <div class="tip-box">
-      <strong>You're ready to deploy!</strong> Place the unit in the field, ensure the solar panel has good sun exposure, and Orpheus will operate autonomously from here.
-    </div>
-
-    <!-- COMPANION APP -->
-    <h2 class="section-title">Using the Companion App</h2>
-
-    <div class="step">
-      <div class="step-number">1</div>
-      <div class="step-content">
-        <h3>Install the App</h3>
-        <p><strong>Android:</strong> Download the APK from <a href="orpheus.html" style="color: var(--primary-green);">gaiaforge.tech/orpheus</a>. When prompted, allow installation from unknown sources.<br>
-        <strong>iOS:</strong> Coming soon to the App Store.</p>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-number">2</div>
-      <div class="step-content">
-        <h3>Connect via Bluetooth</h3>
-        <p>Open the app and it will automatically scan for nearby Orpheus devices. Tap your device to connect. The app uses Bluetooth Low Energy, so you need to be within approximately 10 meters.</p>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-number">3</div>
-      <div class="step-content">
-        <h3>Join the WiFi Hotspot</h3>
-        <p>After the BLE connection is established, join the Orpheus WiFi hotspot on your phone. The network name follows the format <strong>Orpheus-XXXX</strong> (e.g., Orpheus-91BD). No password required.</p>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-number">4</div>
-      <div class="step-content">
-        <h3>Access the Dashboard</h3>
-        <p>The app will connect to the full dashboard automatically. From here you can monitor battery status, configure playback, adjust settings, and more &mdash; all from your phone.</p>
-      </div>
-    </div>
-
-    <!-- QUICK REFERENCE -->
-    <div class="quick-ref">
-      <h3>Quick Reference</h3>
-      <table>
-        <tr>
-          <td>Battery connector</td>
-          <td>XT60</td>
-        </tr>
-        <tr>
-          <td>Solar connector</td>
-          <td>MC4</td>
-        </tr>
-        <tr>
-          <td>Audio formats</td>
-          <td>WAV, MP3</td>
-        </tr>
-        <tr>
-          <td>WiFi hotspot SSID</td>
-          <td>Orpheus-XXXX</td>
-        </tr>
-        <tr>
-          <td>WiFi hotspot password</td>
-          <td>None (open network)</td>
-        </tr>
-        <tr>
-          <td>WiFi auto-off</td>
-          <td>5 minutes of inactivity</td>
-        </tr>
-        <tr>
-          <td>Bluetooth range</td>
-          <td>~10 meters</td>
-        </tr>
-        <tr>
-          <td>Boot time</td>
-          <td>~60 seconds</td>
-        </tr>
-        <tr>
-          <td>RTC battery life</td>
-          <td>3-6 years</td>
-        </tr>
-        <tr>
-          <td>Support</td>
-          <td>contact@gaiaforge.tech</td>
-        </tr>
-      </table>
-    </div>
-
-    <div class="warning-box">
-      <strong>Important:</strong> Some jurisdictions regulate or prohibit the use of recorded calls to attract wildlife. Ensure you have all necessary permits and comply with local laws before deploying Orpheus in the field.
-    </div>
-
-    <p style="text-align: center; margin-top: 30px;">
-      For the complete manual, visit the <a href="orpheus-manual.html" style="color: var(--primary-green); font-weight: 600;">Orpheus User Manual</a>.
-    </p>
-
-    <p style="text-align: center; color: #999; margin-top: 40px;">&copy; 2026 GaiaForge Technology. All rights reserved.</p>
 
     <div class="back-link">
       <a href="orpheus.html">&larr; Back to Orpheus Product Page</a>
