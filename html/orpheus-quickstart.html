@@ -183,6 +183,7 @@
         <li><a href="#recording-pro-only">Recording (Pro only)</a></li>
         <li><a href="#companion-app">Companion App</a></li>
         <li><a href="#deploy">Deploy</a></li>
+        <li><a href="#updates">Updates</a></li>
         <li><a href="#quick-reference">Quick Reference</a></li>
       </ol>
     </div>
@@ -209,9 +210,17 @@
 <h3 id="set-your-location">4. Set Your Location</h3>
 <p>Go to <strong>Settings → Astral Setup</strong>. Enter your GPS coordinates (latitude and longitude) and select your timezone. This is required for the sunrise/sunset calculations used by Astral and Seasonal modes.</p>
 <h3 id="verify-time">5. Verify Time</h3>
-<p>Check the clock displayed on screen. If it is incorrect, go to <strong>Settings → Time &amp; Date</strong> to set it manually. The built-in battery-backed clock maintains accurate time from this point forward, even when the device is powered off.</p>
+<p>Check the clock displayed on screen. If it is incorrect, either set it manually under <strong>Settings → Time &amp; Date</strong>, or let the companion app do it — tap <strong>Auto-Configure Hub (GPS &amp; Time)</strong> in the app and it sets the clock, timezone and GPS position from your phone in one step (see section 4).</p>
+<p>The built-in battery-backed clock maintains accurate time from this point forward, even when the device is powered off.</p>
 <h3 id="load-audio-files">6. Load Audio Files</h3>
 <p>Insert a USB flash drive containing your audio files (<strong>WAV or MP3</strong>). Open the <strong>Audio File Manager</strong> from the toolbar and use USB Import to copy files to the device.</p>
+<h3 id="create-your-portal-account">7. Create Your Portal Account</h3>
+<p>Register at <strong>gaiaforge.tech/portal</strong> to get your software updates, the companion app and your documentation.</p>
+<p>You will need your <strong>device serial number</strong>. Find it on the unit’s touchscreen under the <strong>About</strong> tab — the <strong>(i)</strong> icon at the top of the screen. It is also printed on the device label.</p>
+<p>Choose Register, select Orpheus, then enter the serial number along with your name, email and a password.</p>
+<div class="note">
+<p><strong>OPTIONAL, AND YOUR DATA STAYS YOURS</strong> Orpheus works fully offline — an account is only needed for updates, documentation and optional cloud sync of your logs. Nothing is uploaded unless you sign in inside the app, and audio recordings are never uploaded at all. See the User Manual, section 13, for the detail.</p>
+</div>
 <h2 id="playback-modes">2. Playback Modes</h2>
 <p>Orpheus has four playback modes. Choose one from the mode selector at the top of the screen.</p>
 <h3 id="manual">Manual</h3>
@@ -256,36 +265,57 @@
 <p><strong>BEFORE YOUR FIRST DEPLOYMENT</strong> Recording level is the one setting that cannot be corrected afterwards. The <strong>Orpheus Pro Recording &amp; Field Guide</strong> covers levels and gain, microphone placement, wind protection, threshold tuning and storage planning, and ends with a pre-deployment checklist. Find it in your customer portal at gaiaforge.tech/portal.</p>
 </div>
 <h2 id="companion-app">4. Companion App</h2>
-<p>The companion app gives you remote control over Bluetooth, and is the easiest way to set location and time.</p>
+<p>The companion app is how you manage a deployed unit. It works over Bluetooth, <strong>wakes a sleeping unit for you</strong>, and is the easiest way to set location and time — so once a unit is in the field you rarely need to open the enclosure.</p>
+<h3 id="install-it">Install it</h3>
+<p><strong>Android</strong> — download the APK from <strong>gaiaforge.tech/orpheus</strong> or your customer portal. When prompted, allow installation from unknown sources.</p>
+<p><strong>iOS</strong> — the iPhone app is currently pending App Store approval.</p>
+<h3 id="connect">Connect</h3>
 <ol type="1">
-<li><strong>Android</strong> — download the APK from <strong>gaiaforge.tech/orpheus</strong>. When prompted, allow installation from unknown sources. <em>(iOS: coming soon.)</em></li>
 <li>Open the app. It scans for nearby Orpheus devices automatically.</li>
-<li>Tap your device in the list (e.g. “Orpheus-91BD”). The app connects over BLE, wakes the device if it is sleeping, and switches on its WiFi hotspot.</li>
-<li>Join the <code>Orpheus-XXXX</code> WiFi network on your phone — it is open, with no password.</li>
-<li>The full dashboard loads over WiFi: battery and solar status, schedules, device time and location, and diagnostics.</li>
+<li>Tap your device in the list (e.g. “Orpheus-91BD”).</li>
+<li>That is the only step you take. The app connects over BLE, wakes the unit if it is asleep, switches on its <code>Orpheus-XXXX</code> WiFi hotspot, joins it, and loads the dashboard: battery and solar status, schedules, device time and location, and diagnostics.</li>
 </ol>
+<p><strong>How long it takes:</strong> about <strong>20–40 seconds</strong> if the unit is already awake, and <strong>up to a minute or slightly more</strong> if it is asleep or switched off — a sleeping unit has to boot before it can answer. The app shows its progress while it waits, so leave it running rather than retrying.</p>
+<h3 id="auto-configure-hub-gps-time">Auto-Configure Hub (GPS &amp; Time)</h3>
+<p>In the app’s <strong>Settings</strong> screen, pick your timezone and tap <strong>Auto-Configure Hub (GPS &amp; Time)</strong>. The app reads your phone’s GPS, sends the position, timezone and current time to the unit, and reads the clock back to confirm — setting everything Astral and Seasonal scheduling need, with no typing.</p>
 <div class="note">
-<p><strong>HOTSPOT TIMEOUT</strong> The WiFi hotspot switches off after 5 minutes of inactivity to save power. Reactivate it from the app when you need it.</p>
+<p><strong>HOTSPOT TIMEOUT</strong> The WiFi hotspot switches off after 5 minutes of inactivity to save power. Reconnecting from the app switches it back on.</p>
 </div>
 <h2 id="deploy">5. Deploy</h2>
 <h3 id="enable-deep-sleep">Enable Deep Sleep</h3>
 <p>To maximise battery life, enable <strong>Deep Sleep</strong> under <strong>Settings → Power Management</strong>. Orpheus will power down between scheduled events and wake just before the next one. A unit with adequate solar input can run indefinitely in this mode.</p>
 <p>You can always wake the device manually with the wake button on the enclosure, or remotely from the companion app over Bluetooth.</p>
+<h3 id="switch-the-monitor-off">Switch the monitor off</h3>
+<p>The touchscreen has its own switch on the front panel. <strong>Turn the monitor off for normal use</strong> — switch it on only when you need to work on the unit directly.</p>
+<p>Orpheus runs exactly the same with the screen off, and you keep full control through the app. The display is one of the biggest continuous power draws on the unit, so leaving it on eats into your deployment time for nothing.</p>
 <h3 id="pre-deployment-checklist">Pre-deployment checklist</h3>
 <div class="checklist">
 <ul>
 <li><strong>Power</strong> — battery connected via XT60; solar panel connected and facing the sun (south in the Northern Hemisphere, north in the Southern).</li>
-<li><strong>Time &amp; location</strong> — clock correct, GPS coordinates and timezone set.</li>
+<li><strong>Time &amp; location</strong> — clock correct, GPS coordinates and timezone set (or run Auto-Configure Hub from the app).</li>
 <li><strong>Audio</strong> — files imported; test tone plays through the speakers.</li>
 <li><strong>Schedule</strong> — your interval, astral or seasonal schedule saved and enabled.</li>
 <li><strong>Sleep</strong> — Deep Sleep enabled if you want autonomous operation.</li>
 <li><strong>Recording</strong> <em>(Pro)</em> — USB drive fitted with room for the planned hours; levels set with Auto-Set Gain.</li>
+<li><strong>App</strong> — paired and connecting, so you can reach the unit without opening it.</li>
+<li><strong>Monitor</strong> — front-panel screen switch turned off.</li>
 <li><strong>Seals</strong> — enclosure closed, all connectors seated and weatherproof.</li>
 </ul>
 </div>
 <h3 id="first-few-days">First few days</h3>
 <p>Check battery levels and playback logs for the first few days to confirm the system is behaving as expected before leaving it unattended.</p>
-<h2 id="quick-reference">6. Quick Reference</h2>
+<h2 id="updates">6. Updates</h2>
+<p>Orpheus updates from a USB stick, using a single file that contains both the device application and the firmware.</p>
+<ol type="1">
+<li>Download <code>orpheus_update.zip</code> from your customer portal at <strong>gaiaforge.tech/portal</strong> — the Orpheus dashboard lists the current release and its notes.</li>
+<li>Create a folder on a USB stick named exactly <code>orpheus_update</code> and put the zip inside it, still zipped.</li>
+<li>Insert the stick, then on the unit go to <strong>Settings → Updates</strong> and tap <strong>Scan for USB</strong>, then <strong>Update App</strong>, then <strong>Update Firmware</strong>.</li>
+</ol>
+<p>It takes about 3–5 minutes, with a progress display throughout.</p>
+<div class="warn">
+<p><strong>TWO THINGS TO GET RIGHT</strong> The folder name <code>orpheus_update</code> is <strong>case sensitive</strong> — all lower case, with an underscore. And <strong>do not power the unit off</strong> during an update; wait for the completion message. The unit restarts its own application when finished and does not reboot.</p>
+</div>
+<h2 id="quick-reference">7. Quick Reference</h2>
 <table>
 <thead>
 <tr>
@@ -325,6 +355,22 @@
 <tr>
 <td>Boot time</td>
 <td>~60 seconds</td>
+</tr>
+<tr>
+<td>App connect — unit awake</td>
+<td>~20–40 seconds</td>
+</tr>
+<tr>
+<td>App connect — unit asleep</td>
+<td>up to ~1 minute or a little more</td>
+</tr>
+<tr>
+<td>Monitor (front-panel switch)</td>
+<td>Off for normal use</td>
+</tr>
+<tr>
+<td>Update folder on USB</td>
+<td><code>orpheus_update</code> (case sensitive)</td>
 </tr>
 <tr>
 <td>RTC battery life</td>

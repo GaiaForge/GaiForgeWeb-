@@ -190,6 +190,7 @@
         <li><a href="#field-deployment-tips">Field Deployment Tips</a></li>
         <li><a href="#troubleshooting">Troubleshooting</a></li>
         <li><a href="#maintenance">Maintenance</a></li>
+        <li><a href="#your-data-and-privacy">Your Data and Privacy</a></li>
         <li><a href="#support">Support</a></li>
       </ol>
     </div>
@@ -289,12 +290,30 @@
 <li><strong>Inspect the Device.</strong> Remove Orpheus from the packaging and ensure all components (enclosure, speaker connections, connectors) are intact.</li>
 <li><strong>Power Connection.</strong> Connect the provided LiFePO4 battery using the XT60 connector. Connect the MC4 solar connectors observing polarity.</li>
 <li><strong>First Boot.</strong> Press the power switch. The touchscreen will display the Orpheus interface after approximately 60 seconds.</li>
-<li><strong>Location Setup.</strong> Go to <strong>Settings → Astral Setup</strong> and enter your GPS coordinates (latitude, longitude) and timezone for correct sunrise/sunset calculations.</li>
+<li><strong>Location Setup.</strong> Go to <strong>Settings → Astral Setup</strong> and enter your GPS coordinates (latitude, longitude) and timezone for correct sunrise/sunset calculations. Alternatively, let the companion app do this for you — see <em>Auto-Configure Hub</em> in section 7.</li>
 <li><strong>Speaker Check.</strong> Connect speakers to the waterproof connectors. Confirm audio output by playing the test tone in Manual mode.</li>
-<li><strong>Set Time (if needed).</strong> The device includes a battery-backed real-time clock (RTC) that maintains accurate time. If the time appears incorrect, set it manually under <strong>Settings → Time &amp; Date</strong>.</li>
+<li><strong>Set Time (if needed).</strong> The device includes a battery-backed real-time clock (RTC) that maintains accurate time. If the time appears incorrect, set it manually under <strong>Settings → Time &amp; Date</strong>, or set it from your phone with the app’s Auto-Configure Hub.</li>
+<li><strong>Install the companion app.</strong> Once the unit is running, install the app on your phone (section 7). It is how you will manage the unit in the field, and it lets you leave the touchscreen switched off — see section 9.</li>
+<li><strong>Create your portal account.</strong> Register at <strong>gaiaforge.tech/portal</strong> to get your documentation and software updates — see below.</li>
 </ol>
 <div class="note">
 <p><strong>NO ASSEMBLY REQUIRED</strong> Orpheus comes preloaded with all necessary software. No image flashing or assembly is required.</p>
+</div>
+<h3 id="creating-your-portal-account">Creating your portal account</h3>
+<p>The customer portal at <strong>gaiaforge.tech/portal</strong> is where you download software updates and the latest documentation, and where your device is registered to you. Create the account once, when you first set the unit up.</p>
+<p>You will need your <strong>device serial number</strong> to register.</p>
+<h4 id="finding-your-serial-number">Finding your serial number</h4>
+<p>On the unit’s touchscreen, open the <strong>About</strong> tab — the <strong>(i)</strong> icon along the top of the screen. Your serial number is listed there. It is also printed on the device label.</p>
+<h4 id="registering">Registering</h4>
+<ol type="1">
+<li>Go to <strong>gaiaforge.tech/portal</strong> and choose <strong>Register</strong>.</li>
+<li>Select your product — Orpheus.</li>
+<li>Enter your device serial number, your name, email address and a password.</li>
+<li>Sign in.</li>
+</ol>
+<p>Your Orpheus dashboard then gives you the current software update with its release notes, the companion app, and your documentation — this manual, the Quick Start Guide, the Solar Panel Alignment Guide, and for Pro owners the Recording &amp; Field Guide.</p>
+<div class="note">
+<p><strong>ONE ACCOUNT, EVERY DEVICE</strong> Register once. Additional units are added to the same account, so a fleet of Orpheus devices is managed from a single login.</p>
 </div>
 <h2 id="main-interface">5. Main Interface</h2>
 <ul>
@@ -344,32 +363,66 @@
 <p><strong>FULL RECORDING GUIDANCE</strong> Input levels and Auto-Set Gain, microphone placement, wind protection, threshold tuning, file naming, storage planning and the pre-deployment checklist are covered in the <strong>Orpheus Pro Recording &amp; Field Guide</strong>, available in your customer portal. Read it before your first recording deployment — level is the one setting that cannot be fixed afterwards.</p>
 </div>
 <h2 id="companion-app">7. Companion App</h2>
-<p>Orpheus includes a companion mobile app for remote control and monitoring via Bluetooth Low Energy (BLE).</p>
+<p>The companion mobile app is the main way to work with Orpheus in the field. It connects over Bluetooth Low Energy (BLE), and can <strong>wake a sleeping unit</strong> — you do not need to open the enclosure or touch the screen to check on a deployment.</p>
 <h3 id="getting-the-app">Getting the App</h3>
 <ul>
-<li><strong>Android</strong> — download the APK from <strong>gaiaforge.tech/orpheus</strong> and install it on your device. You may need to enable “Install from unknown sources” in your phone’s settings.</li>
-<li><strong>iOS</strong> — available on the App Store (coming soon).</li>
+<li><strong>Android</strong> — download the APK from <strong>gaiaforge.tech/orpheus</strong> or from your customer portal, and install it on your phone. You may need to allow installation from unknown sources when prompted.</li>
+<li><strong>iOS</strong> — the iPhone app is currently pending App Store approval.</li>
 </ul>
 <h3 id="connecting-to-your-device">Connecting to Your Device</h3>
 <ol type="1">
 <li>Open the Orpheus app on your phone.</li>
-<li>The app will scan for nearby Orpheus devices via Bluetooth.</li>
+<li>The app scans for nearby Orpheus devices via Bluetooth automatically.</li>
 <li>Tap your device in the list (e.g. “Orpheus-91BD”).</li>
-<li>The app will connect via BLE, wake the device if sleeping, and activate the WiFi hotspot.</li>
-<li>Join the Orpheus WiFi hotspot on your phone (e.g. <code>Orpheus-XXXX</code>, where XXXX is your device ID). The hotspot is an open network with no password.</li>
-<li>The app will automatically connect to the full dashboard over WiFi.</li>
+<li>The app connects over BLE and, if the unit is asleep, <strong>wakes it</strong>. The status text keeps you informed while it boots.</li>
+<li>The app then activates the unit’s WiFi hotspot — <code>Orpheus-XXXX</code>, an open network with no password — and joins it for you.</li>
+<li>The full dashboard loads over WiFi.</li>
 </ol>
+<h3 id="how-long-connecting-takes">How long connecting takes</h3>
+<p>The whole sequence is automatic — you only tap your device in the list — but how long it takes depends on whether the unit is already awake:</p>
+<table>
+<thead>
+<tr>
+<th>Unit state</th>
+<th>Time to the dashboard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Already booted and awake</td>
+<td>about 20–40 seconds</td>
+</tr>
+<tr>
+<td>Asleep or powered off</td>
+<td>up to a minute, sometimes slightly more</td>
+</tr>
+</tbody>
+</table>
+<p>A sleeping unit has to boot before it can answer, which takes roughly a minute on its own. The app shows a progress message while it waits, then brings up the hotspot and joins it.</p>
+<div class="note">
+<p><strong>THIS IS NORMAL</strong> A wait of up to a minute on a sleeping unit is expected behaviour, not a fault. Leave the app on the connecting screen and let it finish — it is waiting for the unit to finish booting before it can join the hotspot.</p>
+</div>
 <h3 id="app-features">App Features</h3>
 <ul>
 <li>View real-time battery voltage, charge state, and solar input</li>
 <li>Configure playback modes and schedules remotely</li>
-<li>Set device time, timezone, and location</li>
+<li>Set device time, timezone, and location — see Auto-Configure below</li>
 <li>Send commands: sleep, wake, restart</li>
+<li>Configure recording quality, thresholds and schedules <em>(Pro)</em></li>
 <li>View environmental sensor data <em>(Pro)</em></li>
 <li>Access diagnostics and system status</li>
 </ul>
+<h3 id="auto-configure-hub-gps-time">Auto-Configure Hub (GPS &amp; Time)</h3>
+<p>The fastest way to set up a unit at a new site. In the app’s <strong>Settings</strong> screen, choose your timezone and tap <strong>Auto-Configure Hub (GPS &amp; Time)</strong>. The app then:</p>
+<ol type="1">
+<li>Reads your phone’s GPS position;</li>
+<li>Sends the latitude, longitude and timezone to the unit;</li>
+<li>Sets the unit’s clock from your phone;</li>
+<li>Reads the time back from the unit’s real-time clock to confirm it took.</li>
+</ol>
+<p>This sets everything Astral and Seasonal scheduling depend on in one step, with no typing of coordinates.</p>
 <div class="note">
-<p><strong>HOTSPOT TIMEOUT</strong> The WiFi hotspot automatically turns off after 5 minutes of inactivity to save power. Use the app to reactivate it when needed.</p>
+<p><strong>HOTSPOT TIMEOUT</strong> The WiFi hotspot automatically turns off after 5 minutes of inactivity to save power. Reconnecting from the app switches it back on.</p>
 </div>
 <h2 id="system-settings">8. System Settings</h2>
 <h3 id="audio-file-management">Audio File Management</h3>
@@ -390,9 +443,14 @@
 <ul>
 <li>Orpheus includes a battery-backed real-time clock that maintains accurate time even when the device is powered off or in deep sleep.</li>
 <li>The RTC battery lasts 3–6 years under normal use.</li>
-<li>Time can be set manually through the touchscreen or synced via the companion app.</li>
 <li>The system clock automatically syncs from the RTC on every boot and periodically during operation.</li>
 </ul>
+<p>There are two ways to set the clock:</p>
+<ul>
+<li><strong>From the app (recommended).</strong> Tap <strong>Auto-Configure Hub (GPS &amp; Time)</strong> in the app’s Settings screen. The unit’s clock is set from your phone, along with your GPS position and timezone, and the app reads the time back from the RTC to confirm. This is the quickest and least error-prone method, and it sets location at the same time.</li>
+<li><strong>On the touchscreen.</strong> Set the time and date manually under <strong>Settings → Time &amp; Date</strong>.</li>
+</ul>
+<p>Either method also updates the RTC, so the new time survives power loss and deep sleep.</p>
 <h3 id="gpio-settings">GPIO Settings</h3>
 <ul>
 <li>The GPIO controls the amplifier power relay. This can be toggled on/off in settings.</li>
@@ -420,6 +478,12 @@
 <li>The manual wake button on the enclosure can bring the system online at any time.</li>
 <li>The companion app can also wake the device remotely via BLE.</li>
 </ul>
+<h3 id="turn-the-monitor-off-for-normal-use">Turn the monitor off for normal use</h3>
+<p>The touchscreen has its own switch on the front panel. <strong>Leave the monitor switched off for day-to-day operation</strong> and switch it on only when you need to work on the unit directly.</p>
+<p>Orpheus runs perfectly well with the screen off — playback, scheduling, sleep and wake are all unaffected, and you can still do everything from the companion app. The display is one of the larger continuous power draws on the unit, so leaving it on needlessly shortens how long a deployment lasts between charges.</p>
+<div class="note">
+<p><strong>THE SCREEN IS FOR SETUP, THE APP IS FOR THE FIELD</strong> Use the touchscreen to commission a unit, then switch the monitor off and manage the deployment from your phone. The app wakes the unit and gives you status, schedules and diagnostics without touching the enclosure.</p>
+</div>
 <h3 id="solar-charging">Solar Charging</h3>
 <ul>
 <li>Connect solar panels via the MC4 connectors, observing correct polarity.</li>
@@ -431,6 +495,7 @@
 </div>
 <h2 id="field-deployment-tips">10. Field Deployment Tips</h2>
 <ul>
+<li><strong>Monitor Off</strong> — switch the touchscreen off at the front panel before you leave the site. The unit operates normally without it and the saved power goes into your deployment time. Manage the unit from the companion app instead.</li>
 <li><strong>Initial Monitoring</strong> — for the first few days after deployment, check battery levels and playback logs to confirm the system is operating as expected.</li>
 <li><strong>Weather Protection</strong> — Orpheus ships in a weather-sealed enclosure. Ensure all connectors remain properly seated and sealed.</li>
 <li><strong>Speaker Placement</strong> — position speakers to project sound toward the target area. Avoid placing speakers directly on the ground where moisture can collect.</li>
@@ -468,10 +533,11 @@
 </ul>
 <h3 id="companion-app-wont-connect">Companion App Won’t Connect</h3>
 <ul>
+<li><strong>Give it time first.</strong> A unit that is awake takes about 20–40 seconds to reach the dashboard; one that is asleep or off takes up to a minute or a little more, because it has to boot before it can respond. Let the connecting screen run to completion before assuming a fault.</li>
 <li>Ensure Bluetooth is enabled on your phone and the phone is within range (approximately 10 metres).</li>
-<li>On Android, grant “Nearby devices” and “Location” permissions to the Orpheus app.</li>
-<li>After connecting via BLE, join the Orpheus WiFi hotspot on your phone.</li>
-<li>If the dashboard doesn’t load, wait 15–20 seconds — the WiFi connection can take a moment to establish.</li>
+<li>On Android, grant “Nearby devices” and “Location” permissions to the Orpheus app. Location permission is used only to send your position to the device — it is not used to track you.</li>
+<li>If the hotspot join fails, join the <code>Orpheus-XXXX</code> network manually in your phone’s WiFi settings and return to the app.</li>
+<li>If the unit has been idle a long time, the hotspot may have timed out; reconnecting from the app switches it back on.</li>
 </ul>
 <h3 id="recording-issues-pro-only">Recording Issues (Pro only)</h3>
 <ul>
@@ -481,9 +547,25 @@
 <li>If recordings are empty, a threshold may be set too high for the site — see the Recording &amp; Field Guide.</li>
 </ul>
 <h2 id="maintenance">12. Maintenance</h2>
-<h3 id="software-updates">Software Updates</h3>
-<p>Software updates are deployed by your GaiaForge representative using the Orpheus Updater tool. During a service visit or when connected to your device’s WiFi hotspot, the representative will transfer updated files and rebuild the application. No user action is typically required.</p>
-<p>If you need to perform an update yourself, contact <a href="mailto:contact@gaiaforge.tech">contact@gaiaforge.tech</a> for instructions.</p>
+<h3 id="software-updates-ota">Software Updates (OTA)</h3>
+<p>Orpheus updates itself from a USB stick. A single update file contains both the device application and the ESP32 firmware, and you apply it from the unit’s own touchscreen — no service visit and no tools required.</p>
+<p><strong>1. Download the update.</strong> Sign in to your customer portal at <strong>gaiaforge.tech/portal</strong>. The Orpheus dashboard lists the current release with its version, date and release notes. Download <code>orpheus_update.zip</code>.</p>
+<p><strong>2. Put it on a USB stick.</strong> Create a folder on the stick named exactly <code>orpheus_update</code> and place the zip file inside it.</p>
+<div class="warn">
+<p><strong>THE FOLDER NAME IS CASE SENSITIVE</strong> The folder must be named <code>orpheus_update</code> — all lower case, with an underscore. <code>Orpheus_Update</code> or <code>orpheus update</code> will not be found. The zip goes <em>inside</em> that folder; do not unzip it.</p>
+</div>
+<p><strong>3. Install it.</strong> Insert the stick into the unit’s USB port, then on the touchscreen go to <strong>Settings → Updates</strong>:</p>
+<ol type="1">
+<li>Tap <strong>Scan for USB</strong>. The unit finds the update and shows its version.</li>
+<li>Tap <strong>Update App</strong> to install the device application.</li>
+<li>Tap <strong>Update Firmware</strong> to install the ESP32 firmware.</li>
+</ol>
+<p>A full-screen progress display takes over, labelled <em>Step 1 of 2</em> and <em>Step 2 of 2</em>, with a percentage and estimated time remaining. The whole process takes about <strong>3 to 5 minutes</strong>, most of it transferring firmware.</p>
+<div class="warn">
+<p><strong>DO NOT POWER OFF DURING AN UPDATE</strong> Interrupting an update part-way through can leave the unit unable to start. Wait for the completion message. Make sure the battery is adequately charged, or the unit is on solar, before you begin.</p>
+</div>
+<p>When it finishes you will see a confirmation with the installed version, and the application restarts by itself. <strong>The unit does not reboot</strong> — if the screen goes black for a long period, something has gone wrong.</p>
+<p>If an update fails, the unit reports the reason on screen and restarts the application anyway, so it is never left stranded. A diagnostic log is kept on the device and survives restarts; quote the version you were installing when contacting support.</p>
 <h3 id="file-management">File Management</h3>
 <ul>
 <li>Regularly remove unused audio or log files to free storage space.</li>
@@ -495,7 +577,75 @@
 <li>Clean solar panels to maintain charging efficiency.</li>
 <li>The internal clock battery should be replaced every 3–6 years if timekeeping becomes unreliable. Contact GaiaForge for service.</li>
 </ul>
-<h2 id="support">13. Support</h2>
+<h2 id="your-data-and-privacy">13. Your Data and Privacy</h2>
+<p>Orpheus is designed to work completely offline. Sending anything to the cloud is your choice, and nothing leaves the device unless you make it happen.</p>
+<h3 id="what-the-device-records">What the device records</h3>
+<p>Orpheus keeps its own logs on the unit, on its internal storage:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Data</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Playback events</td>
+<td>Which file played, when, and for how long</td>
+</tr>
+<tr>
+<td>Battery and solar</td>
+<td>Voltage, charge state and solar input over time</td>
+</tr>
+<tr>
+<td>System events</td>
+<td>Sleep, wake, restarts and errors</td>
+</tr>
+<tr>
+<td>Environmental readings <em>(Pro)</em></td>
+<td>Temperature, humidity and barometric pressure</td>
+</tr>
+<tr>
+<td>Deployment settings</td>
+<td>GPS coordinates, timezone and the nickname you give the unit</td>
+</tr>
+<tr>
+<td>Recordings <em>(Pro)</em></td>
+<td>WAV files on your USB drive, with embedded GUANO metadata</td>
+</tr>
+</tbody>
+</table>
+<p>This is operational and scientific data about a device and a location. It is not information about people.</p>
+<h3 id="what-leaves-the-device">What leaves the device</h3>
+<p>Nothing, unless you ask for it. There are three ways data can move:</p>
+<ul>
+<li><strong>USB export</strong> — you copy logs or recordings to a USB drive yourself.</li>
+<li><strong>The companion app</strong> — when you connect, the app can read recent logs onto your phone so you can see charts and status.</li>
+<li><strong>The cloud portal</strong> — <em>only if you create an account and sign in inside the app.</em> Until you do, no data is uploaded anywhere.</li>
+</ul>
+<p>If you are signed in, the app caches the last 30 days of environmental, battery, playback and system logs when it connects, and uploads them to your portal account once your phone has an internet connection. (The unit’s own hotspot has no internet, so the upload happens later, when you are back on a normal network.)</p>
+<div class="note">
+<p><strong>YOUR RECORDINGS STAY WITH YOU</strong> Audio recordings are <strong>never uploaded to the cloud</strong>. They are written to your USB drive and stay there. Only the small operational logs listed above are ever synced, and only when you are signed in.</p>
+</div>
+<h3 id="working-entirely-offline">Working entirely offline</h3>
+<p>If you never create a portal account, Orpheus still does everything described in this manual. You lose only the online extras — software updates and documentation downloads, which you can also request by email — and your data stays entirely on the device, your USB drives and your phone.</p>
+<h3 id="your-rights-over-your-data">Your rights over your data</h3>
+<p>You own your data. Under the EU General Data Protection Regulation (GDPR), and as a matter of how we operate for every customer regardless of location, you can at any time:</p>
+<ul>
+<li><strong>Retrieve your data</strong> — export it from the portal in a machine-readable format (CSV), or take it straight off the unit by USB.</li>
+<li><strong>Correct it</strong> — request correction of anything inaccurate.</li>
+<li><strong>Delete it</strong> — delete your account and all data associated with it. You can do this yourself from the companion app, or ask us to.</li>
+<li><strong>Restrict or object to processing</strong>, and lodge a complaint with your national data protection authority.</li>
+</ul>
+<p>We do not sell your data, and we do not share it with third parties for their own purposes.</p>
+<div class="note">
+<p><strong>FULL POLICY</strong> This section summarises how Orpheus handles data. The complete and authoritative statement — including the limited circumstances in which data may be processed on our behalf, and how to exercise each right — is the GaiaForge Privacy Policy at <strong>gaiaforge.tech/privacy-policy.html</strong>. For data protection enquiries, write to contact@gaiaforge.tech.</p>
+</div>
+<h2 id="support">14. Support</h2>
 <ul>
 <li><strong>Email</strong> — <a href="mailto:contact@gaiaforge.tech">contact@gaiaforge.tech</a></li>
 <li><strong>Portal</strong> — sign in at <strong>gaiaforge.tech/portal</strong> for your documentation, device registration and downloads.</li>
