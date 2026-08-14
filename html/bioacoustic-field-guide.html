@@ -216,10 +216,9 @@
           <div class="approach-card">
             <div class="approach-icon"><i class="fas fa-microphone"></i></div>
             <h3>Passive Acoustic Monitoring (PAM)</h3>
-            <p>The device listens. It records the acoustic environment continuously or on a schedule, capturing everything from bird song and bat echolocation to insect stridulation and anthropogenic noise. The researcher analyses the recordings later.</p>
+            <p>The device listens. It records the acoustic environment continuously or on a schedule, capturing everything from bird song and insect stridulation to anthropogenic noise. The researcher analyses the recordings later.</p>
             <ul>
               <li>Biodiversity surveys and soundscape ecology</li>
-              <li>Bat activity monitoring</li>
               <li>Long-term environmental baselines</li>
               <li>Detecting presence/absence of species</li>
               <li>Ecoacoustic health indices</li>
@@ -294,7 +293,7 @@
         </ul>
 
         <div class="callout-box">
-          <p>After eighteen months of iterative field testing across Luxembourg nature reserves, through full summer and winter cycles, the Orpheus design was refined around exactly these requirements. <strong>Current draw was reduced from 150mA to approximately 50mA</strong> — a 67% reduction achieved through systematic power management development. The devices now running in the field have operated continuously on solar power through seasons where days are short and sunlight is scarce.</p>
+          <p>Orpheus does not chase the deep-sleep efficiency of a dedicated single-purpose recorder — a device that only records, with no amplifier, speaker, or screen to power, will always draw less than a system built to play audio and optionally record at the same time. That is the honest tradeoff of doing both jobs in one autonomous unit. Between events, the main processor powers down completely and only the low-power controller stays active, bringing deep-sleep draw to roughly <strong>50mA</strong> — which is why solar input, not battery capacity alone, is what makes months-long unattended deployment realistic.</p>
         </div>
       </div>
 
@@ -312,7 +311,7 @@
         <p>Migration studies, breeding bird surveys, and multi-year conservation monitoring require different playback protocols at different times of year. Orpheus supports fully programmable seasonal schedules — define spring migration, breeding season, and winter periods with independent audio libraries and timing rules for each. One device, one deployment, one full annual cycle of data.</p>
 
         <h3>Orpheus Pro: Playback and Passive Recording Combined</h3>
-        <p>For research designs that require both active playback and acoustic response recording — bird ringing stations, playback experiment studies, ecoacoustic monitoring — Orpheus Pro records as well as broadcasts. Audio recording at 16, 24, or 32-bit float with configurable sample rates captures the acoustic environment before, during, and after playback events. Combined with AI-powered species identification and automated research reports, the Pro version eliminates the need to run a separate passive recorder alongside the playback unit.</p>
+        <p>For research designs that require both active playback and acoustic response recording — bird ringing stations, playback experiment studies, ecoacoustic monitoring — Orpheus Pro records as well as broadcasts. Audio recording at 16 or 24-bit with configurable sample rates (44.1, 48, or 96 kHz) captures the acoustic environment before, during, and after playback events. Combined with AI-powered species identification and automated research reports, the Pro version eliminates the need to run a separate passive recorder alongside the playback unit.</p>
 
         <div class="use-case-grid">
           <div class="use-case-card">
