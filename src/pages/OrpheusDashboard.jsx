@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import ProductDocs from '../components/ProductDocs';
 
 const API_BASE = window.location.origin;
 
@@ -32,13 +33,6 @@ function OrpheusDashboard({ user, onLogout }) {
   const [appDragging, setAppDragging] = useState(false);
   const [appDeleteConfirm, setAppDeleteConfirm] = useState(null);
   const appFileInputRef = useRef(null);
-
-  // Documentation state
-  const [docsManifest, setDocsManifest] = useState({});
-  const [loadingDocs, setLoadingDocs] = useState(true);
-  const [docsUploadingSlot, setDocsUploadingSlot] = useState(null);
-  const [docsError, setDocsError] = useState('');
-  const docFileInputRefs = useRef({});
 
   const headers = {
     'Authorization': `Bearer ${user?.token}`,
@@ -81,27 +75,10 @@ function OrpheusDashboard({ user, onLogout }) {
     }
   }, []);
 
-  const fetchDocs = useCallback(async () => {
-    try {
-      const res = await fetch(`${API_BASE}/downloads/orpheus/docs/manifest.json?t=${Date.now()}`);
-      if (res.ok) {
-        const data = await res.json();
-        setDocsManifest(data || {});
-      } else {
-        setDocsManifest({});
-      }
-    } catch {
-      setDocsManifest({});
-    } finally {
-      setLoadingDocs(false);
-    }
-  }, []);
-
   useEffect(() => {
     fetchFirmware();
     fetchApp();
-    fetchDocs();
-  }, [fetchFirmware, fetchApp, fetchDocs]);
+  }, [fetchFirmware, fetchApp]);
 
   // Prevent browser from opening dropped files anywhere on the page
   useEffect(() => {
@@ -320,85 +297,6 @@ function OrpheusDashboard({ user, onLogout }) {
     }
   };
 
-  // --- Documentation admin handler — one slot replaced per upload ---
-  const handleDocSelect = async (slot, e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setDocsError('');
-    setDocsUploadingSlot(slot);
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('slot', slot);
-
-    try {
-      const res = await fetch(`${API_BASE}/api/orpheus/docs/upload`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${user?.token}` },
-        body: formData,
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.detail || 'Upload failed');
-      }
-      fetchDocs();
-    } catch (err) {
-      setDocsError(err.message || 'Upload failed');
-    } finally {
-      setDocsUploadingSlot(null);
-      if (docFileInputRefs.current[slot]) docFileInputRefs.current[slot].value = '';
-    }
-  };
-
-  const docMeta = [
-    {
-      slot: 'manual',
-      title: 'Orpheus User Manual',
-      description: 'Complete guide covering setup, operation, and maintenance.',
-      icon: '📖',
-      accept: '.pdf,.html',
-      defaultHref: '/orpheus-manual.html',
-      defaultType: 'html',
-    },
-    {
-      slot: 'quickstart',
-      title: 'Quick Start Guide',
-      description: 'Get your Orpheus device up and running quickly.',
-      icon: '🚀',
-      accept: '.pdf',
-      defaultHref: '/downloads/Orpheus-Basic-Quick-Start-Guide.pdf',
-      defaultType: 'pdf',
-    },
-    {
-      slot: 'solar_guide',
-      title: 'Solar Panel Alignment Guide',
-      description: 'Optimize solar panel positioning for your deployment site.',
-      icon: '☀️',
-      accept: '.pdf',
-      defaultHref: '/downloads/Orpheus-Solar-Panel-Guide.pdf',
-      defaultType: 'pdf',
-    },
-    {
-      slot: 'recording_guide',
-      title: 'Pro Recording & Field Guide',
-      description: 'Recording modes, mic sensitivity, and placement — getting the best from Orpheus Pro.',
-      icon: '🎙️',
-      accept: '.pdf',
-      defaultHref: '/downloads/Orpheus-Pro-Recording-Field-Guide.pdf',
-      defaultType: 'pdf',
-    },
-  ];
-
-  const docs = docMeta.map((meta) => {
-    const entry = docsManifest[meta.slot];
-    return {
-      ...meta,
-      href: entry ? `/downloads/orpheus/${entry.filename}` : meta.defaultHref,
-      type: entry ? entry.filename.split('.').pop() : meta.defaultType,
-      date: entry?.date || null,
-    };
-  });
-
   const latestApp = appReleases[0];
   const mobileApp = {
     android: latestApp
@@ -457,14 +355,6 @@ function OrpheusDashboard({ user, onLogout }) {
               onClick={() => setActiveTab('admin-app')}
             >
               <span className="nav-icon">📲</span> Upload App
-            </button>
-          )}
-          {user?.is_admin && (
-            <button
-              className={`nav-item nav-btn ${activeTab === 'admin-docs' ? 'active' : ''}`}
-              onClick={() => setActiveTab('admin-docs')}
-            >
-              <span className="nav-icon">🗂️</span> Manage Docs
             </button>
           )}
           <Link to="/orpheus/analytics" className="nav-item">
@@ -846,82 +736,9 @@ function OrpheusDashboard({ user, onLogout }) {
           </div>
         )}
 
-        {/* Admin Manage Docs Tab */}
-        {activeTab === 'admin-docs' && user?.is_admin && (
-          <div className="actions-section">
-            <h2>Manage Documentation</h2>
-            <p style={{ color: '#6b7280', marginBottom: '24px' }}>
-              Replace the file behind each document below. Titles and descriptions stay
-              fixed; only the uploaded file changes on the public Documentation tab.
-            </p>
-
-            {docsError && <div className="error-message">{docsError}</div>}
-
-            <div className="docs-manage-list">
-              {docMeta.map((meta) => {
-                const entry = docsManifest[meta.slot];
-                const isUploading = docsUploadingSlot === meta.slot;
-                return (
-                  <div key={meta.slot} className="docs-manage-row">
-                    <div className="orpheus-download-info">
-                      <div className="orpheus-download-icon">
-                        <span className="action-icon" style={{ fontSize: '28px' }}>{meta.icon}</span>
-                      </div>
-                      <div>
-                        <div className="upload-name">{meta.title}</div>
-                        <div className="upload-meta">
-                          {entry
-                            ? `${entry.original_name} · updated ${entry.date} · ${entry.size}`
-                            : 'Using default file — not yet replaced'}
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <input
-                        ref={(el) => { docFileInputRefs.current[meta.slot] = el; }}
-                        type="file"
-                        accept={meta.accept}
-                        onChange={(e) => handleDocSelect(meta.slot, e)}
-                        style={{ display: 'none' }}
-                      />
-                      <button
-                        className="btn-download"
-                        onClick={() => docFileInputRefs.current[meta.slot]?.click()}
-                        disabled={isUploading}
-                      >
-                        {isUploading ? 'Uploading...' : 'Replace File'}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
         {/* Documentation Tab */}
         {activeTab === 'docs' && (
-          <div className="actions-section">
-            <h2>Documentation</h2>
-            <div className="actions-grid">
-              {docs.map((doc, i) => (
-                <a
-                  key={i}
-                  href={doc.href}
-                  className="action-card"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <div className="action-icon">{doc.icon}</div>
-                  <h3>{doc.title}</h3>
-                  <p>{doc.description}</p>
-                  <span className="upload-meta" style={{ marginTop: '8px', display: 'block' }}>
-                    {doc.type === 'pdf' ? 'PDF Download' : 'View Online'}
-                  </span>
-                </a>
-              ))}
-            </div>
-          </div>
+          <ProductDocs product="orpheus" />
         )}
 
         {/* Mobile App Tab */}

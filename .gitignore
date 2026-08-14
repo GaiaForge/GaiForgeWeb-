@@ -21,3 +21,8 @@ Orpheus_unified-main/
 
 # Server-managed files (written by firmware API, not by builds)
 html/downloads/orpheus/manifest.json
+# Per-product document library — manifests and uploaded docs are written by the
+# docs API on the VPS, not committed. Keep the .gitkeep dirs, ignore the rest.
+html/downloads/*/docs/manifest.json
+html/downloads/*/docs/*.pdf
+html/downloads/*/docs/*.html
