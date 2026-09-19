@@ -1195,29 +1195,53 @@ function OrpheusAnalytics({ user, onLogout }) {
                         <p style={{ color: '#6b7280', fontSize: 13, marginBottom: 12 }}>
                           Each dot is a species detection. Higher = more confident. Color-coded by species.
                         </p>
-                        <ResponsiveContainer width="100%" height={300}>
-                          <ScatterChart margin={{ bottom: 20 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                            <XAxis dataKey="time" name="Time" tick={{ fontSize: 11 }} />
-                            <YAxis dataKey="conf" name="Confidence" domain={[0, 1]} tick={{ fontSize: 11 }}
-                              label={{ value: 'Confidence', position: 'insideTopLeft', fontSize: 11 }}
-                              tickFormatter={v => `${(v * 100).toFixed(0)}%`} />
-                            <Tooltip formatter={(v, name) => name === 'Confidence' ? `${(v * 100).toFixed(0)}%` : v}
-                              labelFormatter={l => l} />
-                            <Legend />
-                            {/* Group detections by species for coloring */}
-                            {[...new Set(detections.map(d => d.species_common))].slice(0, 10).map((species, i) => {
-                              const color = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6',
-                                '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#6366f1'][i % 10];
-                              const data = detections.filter(d => d.species_common === species).map(d => ({
-                                time: formatTime(d.detected_at),
-                                conf: d.confidence,
-                                species: d.species_common,
-                              }));
-                              return <Scatter key={species} name={species} data={data} fill={color} />;
-                            })}
-                          </ScatterChart>
-                        </ResponsiveContainer>
+                        {(() => {
+                          // Place each detection at the moment it happened: the
+                          // recording's start plus its offset into the file.
+                          // (detected_at alone stacks every detection from one
+                          // file on the same x.)
+                          const at = d => new Date(d.detected_at).getTime() + (d.start_seconds || 0) * 1000;
+                          const times = detections.map(at);
+                          const tMin = Math.min(...times), tMax = Math.max(...times);
+                          const span = Math.max(tMax - tMin, 1000);
+                          const pad = Math.max(span * 0.05, 2000);
+                          const sameDay = span < 36 * 3600 * 1000;
+                          const fmtTick = t => {
+                            const d = new Date(t);
+                            return sameDay
+                              ? d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                              : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) + ' ' +
+                                d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+                          };
+                          const fmtFull = t => new Date(t).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                          const species = [...new Set(detections.map(d => d.species_common))].slice(0, 10);
+                          const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6',
+                            '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#6366f1'];
+                          return (
+                            <ResponsiveContainer width="100%" height={320}>
+                              <ScatterChart margin={{ top: 12, right: 24, bottom: 8, left: 8 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                                <XAxis type="number" dataKey="t" name="Time"
+                                  domain={[tMin - pad, tMax + pad]} tickCount={7}
+                                  tickFormatter={fmtTick} tick={{ fontSize: 11 }}
+                                  label={{ value: sameDay ? `Time of day, ${new Date(tMin).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}` : 'Time', position: 'insideBottom', offset: -4, fontSize: 11, fill: '#6b7280' }} />
+                                <YAxis type="number" dataKey="conf" name="Confidence" domain={[0, 1]}
+                                  ticks={[0, 0.25, 0.5, 0.75, 1]} tick={{ fontSize: 11 }} width={44}
+                                  tickFormatter={v => `${(v * 100).toFixed(0)}%`} />
+                                <Tooltip cursor={{ strokeDasharray: '3 3' }}
+                                  formatter={(v, name) => name === 'Confidence' ? `${(v * 100).toFixed(0)}%` : (name === 'Time' ? fmtFull(v) : v)}
+                                  labelFormatter={() => ''} />
+                                <Legend verticalAlign="bottom" wrapperStyle={{ paddingTop: 12 }} />
+                                {species.map((sp, i) => (
+                                  <Scatter key={sp} name={sp} fill={colors[i % 10]}
+                                    data={detections.filter(d => d.species_common === sp).map(d => ({
+                                      t: at(d), conf: d.confidence, species: sp,
+                                    }))} />
+                                ))}
+                              </ScatterChart>
+                            </ResponsiveContainer>
+                          );
+                        })()}
                       </div>
                     )}
 
