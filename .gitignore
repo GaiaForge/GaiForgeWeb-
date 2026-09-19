@@ -26,3 +26,7 @@ html/downloads/orpheus/manifest.json
 html/downloads/*/docs/manifest.json
 html/downloads/*/docs/*.pdf
 html/downloads/*/docs/*.html
+
+# local-only dev helpers
+vite.config.local.mjs
+public/__seed.html

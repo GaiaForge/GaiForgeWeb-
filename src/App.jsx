@@ -17,6 +17,7 @@ const Journal = lazy(() => import('./pages/Journal'));
 const OrpheusDashboard = lazy(() => import('./pages/OrpheusDashboard'));
 const OrpheusAnalytics = lazy(() => import('./pages/OrpheusAnalytics'));
 const OrpheusJournal = lazy(() => import('./pages/OrpheusJournal'));
+const OrpheusMap = lazy(() => import('./pages/OrpheusMap'));
 const SprigRigDashboard = lazy(() => import('./pages/SprigRigDashboard'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
@@ -24,9 +25,25 @@ const ForceChangePassword = lazy(() => import('./pages/ForceChangePassword'));
 const ProductDocsPage = lazy(() => import('./pages/ProductDocsPage'));
 import './App.css';
 
+// Read the saved session synchronously so the first render already knows
+// whether the visitor is signed in. Without this, every protected route
+// redirected to /login on a cold load - even with a valid session - and
+// /login then bounced to the product dashboard, so no bookmark or deep link
+// to an inner page (analytics, map, journal) ever landed. The effect below
+// still validates the token against the server and signs out if it's stale.
+function readSavedUser() {
+  try {
+    const saved = localStorage.getItem('user');
+    const parsed = saved ? JSON.parse(saved) : null;
+    return parsed && parsed.token ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(readSavedUser);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => !!readSavedUser());
 
   const handleLogin = (userData) => {
     setIsAuthenticated(true);
@@ -74,7 +91,10 @@ function App() {
                 localStorage.setItem('user', JSON.stringify(updated));
               });
             } else {
+              // Token rejected: drop the optimistic session from above.
               localStorage.removeItem('user');
+              setUser(null);
+              setIsAuthenticated(false);
             }
           }).catch(() => {
             // Network error — allow offline access with cached data
@@ -117,6 +137,7 @@ function App() {
           <Route path="/orpheus" element={protect(<OrpheusDashboard user={user} onLogout={handleLogout} />)} />
           <Route path="/orpheus/analytics" element={protect(<OrpheusAnalytics user={user} onLogout={handleLogout} />)} />
           <Route path="/orpheus/journal" element={protect(<OrpheusJournal user={user} onLogout={handleLogout} />)} />
+          <Route path="/orpheus/map" element={protect(<OrpheusMap user={user} onLogout={handleLogout} />)} />
           {/* SprigRig routes */}
           <Route path="/sprigrig" element={protect(<SprigRigDashboard user={user} onLogout={handleLogout} />)} />
           <Route path="/sprigrig/docs" element={protect(<ProductDocsPage user={user} onLogout={handleLogout} product="sprigrig" backTo="/sprigrig" />)} />

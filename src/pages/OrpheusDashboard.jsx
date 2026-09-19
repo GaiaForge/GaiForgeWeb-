@@ -357,6 +357,9 @@ function OrpheusDashboard({ user, onLogout }) {
               <span className="nav-icon">📲</span> Upload App
             </button>
           )}
+          <Link to="/orpheus/map" className="nav-item">
+            <span className="nav-icon">🗺️</span> Map
+          </Link>
           <Link to="/orpheus/analytics" className="nav-item">
             <span className="nav-icon">📊</span> Analytics
           </Link>

@@ -274,6 +274,9 @@ function OrpheusAnalytics({ user, onLogout }) {
           <Link to="/orpheus" className="nav-item back-link">
             <span className="nav-icon">&larr;</span> Orpheus Portal
           </Link>
+          <Link to="/orpheus/map" className="nav-item">
+            <span className="nav-icon">🗺️</span> Map
+          </Link>
           <button className={`nav-item nav-btn ${activeTab === 'overview' ? 'active' : ''}`}
             onClick={() => setActiveTab('overview')}>
             <span className="nav-icon">📊</span> Overview

@@ -121,6 +121,9 @@ function OrpheusJournal({ user, onLogout }) {
           <Link to="/orpheus" className="nav-item back-link">
             <span className="nav-icon">&larr;</span> Orpheus Portal
           </Link>
+          <Link to="/orpheus/map" className="nav-item">
+            <span className="nav-icon">🗺️</span> Map
+          </Link>
           <Link to="/orpheus/analytics" className="nav-item">
             <span className="nav-icon">📊</span> Analytics
           </Link>
