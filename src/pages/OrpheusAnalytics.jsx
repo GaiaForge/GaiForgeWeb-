@@ -183,15 +183,16 @@ function OrpheusAnalytics({ user, onLogout }) {
     }
   }, []);
 
-  // --- Recording upload + BirdNET analysis (Recordings tab) ---
+  // --- Recording upload + species analysis (Recordings tab) ---
   const [uploadFile, setUploadFile] = useState(null);
   const [uploadWhen, setUploadWhen] = useState('');
   const [uploadBusy, setUploadBusy] = useState(false);
   const [uploadMsg, setUploadMsg] = useState(null);
   const [analysing, setAnalysing] = useState({});
-  // BirdNET's geographic filter: on for field recordings (keeps a distorted
-  // call from being labelled as a bird from another continent); off for
-  // playback tests with non-local species.
+  // Location filter: the server checks each detected species against GBIF
+  // sightings near the unit in this season. On for field recordings (keeps a
+  // distorted call from being labelled as a bird from another continent);
+  // off for playback tests with non-local species.
   const [useLocation, setUseLocation] = useState(true);
 
   // Orpheus names its files <unit>_YYYYMMDD_HHMMSS.wav — read the timestamp
@@ -214,10 +215,15 @@ function OrpheusAnalytics({ user, onLogout }) {
       const res = await fetch(`${API_BASE}/api/orpheus/recordings/${recordingId}/analyze?use_location=${useLocation}`, { method: 'POST', headers });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.detail || `Analysis failed (${res.status})`);
-      const scope = body.use_location === false ? ' (all species, no location filter)' : '';
+      const engine = (body.engine || '').startsWith('perch') ? 'Perch' : (body.engine || '').startsWith('birdnet') ? 'BirdNET' : '';
+      const filt = body.location_filter;
+      const scope = filt === 'off' ? ' All species, no location filter.'
+        : filt === 'unavailable' ? ' Location check unavailable (GBIF could not be reached), so every species was kept.'
+        : body.filtered_out > 0 ? ` ${body.filtered_out} detection${body.filtered_out === 1 ? '' : 's'} dropped: no sightings near this unit at this time of year.`
+        : filt === 'partial' ? ' Location check was incomplete; unverified species were kept.' : '';
       setUploadMsg({ type: 'ok', text: body.detections > 0
-        ? `Analysis done: ${body.species} species, ${body.detections} detection${body.detections === 1 ? '' : 's'}${scope}. See the Species tab.`
-        : `Analysis done: nothing identified above 25% confidence${scope}.` });
+        ? `Analysis done${engine ? ` with ${engine}` : ''}: ${body.species} species, ${body.detections} detection${body.detections === 1 ? '' : 's'}.${scope} See the Species tab.`
+        : `Analysis done${engine ? ` with ${engine}` : ''}: nothing identified.${scope}` });
       await fetchRecordings(selectedDevice, dateRange);
       await fetchSpecies(selectedDevice, dateRange);
     } catch (err) {
@@ -280,7 +286,7 @@ function OrpheusAnalytics({ user, onLogout }) {
     <div className="analytics-card full-width" style={{ marginBottom: 16 }}>
       <h3>Upload a recording</h3>
       <p style={{ fontSize: 13, color: '#6b7280', margin: '4px 0 12px' }}>
-        WAV files from the unit's USB stick. The unit writes the recording time and its location into each file, and BirdNET uses both to narrow the species list. The time field is only needed for files that lack that metadata.
+        WAV files from the unit's USB stick. The unit writes the recording time and its location into each file; species are identified with Perch, and the location is used to check each species against real sightings nearby. The time field is only needed for files that lack that metadata.
       </p>
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
         <input id="rec-upload-file" type="file" accept=".wav,audio/wav" onChange={onPickFile} disabled={uploadBusy} />
@@ -295,8 +301,8 @@ function OrpheusAnalytics({ user, onLogout }) {
       </div>
       <label htmlFor="rec-use-location" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 13, color: '#374151' }}>
         <input id="rec-use-location" type="checkbox" checked={useLocation} onChange={e => setUseLocation(e.target.checked)} />
-        Only species expected at this unit's location and date
-        <span style={{ color: '#9ca3af' }}>— untick for playback tests with non-local birds</span>
+        Only species with sightings near this unit at this time of year
+        <span style={{ color: '#9ca3af' }}>— checked against GBIF; untick for playback tests with non-local birds</span>
       </label>
       {uploadMsg && (
         <div style={{ marginTop: 10, fontSize: 13, color: uploadMsg.type === 'ok' ? '#166534' : '#991b1b' }}>{uploadMsg.text}</div>
@@ -1069,7 +1075,7 @@ function OrpheusAnalytics({ user, onLogout }) {
                                   padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600,
                                   background: r.analyzed ? '#dcfce7' : '#fef3c7',
                                   color: r.analyzed ? '#166534' : '#92400e',
-                                }}>{r.analyzed ? 'Analyzed' : 'Pending'}</span>
+                                }} title={r.analysis_engine ? `Analysed with ${r.analysis_engine}` : undefined}>{r.analyzed ? 'Analyzed' : 'Pending'}</span>
                               </td>
                               <td style={{ padding: '8px 12px', fontSize: 13, fontWeight: r.detection_count > 0 ? 700 : 400 }}>
                                 {r.detection_count > 0 ? `${r.detection_count} detection${r.detection_count === 1 ? '' : 's'}` : '—'}
@@ -1109,7 +1115,7 @@ function OrpheusAnalytics({ user, onLogout }) {
                       <div>
                         <strong>How it works:</strong> Record audio on your Orpheus Pro using threshold detection mode.
                         Sync recordings to the cloud via the mobile app.
-                        BirdNET identifies species and results appear here automatically.
+                        Perch, Google's open bioacoustics model, identifies species and results appear here automatically.
                       </div>
                     </div>
                   </div>
@@ -1262,7 +1268,7 @@ function OrpheusAnalytics({ user, onLogout }) {
                         <div className="analytics-card full-width" style={{ marginBottom: 24 }}>
                           <h3>Confidence Distribution</h3>
                           <p style={{ color: '#6b7280', fontSize: 13, marginBottom: 12 }}>
-                            How confident BirdNET is across all detections. Higher is better.
+                            How confident the model is across all detections. Higher is better.
                           </p>
                           <ResponsiveContainer width="100%" height={200}>
                             <BarChart data={buckets}>
@@ -1378,7 +1384,7 @@ function OrpheusAnalytics({ user, onLogout }) {
                       <div className="stat-icon">🐦</div>
                       <div className="stat-content">
                         <div className="stat-value" style={{ fontSize: 16 }}>Species Detection</div>
-                        <div className="stat-label">BirdNET-powered automatic species identification</div>
+                        <div className="stat-label">Automatic species identification with Perch 2.0</div>
                       </div>
                     </div>
                     <div className="stat-card">
