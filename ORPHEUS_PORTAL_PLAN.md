@@ -64,11 +64,15 @@ at startup and still validated against `/api/auth/me`.
 
 ### 2. Recording metadata sync
 
-BirdNET itself is installed and verified on the VPS as of 2026-09-19 (model
-load ~9 s, ~5× real time on CPU; see the API repo's `pyproject.toml`
-`birdnet` extra). Still missing for real use: an upload page, a background
-analysis job (analysis currently runs inside the web request), a storage
-policy for the audio, and the non-commercial model-licence question.
+Species engine is **Perch 2.0** (Google DeepMind, Apache 2.0) as of
+2026-09-19, chosen over BirdNET after a side-by-side on the same test file
+(23 species vs 15, similar CPU speed, and a licence that allows commercial
+use; BirdNET's model is CC BY-NC-SA). The "expected here" filter is built on
+GBIF occurrence counts near the unit in season, licence-free. Upload page and
+delete are live on the Recordings tab. Still missing for real use: a
+background analysis job (analysis runs inside the web request, fine up to
+~10-minute files) and a storage policy for the audio. Details in the API
+repo: `app/core/perch.py`, `app/core/gbif.py`.
 
 A fifth dataset in the app's `sync_service.dart`: start time, duration,
 format, trigger type (manual / scheduled / threshold), storage label. The unit
