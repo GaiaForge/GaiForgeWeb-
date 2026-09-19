@@ -183,6 +183,94 @@ function OrpheusAnalytics({ user, onLogout }) {
     }
   }, []);
 
+  // --- Recording upload + BirdNET analysis (Recordings tab) ---
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploadWhen, setUploadWhen] = useState('');
+  const [uploadBusy, setUploadBusy] = useState(false);
+  const [uploadMsg, setUploadMsg] = useState(null);
+  const [analysing, setAnalysing] = useState({});
+
+  // Orpheus names its files <unit>_YYYYMMDD_HHMMSS.wav — read the timestamp
+  // out of the name so the user rarely has to type it.
+  const timeFromOrpheusName = (name) => {
+    const m = /_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})\.wav$/i.exec(name || '');
+    return m ? `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}` : '';
+  };
+
+  const onPickFile = (e) => {
+    const f = e.target.files?.[0] || null;
+    setUploadFile(f);
+    setUploadMsg(null);
+    if (f) setUploadWhen(timeFromOrpheusName(f.name) || uploadWhen);
+  };
+
+  const analyseRecording = async (recordingId) => {
+    setAnalysing(a => ({ ...a, [recordingId]: true }));
+    try {
+      const res = await fetch(`${API_BASE}/api/orpheus/recordings/${recordingId}/analyze`, { method: 'POST', headers });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.detail || `Analysis failed (${res.status})`);
+      setUploadMsg({ type: 'ok', text: body.detections > 0
+        ? `Analysis done: ${body.detections} detection${body.detections === 1 ? '' : 's'}. See the Species tab.`
+        : 'Analysis done: nothing identified above 25% confidence.' });
+      await fetchRecordings(selectedDevice, dateRange);
+      await fetchSpecies(selectedDevice, dateRange);
+    } catch (err) {
+      setUploadMsg({ type: 'err', text: err.message });
+    } finally {
+      setAnalysing(a => ({ ...a, [recordingId]: false }));
+    }
+  };
+
+  const uploadRecording = async () => {
+    if (!uploadFile || !selectedDevice) return;
+    if (!uploadWhen) { setUploadMsg({ type: 'err', text: 'Set the date and time the recording was made.' }); return; }
+    setUploadBusy(true); setUploadMsg(null);
+    try {
+      const form = new FormData();
+      form.append('file', uploadFile);
+      form.append('device_id', String(selectedDevice));
+      form.append('recorded_at', uploadWhen);
+      // No Content-Type here: the browser sets the multipart boundary itself.
+      const res = await fetch(`${API_BASE}/api/orpheus/recordings/upload`, {
+        method: 'POST', headers: { 'Authorization': `Bearer ${user?.token}` }, body: form,
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.detail || (res.status === 413 ? 'File too large for the server.' : `Upload failed (${res.status})`));
+      setUploadFile(null);
+      await fetchRecordings(selectedDevice, dateRange);
+      setUploadMsg({ type: 'ok', text: 'Uploaded. Analysing…' });
+      await analyseRecording(body.recording_id);
+    } catch (err) {
+      setUploadMsg({ type: 'err', text: err.message });
+    } finally {
+      setUploadBusy(false);
+    }
+  };
+
+  const uploadPanel = (
+    <div className="analytics-card full-width" style={{ marginBottom: 16 }}>
+      <h3>Upload a recording</h3>
+      <p style={{ fontSize: 13, color: '#6b7280', margin: '4px 0 12px' }}>
+        WAV files from the unit's USB stick. The unit's location and the recording date narrow BirdNET's species list, so set the time it was actually recorded.
+      </p>
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+        <input id="rec-upload-file" type="file" accept=".wav,audio/wav" onChange={onPickFile} disabled={uploadBusy} />
+        <label htmlFor="rec-upload-when" style={{ fontSize: 13, color: '#374151' }}>Recorded at</label>
+        <input id="rec-upload-when" type="datetime-local" step="1" value={uploadWhen}
+          onChange={e => setUploadWhen(e.target.value)} disabled={uploadBusy}
+          style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13 }} />
+        <button className="btn-download" style={{ padding: '6px 16px', fontSize: 13 }}
+          onClick={uploadRecording} disabled={!uploadFile || uploadBusy}>
+          {uploadBusy ? 'Working…' : 'Upload & analyse'}
+        </button>
+      </div>
+      {uploadMsg && (
+        <div style={{ marginTop: 10, fontSize: 13, color: uploadMsg.type === 'ok' ? '#166534' : '#991b1b' }}>{uploadMsg.text}</div>
+      )}
+    </div>
+  );
+
   useEffect(() => { fetchDevices(); }, [fetchDevices]);
 
   useEffect(() => {
@@ -909,11 +997,12 @@ function OrpheusAnalytics({ user, onLogout }) {
             {/* ==================== RECORDINGS TAB (Pro) ==================== */}
             {activeTab === 'recordings' && isPro && (
               <div>
+                {uploadPanel}
                 {recordings.length === 0 ? (
                   <div className="empty-state">
                     <div className="empty-icon">🎙️</div>
                     <h2>No recordings yet</h2>
-                    <p>Audio recordings from your Orpheus Pro device will appear here once synced. Use Record Mode on the device to capture field audio.</p>
+                    <p>Record on the unit, bring the USB stick back, and upload the WAV files above. Each one is analysed for bird species.</p>
                   </div>
                 ) : (
                   <div className="analytics-card full-width">
@@ -928,6 +1017,7 @@ function OrpheusAnalytics({ user, onLogout }) {
                             <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Size</th>
                             <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Analysis</th>
                             <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}>Detections</th>
+                            <th style={{ padding: '8px 12px', fontSize: 12, color: '#6b7280' }}></th>
                           </tr>
                         </thead>
                         <tbody>
@@ -951,6 +1041,12 @@ function OrpheusAnalytics({ user, onLogout }) {
                               <td style={{ padding: '8px 12px', fontSize: 13, fontWeight: r.detection_count > 0 ? 700 : 400 }}>
                                 {r.detection_count > 0 ? `${r.detection_count} species` : '—'}
                               </td>
+                              <td style={{ padding: '8px 12px', fontSize: 13 }}>
+                                <button className="btn-download" style={{ padding: '4px 12px', fontSize: 12 }}
+                                  onClick={() => analyseRecording(r.id)} disabled={!!analysing[r.id]}>
+                                  {analysing[r.id] ? 'Analysing…' : (r.analyzed ? 'Re-analyse' : 'Analyse')}
+                                </button>
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -968,7 +1064,7 @@ function OrpheusAnalytics({ user, onLogout }) {
                   <div className="empty-state">
                     <div className="empty-icon">🐦</div>
                     <h2>No species detected yet</h2>
-                    <p>BirdNET analyzes your field recordings automatically. Upload recordings from your Orpheus Pro device to see detected species here.</p>
+                    <p>Upload a recording on the Recordings tab and analyse it. Identified species appear here with confidence and time of day.</p>
                     <div className="orpheus-info-banner" style={{ marginTop: 24, maxWidth: 500 }}>
                       <div className="info-icon">🔬</div>
                       <div>

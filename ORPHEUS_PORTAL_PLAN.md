@@ -64,6 +64,12 @@ at startup and still validated against `/api/auth/me`.
 
 ### 2. Recording metadata sync
 
+BirdNET itself is installed and verified on the VPS as of 2026-09-19 (model
+load ~9 s, ~5× real time on CPU; see the API repo's `pyproject.toml`
+`birdnet` extra). Still missing for real use: an upload page, a background
+analysis job (analysis currently runs inside the web request), a storage
+policy for the audio, and the non-commercial model-licence question.
+
 A fifth dataset in the app's `sync_service.dart`: start time, duration,
 format, trigger type (manual / scheduled / threshold), storage label. The unit
 already keeps this list. Fills the recordings tab without moving audio. Audio
