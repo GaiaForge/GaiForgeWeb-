@@ -227,6 +227,24 @@ function OrpheusAnalytics({ user, onLogout }) {
     }
   };
 
+  const deleteRecording = async (r) => {
+    const label = `${r.filename}${r.detection_count ? ` and its ${r.detection_count} detection${r.detection_count === 1 ? '' : 's'}` : ''}`;
+    if (!window.confirm(`Delete ${label}? The file is removed from the portal. This cannot be undone.`)) return;
+    setAnalysing(a => ({ ...a, [r.id]: true }));
+    try {
+      const res = await fetch(`${API_BASE}/api/orpheus/recordings/${r.id}`, { method: 'DELETE', headers });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.detail || `Delete failed (${res.status})`);
+      setUploadMsg({ type: 'ok', text: `Deleted ${r.filename}.` });
+      await fetchRecordings(selectedDevice, dateRange);
+      await fetchSpecies(selectedDevice, dateRange);
+    } catch (err) {
+      setUploadMsg({ type: 'err', text: err.message });
+    } finally {
+      setAnalysing(a => ({ ...a, [r.id]: false }));
+    }
+  };
+
   const uploadRecording = async () => {
     if (!uploadFile || !selectedDevice) return;
     setUploadBusy(true); setUploadMsg(null);
@@ -1057,10 +1075,16 @@ function OrpheusAnalytics({ user, onLogout }) {
                                 {r.detection_count > 0 ? `${r.detection_count} detection${r.detection_count === 1 ? '' : 's'}` : '—'}
                               </td>
                               <td style={{ padding: '8px 12px', fontSize: 13 }}>
-                                <button className="btn-download" style={{ padding: '4px 12px', fontSize: 12 }}
-                                  onClick={() => analyseRecording(r.id)} disabled={!!analysing[r.id]}>
-                                  {analysing[r.id] ? 'Analysing…' : (r.analyzed ? 'Re-analyse' : 'Analyse')}
-                                </button>
+                                <div style={{ display: 'flex', gap: 6 }}>
+                                  <button className="btn-download" style={{ padding: '4px 12px', fontSize: 12 }}
+                                    onClick={() => analyseRecording(r.id)} disabled={!!analysing[r.id]}>
+                                    {analysing[r.id] ? 'Working…' : (r.analyzed ? 'Re-analyse' : 'Analyse')}
+                                  </button>
+                                  <button style={{ padding: '4px 12px', fontSize: 12, borderRadius: 6, border: '1px solid #fca5a5', background: '#fff', color: '#b91c1c', cursor: 'pointer' }}
+                                    onClick={() => deleteRecording(r)} disabled={!!analysing[r.id]}>
+                                    Delete
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           ))}
