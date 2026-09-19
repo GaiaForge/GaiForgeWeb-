@@ -189,6 +189,10 @@ function OrpheusAnalytics({ user, onLogout }) {
   const [uploadBusy, setUploadBusy] = useState(false);
   const [uploadMsg, setUploadMsg] = useState(null);
   const [analysing, setAnalysing] = useState({});
+  // BirdNET's geographic filter: on for field recordings (keeps a distorted
+  // call from being labelled as a bird from another continent); off for
+  // playback tests with non-local species.
+  const [useLocation, setUseLocation] = useState(true);
 
   // Orpheus names its files <unit>_YYYYMMDD_HHMMSS.wav — read the timestamp
   // out of the name so the user rarely has to type it.
@@ -207,12 +211,13 @@ function OrpheusAnalytics({ user, onLogout }) {
   const analyseRecording = async (recordingId) => {
     setAnalysing(a => ({ ...a, [recordingId]: true }));
     try {
-      const res = await fetch(`${API_BASE}/api/orpheus/recordings/${recordingId}/analyze`, { method: 'POST', headers });
+      const res = await fetch(`${API_BASE}/api/orpheus/recordings/${recordingId}/analyze?use_location=${useLocation}`, { method: 'POST', headers });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.detail || `Analysis failed (${res.status})`);
+      const scope = body.use_location === false ? ' (all species, no location filter)' : '';
       setUploadMsg({ type: 'ok', text: body.detections > 0
-        ? `Analysis done: ${body.detections} detection${body.detections === 1 ? '' : 's'}. See the Species tab.`
-        : 'Analysis done: nothing identified above 25% confidence.' });
+        ? `Analysis done: ${body.species} species, ${body.detections} detection${body.detections === 1 ? '' : 's'}${scope}. See the Species tab.`
+        : `Analysis done: nothing identified above 25% confidence${scope}.` });
       await fetchRecordings(selectedDevice, dateRange);
       await fetchSpecies(selectedDevice, dateRange);
     } catch (err) {
@@ -237,6 +242,7 @@ function OrpheusAnalytics({ user, onLogout }) {
         method: 'POST', headers: { 'Authorization': `Bearer ${user?.token}` }, body: form,
       });
       const body = await res.json().catch(() => ({}));
+      if (res.status === 409) throw new Error(body.detail || 'This recording is already uploaded. Use Re-analyse on it instead.');
       if (!res.ok) throw new Error(body.detail || (res.status === 413 ? 'File too large for the server.' : `Upload failed (${res.status})`));
       setUploadFile(null);
       await fetchRecordings(selectedDevice, dateRange);
@@ -269,6 +275,11 @@ function OrpheusAnalytics({ user, onLogout }) {
           {uploadBusy ? 'Working…' : 'Upload & analyse'}
         </button>
       </div>
+      <label htmlFor="rec-use-location" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 13, color: '#374151' }}>
+        <input id="rec-use-location" type="checkbox" checked={useLocation} onChange={e => setUseLocation(e.target.checked)} />
+        Only species expected at this unit's location and date
+        <span style={{ color: '#9ca3af' }}>— untick for playback tests with non-local birds</span>
+      </label>
       {uploadMsg && (
         <div style={{ marginTop: 10, fontSize: 13, color: uploadMsg.type === 'ok' ? '#166534' : '#991b1b' }}>{uploadMsg.text}</div>
       )}
@@ -1043,7 +1054,7 @@ function OrpheusAnalytics({ user, onLogout }) {
                                 }}>{r.analyzed ? 'Analyzed' : 'Pending'}</span>
                               </td>
                               <td style={{ padding: '8px 12px', fontSize: 13, fontWeight: r.detection_count > 0 ? 700 : 400 }}>
-                                {r.detection_count > 0 ? `${r.detection_count} species` : '—'}
+                                {r.detection_count > 0 ? `${r.detection_count} detection${r.detection_count === 1 ? '' : 's'}` : '—'}
                               </td>
                               <td style={{ padding: '8px 12px', fontSize: 13 }}>
                                 <button className="btn-download" style={{ padding: '4px 12px', fontSize: 12 }}
