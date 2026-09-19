@@ -10,8 +10,9 @@
 
 .map-canvas {
   width: 100%;
-  height: min(70vh, 640px);
-  min-height: 360px;
+  /* Fill the window below the header and legend; the legend, privacy line
+     and page padding take roughly 290px. Floors keep it usable on a phone. */
+  height: clamp(420px, calc(100vh - 290px), 1400px);
 }
 
 /* Freshness pins: a coloured dot with a white ring so it reads on any tile */
@@ -150,6 +151,6 @@
 
 @media (max-width: 640px) {
   .map-canvas {
-    height: 60vh;
+    height: clamp(360px, calc(100vh - 260px), 900px);
   }
 }
