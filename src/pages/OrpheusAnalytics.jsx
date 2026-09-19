@@ -224,13 +224,14 @@ function OrpheusAnalytics({ user, onLogout }) {
 
   const uploadRecording = async () => {
     if (!uploadFile || !selectedDevice) return;
-    if (!uploadWhen) { setUploadMsg({ type: 'err', text: 'Set the date and time the recording was made.' }); return; }
     setUploadBusy(true); setUploadMsg(null);
     try {
       const form = new FormData();
       form.append('file', uploadFile);
       form.append('device_id', String(selectedDevice));
-      form.append('recorded_at', uploadWhen);
+      // The unit embeds the real start time in the file (GUANO chunk); the
+      // server prefers that. Only send a time if the user set one.
+      if (uploadWhen) form.append('recorded_at', uploadWhen);
       // No Content-Type here: the browser sets the multipart boundary itself.
       const res = await fetch(`${API_BASE}/api/orpheus/recordings/upload`, {
         method: 'POST', headers: { 'Authorization': `Bearer ${user?.token}` }, body: form,
@@ -239,7 +240,10 @@ function OrpheusAnalytics({ user, onLogout }) {
       if (!res.ok) throw new Error(body.detail || (res.status === 413 ? 'File too large for the server.' : `Upload failed (${res.status})`));
       setUploadFile(null);
       await fetchRecordings(selectedDevice, dateRange);
-      setUploadMsg({ type: 'ok', text: 'Uploaded. Analysing…' });
+      const when = body.recorded_at ? new Date(body.recorded_at).toLocaleString('en-GB') : '';
+      const src = body.time_source === 'guano' ? 'time and location read from the file'
+        : body.time_source === 'filename' ? 'time taken from the filename' : 'time as entered';
+      setUploadMsg({ type: 'ok', text: `Uploaded (${src}${when ? `: ${when}` : ''}). Analysing…` });
       await analyseRecording(body.recording_id);
     } catch (err) {
       setUploadMsg({ type: 'err', text: err.message });
@@ -252,11 +256,11 @@ function OrpheusAnalytics({ user, onLogout }) {
     <div className="analytics-card full-width" style={{ marginBottom: 16 }}>
       <h3>Upload a recording</h3>
       <p style={{ fontSize: 13, color: '#6b7280', margin: '4px 0 12px' }}>
-        WAV files from the unit's USB stick. The unit's location and the recording date narrow BirdNET's species list, so set the time it was actually recorded.
+        WAV files from the unit's USB stick. The unit writes the recording time and its location into each file, and BirdNET uses both to narrow the species list. The time field is only needed for files that lack that metadata.
       </p>
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
         <input id="rec-upload-file" type="file" accept=".wav,audio/wav" onChange={onPickFile} disabled={uploadBusy} />
-        <label htmlFor="rec-upload-when" style={{ fontSize: 13, color: '#374151' }}>Recorded at</label>
+        <label htmlFor="rec-upload-when" style={{ fontSize: 13, color: '#374151' }}>Recorded at <span style={{ color: '#9ca3af' }}>(optional)</span></label>
         <input id="rec-upload-when" type="datetime-local" step="1" value={uploadWhen}
           onChange={e => setUploadWhen(e.target.value)} disabled={uploadBusy}
           style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 13 }} />
