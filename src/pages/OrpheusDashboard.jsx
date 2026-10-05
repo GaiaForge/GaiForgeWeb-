@@ -306,9 +306,10 @@ function OrpheusDashboard({ user, onLogout }) {
           size: latestApp.size,
         }
       : {
-          version: '1.8.8',
-          href: '/downloads/Orpheus-v1.8.8.apk',
-          size: '57 MB',
+          // Fallback if the manifest cannot be read: the portal's APK slot.
+          version: '1.9.0',
+          href: '/downloads/orpheus/app/orpheus.apk',
+          size: '58 MB',
         },
     ios: { href: 'https://apps.apple.com/de/app/gaiaforge-orpheus-remote/id6791587861?l=en-GB', name: 'GaiaForge Orpheus Remote' },
   };
