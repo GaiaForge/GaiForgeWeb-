@@ -310,7 +310,7 @@ function OrpheusDashboard({ user, onLogout }) {
           href: '/downloads/Orpheus-v1.8.8.apk',
           size: '57 MB',
         },
-    ios: null,
+    ios: { href: 'https://apps.apple.com/de/app/gaiaforge-orpheus-remote/id6791587861?l=en-GB', name: 'GaiaForge Orpheus Remote' },
   };
 
   return (
@@ -764,14 +764,19 @@ function OrpheusDashboard({ user, onLogout }) {
                   Download APK
                 </span>
               </a>
-              <div className="action-card" style={{ opacity: 0.5, cursor: 'default' }}>
+              <a
+                href={mobileApp.ios.href}
+                className="action-card"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <div className="action-icon">🍎</div>
                 <h3>iOS App</h3>
-                <p>Coming soon to the App Store.</p>
-                <span className="selector-badge-soon" style={{ marginTop: '12px', display: 'inline-block' }}>
-                  Coming Soon
+                <p>{mobileApp.ios.name} on the App Store</p>
+                <span className="selector-badge-open" style={{ marginTop: '12px', display: 'inline-block' }}>
+                  Open App Store
                 </span>
-              </div>
+              </a>
             </div>
           </div>
         )}
