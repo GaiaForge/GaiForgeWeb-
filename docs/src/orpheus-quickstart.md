@@ -170,7 +170,8 @@ time — so once a unit is in the field you rarely need to open the enclosure.
 **Android** — download the APK from **gaiaforge.tech/orpheus** or your customer
 portal. When prompted, allow installation from unknown sources.
 
-**iOS** — the iPhone app is currently pending App Store approval.
+**iOS** — install *GaiaForge Orpheus Remote* from the App Store, or use the
+link on **gaiaforge.tech/orpheus**.
 
 ### Connect
 
@@ -253,7 +254,10 @@ device application and the firmware.
 2. Create a folder on a USB stick named exactly `orpheus_update` and put the zip
    inside it, still zipped.
 3. Insert the stick, then on the unit go to **Settings → Updates** and tap
-   **Scan for USB**, then **Update App**, then **Update Firmware**.
+   **Scan for USB**, then **Update App**. The unit restarts.
+4. Back in **Settings → Updates**, tap **Scan for USB** again, then **Update
+   Firmware**. If that step reports a failure, let the unit restart and tap
+   **Update Firmware** once more.
 
 It takes about 3–5 minutes, with a progress display throughout.
 

@@ -39,9 +39,9 @@ const DOCS = [
     subtitle:
       'Setup, playback modes, the companion app, power management and field ' +
       'deployment for Orpheus Basic and Orpheus Pro.',
-    badge: 'Version 1.8 · Orpheus Basic & Pro',
+    badge: 'Version 1.9 · Orpheus Basic & Pro',
     pageTitle: 'Orpheus User Manual | GaiaForge',
-    pageSubtitle: 'User Manual — Version 1.8 — 2026',
+    pageSubtitle: 'User Manual — Version 1.9 — October 2026',
   },
   {
     key: 'quickstart',
@@ -53,9 +53,9 @@ const DOCS = [
     subtitle:
       'From unboxing to your first scheduled playback, for Orpheus Basic and ' +
       'Orpheus Pro.',
-    badge: 'Version 1.8 · Orpheus Basic & Pro',
+    badge: 'Version 1.9 · Orpheus Basic & Pro',
     pageTitle: 'Orpheus Quick Start Guide | GaiaForge',
-    pageSubtitle: 'Quick Start Guide — Version 1.8 — 2026',
+    pageSubtitle: 'Quick Start Guide — Version 1.9 — October 2026',
   },
 ];
 

@@ -43,42 +43,48 @@
 
 ## In Progress
 
-### Deploy Serial Registration
-- [ ] Run device_serials migration on production database
-- [ ] Deploy updated API to VPS
-- [ ] Deploy updated portal to VPS
-- [ ] Pre-register Orpheus device serials (7 units) via admin API
-- [ ] Test full registration flow end-to-end
+- [ ] Catch-data import (EURING / CSV) and the effort-vs-catch view — see `ORPHEUS_PORTAL_PLAN.md`
+- [ ] Recording metadata sync from the app (fifth dataset)
 
 ---
 
 ## Recently Completed
 
-### Orpheus Data Pipeline (Done)
-- [ ] Define Orpheus data schema (environmental readings, playback events)
-- [ ] API models for Orpheus readings (temperature, humidity, battery, solar, GPS)
-- [ ] API models for playback logs (track played, start/stop time, volume, schedule name)
-- [ ] Sync endpoint — Flutter app pushes data over hotspot to phone, phone uploads to API when online
-- [ ] Device registration via app (auto-register serial on first sync)
+(Updated 2026-10-05. `ORPHEUS_PORTAL_PLAN.md` is the plan of record for what
+comes next on the Orpheus side; this list records what shipped.)
 
-### Orpheus Analytics Dashboard
-- [ ] Device overview — status of all registered Orpheus units, last sync time
-- [ ] Environmental charts — temperature, humidity, battery voltage, solar input over time
-- [ ] Playback timeline — visual timeline of what was played and when
-- [ ] Correlation views — overlay environmental data with playback events
-- [ ] Date range filtering and data export (CSV)
+### Orpheus Data Pipeline (Done, 2026-07)
+- [x] Orpheus data schema (environmental readings, battery, playback events, system events)
+- [x] API models and `/api/orpheus/sync`
+- [x] Sync from the app: automatic on device connect while signed in, manual fallback
+- [x] Device registration via the app (serial claimed on first sync)
 
-### Orpheus Researcher Journal
-- [ ] Timestamped field notes tied to deployment site / device
-- [ ] Categories: observation, maintenance, deployment, collection, incident
-- [ ] Photo attachment support
-- [ ] Environmental snapshot at time of entry (auto-fill from latest reading)
-- [ ] Export journal entries
+### Orpheus Analytics Dashboard (Done, 2026-08)
+- [x] Device overview with last sync time
+- [x] Environmental charts (temperature, humidity, pressure, battery, solar)
+- [x] Playback timeline and mode breakdown
+- [x] Correlation view
+- [x] Date range filtering and CSV export
+
+### Orpheus Researcher Journal (Done, 2026-08)
+- [x] Timestamped entries per device
+- [ ] Photo attachment, environmental snapshot, export — not built
+
+### Orpheus Map (Done, 2026-09-19)
+- [x] `/orpheus/map`: OpenTopoMap, one pin per unit, colour by sync age, popup with battery and last sync
+- [x] Units without a location listed beside the map
+
+### Orpheus Recordings and Species (Done, 2026-09-19/20)
+- [x] Upload WAV from the unit's USB stick; recording time and location read from the file's GUANO metadata
+- [x] Species identification with Perch 2.0 (Apache 2.0 licence); BirdNET kept as a comparison engine only
+- [x] Location filter from GBIF sightings near the unit in season
+- [x] Delete a recording and its analysis; re-analyse replaces results
+- [x] Detection timeline on a real time axis
+- [ ] Background analysis job and chunked reading for files over ~20 minutes
+- [ ] Folder upload for a whole stick
 
 ### Orpheus Reports
-- [ ] Summary reports per deployment period
-- [ ] AI-generated insights (like HiveGuard's AI reports)
-- [ ] Exportable PDF reports for research publications
+- [ ] Not started. AI-generated reports are a HiveGuard feature; the Orpheus button is a plain data summary.
 
 ---
 

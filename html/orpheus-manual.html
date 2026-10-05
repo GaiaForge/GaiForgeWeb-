@@ -170,7 +170,7 @@
 
   <div class="manual-content">
     <h1>Orpheus User Manual</h1>
-    <p class="manual-subtitle">User Manual — Version 1.8 — 2026</p>
+    <p class="manual-subtitle">User Manual — Version 1.9 — October 2026</p>
     <div class="doc-actions">
       <a href="/downloads/Orpheus-User-Manual.pdf" download><i class="fas fa-file-pdf"></i>&nbsp; Download PDF</a>
     </div>
@@ -367,7 +367,7 @@
 <h3 id="getting-the-app">Getting the App</h3>
 <ul>
 <li><strong>Android</strong> — download the APK from <strong>gaiaforge.tech/orpheus</strong> or from your customer portal, and install it on your phone. You may need to allow installation from unknown sources when prompted.</li>
-<li><strong>iOS</strong> — the iPhone app is currently pending App Store approval.</li>
+<li><strong>iOS</strong> — install <em>GaiaForge Orpheus Remote</em> from the App Store (search for it, or use the link on <strong>gaiaforge.tech/orpheus</strong>).</li>
 </ul>
 <h3 id="connecting-to-your-device">Connecting to Your Device</h3>
 <ol type="1">
@@ -476,8 +476,10 @@
 <li>Enable or disable deep sleep under <strong>Settings → Power Management</strong>.</li>
 <li>When enabled, the device automatically sleeps between scheduled events, drastically reducing power consumption.</li>
 <li>The manual wake button on the enclosure can bring the system online at any time.</li>
-<li>The companion app can also wake the device remotely via BLE.</li>
+<li>The companion app can also wake the device remotely via BLE, and its <strong>Sleep Now</strong> button puts the unit to sleep at any time. It declines only when a scheduled playback is less than three minutes away, and says so.</li>
 </ul>
+<h3 id="shutting-down-with-the-button">Shutting Down with the Button</h3>
+<p>To shut the unit down fully, hold the button on the enclosure. The screen counts down from five and tells you to keep holding; let go early and nothing happens. After five seconds the unit closes any recording in progress, shuts down cleanly, and powers off about twenty seconds later. Press the button again to start it. (Software 1.71 and later.)</p>
 <h3 id="turn-the-monitor-off-for-normal-use">Turn the monitor off for normal use</h3>
 <p>The touchscreen has its own switch on the front panel. <strong>Leave the monitor switched off for day-to-day operation</strong> and switch it on only when you need to work on the unit directly.</p>
 <p>Orpheus runs perfectly well with the screen off — playback, scheduling, sleep and wake are all unaffected, and you can still do everything from the companion app. The display is one of the larger continuous power draws on the unit, so leaving it on needlessly shortens how long a deployment lasts between charges.</p>
@@ -548,7 +550,7 @@
 </ul>
 <h2 id="maintenance">12. Maintenance</h2>
 <h3 id="software-updates-ota">Software Updates (OTA)</h3>
-<p>Orpheus updates itself from a USB stick. A single update file contains both the device application and the ESP32 firmware, and you apply it from the unit’s own touchscreen — no service visit and no tools required.</p>
+<p>Orpheus updates itself from a USB stick. A single update file contains both the device application and the controller firmware, and you apply it from the unit’s own touchscreen — no service visit and no tools required.</p>
 <p><strong>1. Download the update.</strong> Sign in to your customer portal at <strong>gaiaforge.tech/portal</strong>. The Orpheus dashboard lists the current release with its version, date and release notes. Download <code>orpheus_update.zip</code>.</p>
 <p><strong>2. Put it on a USB stick.</strong> Create a folder on the stick named exactly <code>orpheus_update</code> and place the zip file inside it.</p>
 <div class="warn">
@@ -557,9 +559,10 @@
 <p><strong>3. Install it.</strong> Insert the stick into the unit’s USB port, then on the touchscreen go to <strong>Settings → Updates</strong>:</p>
 <ol type="1">
 <li>Tap <strong>Scan for USB</strong>. The unit finds the update and shows its version.</li>
-<li>Tap <strong>Update App</strong> to install the device application.</li>
-<li>Tap <strong>Update Firmware</strong> to install the ESP32 firmware.</li>
+<li>Tap <strong>Update App</strong> to install the device application. The unit restarts when it is done.</li>
+<li>After the restart, go back to <strong>Settings → Updates</strong>, tap <strong>Scan for USB</strong> again, then tap <strong>Update Firmware</strong> to install the controller firmware.</li>
 </ol>
+<p>Do the two steps in this order. If the firmware step reports a failure, wait for the unit to restart and tap <strong>Update Firmware</strong> once more; the second attempt completes.</p>
 <p>A full-screen progress display takes over, labelled <em>Step 1 of 2</em> and <em>Step 2 of 2</em>, with a percentage and estimated time remaining. The whole process takes about <strong>3 to 5 minutes</strong>, most of it transferring firmware.</p>
 <div class="warn">
 <p><strong>DO NOT POWER OFF DURING AN UPDATE</strong> Interrupting an update part-way through can leave the unit unable to start. Wait for the completion message. Make sure the battery is adequately charged, or the unit is on solar, before you begin.</p>

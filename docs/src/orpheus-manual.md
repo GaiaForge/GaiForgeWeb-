@@ -228,7 +228,8 @@ do not need to open the enclosure or touch the screen to check on a deployment.
 - **Android** — download the APK from **gaiaforge.tech/orpheus** or from your
   customer portal, and install it on your phone. You may need to allow
   installation from unknown sources when prompted.
-- **iOS** — the iPhone app is currently pending App Store approval.
+- **iOS** — install *GaiaForge Orpheus Remote* from the App Store (search
+  for it, or use the link on **gaiaforge.tech/orpheus**).
 
 ### Connecting to Your Device
 
@@ -366,7 +367,17 @@ controller and battery-backed real-time clock.
   drastically reducing power consumption.
 - The manual wake button on the enclosure can bring the system online at any
   time.
-- The companion app can also wake the device remotely via BLE.
+- The companion app can also wake the device remotely via BLE, and its **Sleep
+  Now** button puts the unit to sleep at any time. It declines only when a
+  scheduled playback is less than three minutes away, and says so.
+
+### Shutting Down with the Button
+
+To shut the unit down fully, hold the button on the enclosure. The screen
+counts down from five and tells you to keep holding; let go early and nothing
+happens. After five seconds the unit closes any recording in progress, shuts
+down cleanly, and powers off about twenty seconds later. Press the button again
+to start it. (Software 1.71 and later.)
 
 ### Turn the monitor off for normal use
 
@@ -485,7 +496,7 @@ run indefinitely.
 ### Software Updates (OTA)
 
 Orpheus updates itself from a USB stick. A single update file contains both the
-device application and the ESP32 firmware, and you apply it from the unit's own
+device application and the controller firmware, and you apply it from the unit's own
 touchscreen — no service visit and no tools required.
 
 **1. Download the update.** Sign in to your customer portal at
@@ -506,8 +517,14 @@ that folder; do not unzip it.
 touchscreen go to **Settings → Updates**:
 
 1. Tap **Scan for USB**. The unit finds the update and shows its version.
-2. Tap **Update App** to install the device application.
-3. Tap **Update Firmware** to install the ESP32 firmware.
+2. Tap **Update App** to install the device application. The unit restarts
+   when it is done.
+3. After the restart, go back to **Settings → Updates**, tap **Scan for USB**
+   again, then tap **Update Firmware** to install the controller firmware.
+
+Do the two steps in this order. If the firmware step reports a failure, wait for
+the unit to restart and tap **Update Firmware** once more; the second attempt
+completes.
 
 A full-screen progress display takes over, labelled *Step 1 of 2* and *Step 2 of
 2*, with a percentage and estimated time remaining. The whole process takes
