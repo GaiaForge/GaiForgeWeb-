@@ -23,6 +23,11 @@ function Admin({ user, onLogout }) {
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditFilter, setAuditFilter] = useState('');
 
+  // Security scans
+  const [securityScans, setSecurityScans] = useState([]);
+  const [securityLoading, setSecurityLoading] = useState(false);
+  const [expandedScan, setExpandedScan] = useState(null);
+
   // Serials
   const [allSerials, setAllSerials] = useState([]);
   const [newSerial, setNewSerial] = useState({ serial: '', product: 'orpheus', notes: '' });
@@ -312,6 +317,19 @@ function Admin({ user, onLogout }) {
       if (res.ok) setAuditLogs(await res.json());
     } catch {} finally { setAuditLoading(false); }
   };
+
+  const fetchSecurityScans = async () => {
+    setSecurityLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/security-scans?limit=50`, { headers });
+      if (res.ok) setSecurityScans(await res.json());
+    } catch {} finally { setSecurityLoading(false); }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'audit') fetchSecurityScans();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   const exportUserData = async (userId) => {
     try {
@@ -1010,6 +1028,78 @@ function Admin({ user, onLogout }) {
 
             {/* ==================== AUDIT LOG TAB ==================== */}
             {activeTab === 'audit' && (
+              <>
+              <div className="admin-card">
+                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px'}}>
+                  <h3 style={{margin:0}}>Security Scans</h3>
+                  <button onClick={fetchSecurityScans}
+                    style={{padding:'8px 16px', background:'#4c8c4a', color:'#fff', border:'none', borderRadius:'8px', fontWeight:600, cursor:'pointer', fontSize:'13px'}}>
+                    {securityLoading ? 'Loading...' : 'Refresh'}
+                  </button>
+                </div>
+                <p style={{color:'#6b7280', fontSize:'13px', marginTop:0}}>
+                  Automated weekly scan of the site &amp; infrastructure. Click a run to see details.
+                </p>
+                {securityScans.length > 0 ? (
+                  <div style={{display:'flex', flexDirection:'column', gap:'8px'}}>
+                    {securityScans.map(scan => {
+                      const color = scan.status === 'ok' ? '#10b981'
+                        : scan.status === 'warn' ? '#f59e0b' : '#ef4444';
+                      const label = scan.status === 'ok' ? 'All clear' : scan.status.toUpperCase();
+                      const open = expandedScan === scan.id;
+                      return (
+                        <div key={scan.id} style={{border:'1px solid #e5e7eb', borderRadius:'8px', overflow:'hidden'}}>
+                          <div onClick={() => setExpandedScan(open ? null : scan.id)}
+                            style={{display:'flex', alignItems:'center', gap:'12px', padding:'12px 14px', cursor:'pointer',
+                              background: open ? 'rgba(0,0,0,0.02)' : '#fff'}}>
+                            <span style={{width:'10px', height:'10px', borderRadius:'50%', background:color, flexShrink:0}}></span>
+                            <span style={{fontWeight:600, color:'#1f2937', fontSize:'13px'}}>{label}</span>
+                            <span style={{color:'#6b7280', fontSize:'13px'}}>{new Date(scan.timestamp).toLocaleString()}</span>
+                            <span style={{marginLeft:'auto', fontSize:'12px', color:'#6b7280'}}>
+                              {scan.checks_passed}/{scan.checks_total} passed
+                              {scan.warnings > 0 && <span style={{color:'#f59e0b'}}> · {scan.warnings} warn</span>}
+                              {scan.failures > 0 && <span style={{color:'#ef4444'}}> · {scan.failures} fail</span>}
+                            </span>
+                            <span style={{color:'#9ca3af', fontSize:'12px'}}>{open ? '▲' : '▼'}</span>
+                          </div>
+                          {open && (
+                            <div style={{borderTop:'1px solid #e5e7eb', padding:'4px 0'}}>
+                              {scan.error && (
+                                <p style={{color:'#ef4444', fontSize:'13px', padding:'8px 14px', margin:0}}>
+                                  Scan error: {scan.error}
+                                </p>
+                              )}
+                              <table style={{width:'100%', fontSize:'13px', borderCollapse:'collapse'}}>
+                                <tbody>
+                                  {scan.findings.map((f, i) => {
+                                    const fc = f.status === 'pass' ? '#10b981'
+                                      : f.status === 'warn' ? '#f59e0b'
+                                      : f.status === 'fail' ? '#ef4444' : '#9ca3af';
+                                    return (
+                                      <tr key={i} style={{borderTop: i ? '1px solid #f3f4f6' : 'none'}}>
+                                        <td style={{padding:'6px 14px', fontWeight:600, color:'#374151', whiteSpace:'nowrap'}}>{f.check}</td>
+                                        <td style={{padding:'6px 10px', whiteSpace:'nowrap'}}>
+                                          <span style={{color:fc, fontWeight:600, textTransform:'uppercase', fontSize:'11px'}}>{f.status}</span>
+                                        </td>
+                                        <td style={{padding:'6px 14px', color:'#6b7280'}}>{f.detail}</td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p style={{color:'#6b7280', fontSize:'14px'}}>
+                    {securityLoading ? 'Loading scans...' : 'No scans recorded yet. The weekly scan writes results here.'}
+                  </p>
+                )}
+              </div>
+
               <div className="admin-card">
                 <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px'}}>
                   <h3 style={{margin:0}}>Security Audit Log</h3>
@@ -1069,6 +1159,7 @@ function Admin({ user, onLogout }) {
                   <p style={{color:'#6b7280', fontSize:'14px'}}>Click "Load Log" to view security audit events.</p>
                 )}
               </div>
+              </>
             )}
 
             {/* ==================== CONFIG TAB ==================== */}
